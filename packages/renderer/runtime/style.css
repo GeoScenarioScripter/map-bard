@@ -1,0 +1,235 @@
+/* MapBard runtime styles — layout for the sticky-map scrollytelling shell.
+   Theme tokens (fonts, accent) arrive as CSS variables set inline in index.html. */
+:root {
+  --mb-display: var(--mb-display-font, 'Iowan Old Style', Georgia, 'Times New Roman', serif);
+  --mb-body: var(--mb-body-font, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  --mb-accent: var(--mb-accent-color, #0b3d91);
+  --mb-card-bg: rgba(255, 255, 255, 0.94);
+  --mb-ink: #1c1d22;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: var(--mb-body);
+  color: var(--mb-ink);
+  background: #e9e6df;
+}
+
+/* full-bleed sticky map behind the scrolling story */
+#map {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+}
+.maplibregl-ctrl-bottom-right {
+  z-index: 3;
+}
+
+#story {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  pointer-events: none; /* let the map receive drags; cards re-enable below */
+}
+
+.mb-intro,
+.mb-outro {
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 560px;
+}
+.mb-intro h1 {
+  font-family: var(--mb-display);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+  margin: 0 0 0.5em;
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
+}
+.mb-intro p,
+.mb-outro p {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  max-width: 36ch;
+}
+
+.scene {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+.scene-card {
+  pointer-events: auto;
+  width: min(420px, 92vw);
+  background: var(--mb-card-bg);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  opacity: 0.5;
+  transform: translateY(10px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+.scene.is-active .scene-card {
+  opacity: 1;
+  transform: none;
+}
+.scene-card h2 {
+  font-family: var(--mb-display);
+  font-size: 1.5rem;
+  margin: 0 0 0.4em;
+  color: var(--mb-accent);
+}
+.scene-narration p {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  margin: 0 0 0.8em;
+}
+.scene-narration p:last-child {
+  margin-bottom: 0;
+}
+
+.mb-media {
+  margin: 14px 0 0;
+}
+.mb-media img,
+.mb-media video {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  background: #cfcabd;
+}
+.mb-media figcaption {
+  font-size: 0.82rem;
+  color: #555;
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.mb-credit {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* scene background-image media */
+.scene-card.has-bg {
+  color: #fff;
+  background-size: cover;
+  background-position: center;
+}
+.scene-card.has-bg h2 {
+  color: #fff;
+}
+
+#controls {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
+  width: 232px;
+  background: var(--mb-card-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+#controls[hidden] {
+  display: none;
+}
+.mb-controls-title {
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--mb-accent);
+  margin-bottom: 10px;
+}
+.mb-control {
+  display: block;
+  margin: 0 0 12px;
+}
+.mb-control:last-child {
+  margin-bottom: 0;
+}
+.mb-control-label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+.mb-control-input {
+  width: 100%;
+  accent-color: var(--mb-accent);
+}
+
+/* teardrop markers */
+.mb-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--mb-accent);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+.mb-marker.is-video {
+  background: #b3261e;
+}
+.mb-popup .maplibregl-popup-content {
+  padding: 10px;
+  border-radius: 10px;
+}
+.mb-popup-title {
+  display: block;
+  font-family: var(--mb-display);
+  margin-bottom: 6px;
+  color: var(--mb-accent);
+}
+.mb-popup img,
+.mb-popup video {
+  width: 280px;
+  max-width: 100%;
+  border-radius: 6px;
+  display: block;
+}
+.mb-popup figcaption {
+  font-size: 0.78rem;
+  color: #555;
+  margin-top: 5px;
+}
+
+@media (max-width: 640px) {
+  #story {
+    padding: 0 14px;
+  }
+  #controls {
+    left: 14px;
+    right: 14px;
+    width: auto;
+    top: auto;
+    bottom: 14px;
+  }
+}

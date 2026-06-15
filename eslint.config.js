@@ -11,4 +11,25 @@ export default tseslint.config(
       sourceType: 'module',
     },
   },
+  // Browser runtime shipped verbatim into the bundle (plain JS, map libs as globals).
+  {
+    files: ['packages/renderer/runtime/**/*.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        maplibregl: 'readonly',
+        scrollama: 'readonly',
+      },
+    },
+  },
+  // Node dev scripts (ESM, run with `node`).
+  {
+    files: ['**/scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { URL: 'readonly', console: 'readonly', process: 'readonly' },
+    },
+  },
 );

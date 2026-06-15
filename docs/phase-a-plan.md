@@ -26,7 +26,7 @@ A **single linear story over vector data + supporting media (images/video), run 
 |---|---|---|---|
 | M0 | Repo scaffold (pnpm workspace, tsconfig, empty packages, vitest, lint) | `pnpm -r build` and `pnpm -r test` run clean | ✅ DONE |
 | M1 | `schema`: Zod `GeoNarrative` + inferred types + example JSON | example validates; types exported | ✅ DONE |
-| M2 | `core` Stage 0: GeoJSON + CSV ingest & profiling | profiles correct on sample files (tested) | ⬜ NOT STARTED |
+| M2 | `core` Stage 0: GeoJSON + CSV ingest & profiling | profiles correct on sample files (tested) | ✅ DONE |
 | M3 | `renderer` against the example JSON | example renders to a browsable bundle | ✅ DONE |
 | M4 | `core` LLM adapter + Stage 1 Plan (validated, with fit check) | intent → valid planned `GeoNarrative` | ⬜ NOT STARTED |
 | M5 | `core` Stage 2 Design (rule-based via `knowledge` table) | plan → design with layers/camera/controls | ⬜ NOT STARTED |

@@ -15,10 +15,10 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** A (MVP) — **OPENED** (Session 03).
-- **Active milestone:** **M2 — `core` Stage 0** (⬜ NOT STARTED, next). M0 ✅ · M1 ✅ · M3 ✅ DONE.
-- **Milestones:** M0 ✅ · M1 ✅ · M2 ⬜ · M3 ✅ · M4 ⬜ · M5 ⬜ · M6 ⬜ · M7 ⬜.
+- **Active milestone:** **M4 — `core` LLM adapter + Stage 1 Plan** (⬜ NOT STARTED, next). M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ DONE.
+- **Milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ⬜ · M5 ⬜ · M6 ⬜ · M7 ⬜.
 - **Scope:** vector data **+ supporting media (images/video, local or URL)** — media appears in scene narration panels and anchored to map locations. Threads through M1–M4, M6 (not a separate milestone).
-- **Next action:** **M2** — `core` Stage 0 ingest & profiling (GeoJSON + CSV-with-coords) + media registration into `MediaAsset[]`, thoroughly tested on fixtures. Renderer (M3) + schema (M1) are the concrete targets. Schema is `v0.1.0`, not frozen.
+- **Next action:** **M4** — DashScope OpenAI-compat adapter (`MAPBARD_LLM_*`, default `qwen3.7-max-2026-05-17`) + Stage 1 Plan: intent + profiles → validated `GeoNarrative` (content/narration/discourse, media by `assetId` only, fit check, repair/retry). Ship `.env.example`. Schema is `v0.1.0`, not frozen.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
 - **LLM:** DashScope (OpenAI-compat endpoint), default model `qwen3.7-max-2026-05-17`. See `CLAUDE.md §d`.
 
@@ -100,6 +100,13 @@ The single session/phase journal. Each work session is one chapter. This is how 
 - **6 render() unit tests** (pure, no fs): HTML has title/intent/scenes + runtime wiring; panel media inlined while anchor-only media is left to the runtime; data inlined with no surviving `</script>`; both local images listed to copy; missing-data warning; clean when data supplied.
 - Added **`@types/node`** (tsc needed it for `node:*` + `import.meta.url` in renderer).
 
+**Did (M2 — `core` Stage 0: ingest & profile):**
+- **GeoJSON ingest** (`stage0/geojson.ts`): parse → validate FeatureCollection → `DataSource` with a filled `DataProfile` + the raw FC for the renderer. **CSV-with-coordinates ingest** (`stage0/csv.ts`): a dependency-free RFC-4180-ish parser, lon/lat column detection (lon/lng/long/longitude/x + lat/latitude/y), cell coercion (numbers/booleans; zero-padded codes and dates stay strings), → point features → same profile path.
+- **Shared profiling** (`stage0/profile.ts`, pure): geometry classification (point/line/polygon/mixed/none incl. GeometryCollection), `[minX,minY,maxX,maxY]` extent via a recursive position walker, attribute profiling (`dataType` number/string/boolean/date; `measurement` heuristic number→ratio, date→interval, boolean/string→nominal; first-5 distinct `sample`), and `temporalExtent` from date attributes. CRS defaults to EPSG:4326 (reads a 2008-style `crs` member if present).
+- **Media registration** (`stage0/media.ts`): `--media` input (local path or URL) → validated `MediaAsset`; classify kind (image/video) + source (local/url) + mimeType by extension; validate local files exist and URLs are well-formed; **best-effort intrinsic image size** via a header sniffer (`stage0/image-size.ts`: PNG/JPEG/GIF/WebP, no deps). No transcoding, no LLM.
+- **Extension dispatcher** `ingestDataFile()` (.geojson/.json vs .csv) + `registerMediaInputs()` batch. New fixtures: `examples/data/neighborhoods.geojson` (polygons + dates) and `examples/data/sensors.csv` (lon/lat + numeric + date); reuses the existing media PNGs.
+- **14 unit tests** across geojson/csv/media: exact profiles (geometry, count, extent, temporalExtent, per-attribute type+measurement), lon/lat excluded from attributes, point features built correctly; media classification incl. a URL asset (no dims) and a missing-local-file error; PNG size sniff (800×450 / 600×400); parser + coercion edge cases.
+
 **Decisions:**
 - **MapBard owns its git** at the folder root (`main`), not the `D:/code` parent. Commits will target this repo.
 - **Build = per-package `tsc -p` via `pnpm -r build`** (not a root project-reference graph) — simplest for now; revisit if cross-package type-checking speed matters.
@@ -107,17 +114,19 @@ The single session/phase journal. Each work session is one chapter. This is how 
 - Tooling versions resolved: typescript 5.9.3, vitest 2.1.9, eslint 9.39.4, prettier 3.8.4, typescript-eslint 8.61.0. Added **zod ^3.24.1** to `schema`.
 - **Schema is `v0.1.0` and explicitly NOT frozen** (guide §4 calls it a starter). Referential checks chosen for M1 = "references resolve" (assetId / dataSourceId / control layerId); attribute-name and CRS-value checks deferred (need data profiles from M2).
 - **Renderer is split pure/`render()` vs I/O `writeBundle()`** so generation is unit-testable without disk. **Data is inlined**, not fetched, to guarantee `file://` works. **Vendor libs are copied from node_modules**, not CDN, to stay offline. **Basemap = neutral background in MVP**; real PMTiles deferred (parked) — it needs a real tileset and `file://` range-request handling, out of M3's "renders to a browsable bundle" bar.
+- **Stage 0 measurement inference is a documented heuristic** (number→ratio, date→interval, boolean/string→nominal) — good enough for MVP; the Design stage / future profiling can refine ordinal vs nominal. **CSV numeric coercion deliberately preserves zero-padded codes** (e.g. ZIPs) and date strings as strings. **Ingest returns the raw FeatureCollection alongside the profile** so the renderer's `dataMap` comes straight from Stage 0 with no second parse.
 
 **Open thread / note:** there is a stray **empty `D:\code\MapBard\code\` directory** (pre-existing, not created this session) — harmless but worth deleting when convenient.
 
-**Files touched:** _M0_ — `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `.gitignore`, `.prettierrc.json`, `.prettierignore`, `eslint.config.js`, `packages/{schema,core,knowledge,renderer,cli}/{package.json,tsconfig.json,src/index.ts}`, `examples/.gitkeep`. _M1_ — `packages/schema/{package.json,src/geo-narrative.ts,src/index.ts,src/index.test.ts}`, `packages/core/{package.json,src/index.ts}`, `examples/sf-waterfront.geonarrative.json`. _M3_ — root `package.json` (+`@types/node`), `eslint.config.js` (runtime/script globals), `packages/renderer/{package.json,runtime/app.js,runtime/style.css,scripts/render-example.mjs,src/{types,index-html,bundle-data,render,write,index,render.test}.ts}`, `examples/data/landmarks.geojson`, `examples/media/{skyline,ferry-building}.png`. _Docs_ — `docs/BUILD_LOG.md`, `docs/phase-a-plan.md`.
+**Files touched:** _M0_ — `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `.gitignore`, `.prettierrc.json`, `.prettierignore`, `eslint.config.js`, `packages/{schema,core,knowledge,renderer,cli}/{package.json,tsconfig.json,src/index.ts}`, `examples/.gitkeep`. _M1_ — `packages/schema/{package.json,src/geo-narrative.ts,src/index.ts,src/index.test.ts}`, `packages/core/{package.json,src/index.ts}`, `examples/sf-waterfront.geonarrative.json`. _M3_ — root `package.json` (+`@types/node`), `eslint.config.js` (runtime/script globals), `packages/renderer/{package.json,runtime/app.js,runtime/style.css,scripts/render-example.mjs,src/{types,index-html,bundle-data,render,write,index,render.test}.ts}`, `examples/data/landmarks.geojson`, `examples/media/{skyline,ferry-building}.png`. _M2_ — `packages/core/src/{index.ts,stage0/{geojson-types,profile,ingest-types,geojson,csv,image-size,media,index,geojson.test,csv.test,media.test}.ts}`, `examples/data/{neighborhoods.geojson,sensors.csv}`. _Docs_ — `docs/BUILD_LOG.md`, `docs/phase-a-plan.md`.
 
 **Verification:**
 - M0: `pnpm install` ✅ → `pnpm -r build` ✅ (5/5) → `pnpm -r test` ✅ → `pnpm lint` ✅. **M0 DoD met.**
 - M1: `pnpm --filter @mapbard/schema test` ✅ (12/12). Full `pnpm -r build` ✅ (schema → core topo order; `GeoNarrative` type imports across the package boundary), `pnpm -r test` ✅, `pnpm lint` ✅. **M1 DoD met** (example validates; types exported and importable).
 - M3: `pnpm -r build` ✅, `pnpm -r test` ✅ (renderer 6/6), `pnpm lint` ✅. Rendered example via the dev script → **9-file self-contained `out/`** (`index.html`, `app.js`, `style.css`, `bundle-data.js`, `media/*.png` copied, `vendor/{maplibre-gl.js,maplibre-gl.css,scrollama.min.js}`), **0 warnings**. `node --check` clean on `app.js` + `bundle-data.js`; eval of `bundle-data.js` → 2 scenes / 2 assets / landmarks=3 features; every `index.html` reference resolves to a present file. **M3 DoD met** (renders to a browsable bundle). _Final human eyeball in a browser (scroll/popup/control) is the user's to do — `file:///D:/code/MapBard/out/index.html`._
+- M2: `pnpm --filter @mapbard/core test` ✅ (14/14 — geojson 3, csv 4, media 7). Full `pnpm -r build` ✅, `pnpm -r test` ✅ (**32 total**: schema 12, core 14, renderer 6), `pnpm lint` ✅. **M2 DoD met** (profiles + media assets correct on fixtures, verified by tests).
 
-**Next:** **M2** — `core` Stage 0: GeoJSON + CSV ingest & profiling, plus media registration into `MediaAsset[]`. Test thoroughly on fixtures (it grounds everything downstream).
+**Next:** **M4** — `core` LLM adapter (DashScope OpenAI-compat) + Stage 1 Plan: `(profiles + media, intent) → validated GeoNarrative` with scenes filled at content/narration/discourse, media attached by `assetId` only, fit check, repair/retry. Ship `.env.example`. Then M5 (Design), M6 (CLI), M7 (MVP).
 
 ---
 

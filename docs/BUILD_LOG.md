@@ -15,10 +15,11 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** A (MVP) — **OPENED** (Session 03).
-- **Active milestone:** **M4 — `core` LLM adapter + Stage 1 Plan** (⬜ NOT STARTED, next). M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ DONE.
-- **Milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ⬜ · M5 ⬜ · M6 ⬜ · M7 ⬜.
+- **Active milestone:** **M5 — `core` Stage 2 Design (rule-based via `knowledge` table)** (⬜ NOT STARTED, next). M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ DONE.
+- **Milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 ⬜ · M6 ⬜ · M7 ⬜.
 - **Scope:** vector data **+ supporting media (images/video, local or URL)** — media appears in scene narration panels and anchored to map locations. Threads through M1–M4, M6 (not a separate milestone).
-- **Next action:** **M4** — DashScope OpenAI-compat adapter (`MAPBARD_LLM_*`, default `qwen3.7-max-2026-05-17`) + Stage 1 Plan: intent + profiles → validated `GeoNarrative` (content/narration/discourse, media by `assetId` only, fit check, repair/retry). Ship `.env.example`. Schema is `v0.1.0`, not frozen.
+- **Next action:** **M5** — Stage 2 Design: a static element→technique table in `packages/knowledge`, then a rule-based pass filling each scene's `layers` (technique + encode + classification), refined per-scene `camera`, `transitionIn`, and chosen `controls`. Feed M4's plan through it → a `narrative.design.json` the renderer accepts. Schema is `v0.1.0`, not frozen.
+- **Repo:** pushed to GitHub `origin` → `https://github.com/GeoScenarioScripter/map-bard.git` (`main` tracks `origin/main`) as of Session 04.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
 - **LLM:** DashScope (OpenAI-compat endpoint), default model `qwen3.7-max-2026-05-17`. See `CLAUDE.md §d`.
 
@@ -127,6 +128,37 @@ The single session/phase journal. Each work session is one chapter. This is how 
 - M2: `pnpm --filter @mapbard/core test` ✅ (14/14 — geojson 3, csv 4, media 7). Full `pnpm -r build` ✅, `pnpm -r test` ✅ (**32 total**: schema 12, core 14, renderer 6), `pnpm lint` ✅. **M2 DoD met** (profiles + media assets correct on fixtures, verified by tests).
 
 **Next:** **M4** — `core` LLM adapter (DashScope OpenAI-compat) + Stage 1 Plan: `(profiles + media, intent) → validated GeoNarrative` with scenes filled at content/narration/discourse, media attached by `assetId` only, fit check, repair/retry. Ship `.env.example`. Then M5 (Design), M6 (CLI), M7 (MVP).
+
+---
+
+## Session 04 — 2026-06-16 — 🔴 CLOSED
+
+**Goal:** M4 — `core` LLM adapter (DashScope OpenAI-compat) + Stage 1 Plan: `(profiles + media, intent) → validated GeoNarrative` with scenes filled at content/narration/discourse, media attached by `assetId` only, fit check, repair/retry. Ship `.env.example`.
+
+**Did:**
+- **Pushed the repo to GitHub** (start of session): added remote `origin` → `https://github.com/GeoScenarioScripter/map-bard.git` and pushed `main` (3 commits). `main` now tracks `origin/main`.
+- **LLM adapter** (`src/llm/`): the provider-agnostic seam `LlmAdapter.complete({ system, prompt, schema }) → validated T` (`adapter.ts`), plus the **DashScope** implementation (`dashscope.ts`) over the OpenAI-compat endpoint via the `openai` SDK (`response_format: json_object`). The **repair/retry loop is a standalone `completeWithRepair(req, generate, opts)`** decoupled from any provider — it parses (`extractJson`: fenced-block aware), validates with Zod `safeParse`, and on failure feeds the assistant's bad output + the specific Zod issues back as a follow-up turn, up to `maxAttempts` (default 3), then throws `LlmValidationError`. Env config via `dashScopeConfigFromEnv` (`MAPBARD_LLM_KEY` required; `MAPBARD_LLM_BASE_URL`/`MAPBARD_LLM_MODEL` optional, defaults = compat endpoint + `qwen3.7-max-2026-05-17`).
+- **Stage 1 Plan** (`src/stage1/plan.ts`): `planNarrative({ intent, dataSources, mediaAssets, title? }, adapter, opts) → { narrative, questions }`. The model emits a **constrained plan object** (title + scenes with `narration`/`content`/`discourse`/`media`/`mediaAnchors` only) validated by **`makePlanSchema(assetIds)`** — a per-call Zod schema whose media `assetId`s are `superRefine`d against the known set, so a **dangling/invented media reference is repaired by the adapter like any other schema violation**. The full `GeoNarrative` is then **assembled deterministically**: scene ids (`scene-N`), `layers: []` (Stage 2's job), a **default camera framed on the unioned data extent** (`cameraFromExtent` — coarse log2 zoom heuristic), neutral basemap, `schemaVersion`. Final `parseGeoNarrative` guards the assembly.
+- **Fit check:** after assembly, any scene with `content.process` while **no** source has a `temporalExtent` yields a surfaced **question** (not an error, not invented data) — returned in `questions[]`.
+- **`.env.example`** shipped at repo root with the three `MAPBARD_LLM_*` vars (`.gitignore` already allows it past the `.env*` block).
+- **Dev smoke script** `packages/core/scripts/plan-example.mjs` — ingests the example data+media, builds the env adapter, writes `narrative.plan.json` (for the user's live-key run; superseded by `mapbard plan` at M6).
+- Exported `llm` + `stage1` from the `core` barrel.
+
+**Decisions:**
+- **Plan emits a constrained sub-object, not the full `GeoNarrative`.** The LLM owns only content/narration/discourse + media attachment; ids, layers, camera, basemap are filled deterministically. Keeps the model away from data/visual invention and makes media-reference validation a pure schema concern.
+- **Media-reference integrity rides the adapter's repair loop** via a dynamically-built `superRefine` (asset ids known only at call time) — no separate validate-and-retry path.
+- **Repair loop is provider-independent** (`completeWithRepair` + a `generate` fn) so retry/repair is unit-tested with a fake generator, zero network. The `openai` client is constructed only inside `createDashScopeAdapter`.
+- **`zod` is now a direct `core` dependency** (was only transitive via `schema`); pnpm strict linking requires it for the `core` source to import `zod`. Added `openai ^6.42.0`, `zod ^3.24.1` (resolved 3.25.76).
+- **Default camera is a placeholder** framed on the data extent — Stage 2 (Design) will set real per-scene framing. Plan output is still renderable as-is.
+
+**Files touched:** `packages/core/src/llm/{adapter,dashscope,index}.ts` (+ `adapter.test.ts`), `packages/core/src/stage1/{plan,index}.ts` (+ `plan.test.ts`), `packages/core/src/index.ts`, `packages/core/scripts/plan-example.mjs`, `packages/core/package.json` (+`openai`,`zod`), root `.env.example`, `pnpm-lock.yaml`, `docs/BUILD_LOG.md`, `docs/phase-a-plan.md`, memory (`feedback_mapbard_dashscope.md`).
+
+**Verification:**
+- `pnpm -r build` ✅ (6/6) · `pnpm -r test` ✅ (**53 total**: schema 12, core **35** [+21 this session — adapter 8, plan 13, stage0 14], renderer 6) · `pnpm lint` ✅.
+- New M4 tests cover (mocked, no network): `extractJson` (bare/fenced/prose/non-JSON); repair loop (first-good, JSON-repair, schema-type-repair with error fed back, exhaustion → `LlmValidationError`); Plan assembly (valid `GeoNarrative`, ids, empty layers, camera-on-extent, media attachment), title override, **dangling assetId rejected**, **fit check fires / stays silent** by temporal presence; `makePlanSchema` accept/reject; `cameraFromExtent`/`unionExtents`.
+- **M4 DoD met** (intent → valid planned `GeoNarrative`, verified by mocked tests). _Live-key smoke (`narrative.plan.json` from a real DashScope call) is the user's to run — no key in env; `scripts/plan-example.mjs` is ready for it._
+
+**Next:** **M5** — `core` Stage 2 Design (rule-based via the `knowledge` element→technique table): plan → enrich each scene with `layers` (technique + encode + classification), refined per-scene `camera`, `transitionIn`, and chosen `controls`. Output a `narrative.design.json` the M3 renderer accepts.
 
 ---
 

@@ -28,7 +28,7 @@ A **single linear story over vector data + supporting media (images/video), run 
 | M1 | `schema`: Zod `GeoNarrative` + inferred types + example JSON | example validates; types exported | ✅ DONE |
 | M2 | `core` Stage 0: GeoJSON + CSV ingest & profiling | profiles correct on sample files (tested) | ✅ DONE |
 | M3 | `renderer` against the example JSON | example renders to a browsable bundle | ✅ DONE |
-| M4 | `core` LLM adapter + Stage 1 Plan (validated, with fit check) | intent → valid planned `GeoNarrative` | ⬜ NOT STARTED |
+| M4 | `core` LLM adapter + Stage 1 Plan (validated, with fit check) | intent → valid planned `GeoNarrative` | ✅ DONE |
 | M5 | `core` Stage 2 Design (rule-based via `knowledge` table) | plan → design with layers/camera/controls | ⬜ NOT STARTED |
 | M6 | `cli` wiring `plan`/`design`/`build` + gates | one command path works | ⬜ NOT STARTED |
 | M7 | MVP: one real dataset end to end | matches Definition of Done | ⬜ NOT STARTED |
@@ -119,12 +119,12 @@ A **single linear story over vector data + supporting media (images/video), run 
 **Depends on:** M1, M2. (Targets the M3 renderer.)
 
 **Tasks**
-- [ ] **LLM adapter** `complete({ system, prompt, schema }) → validated object`, single provider = **DashScope OpenAI-compat** (see `CLAUDE.md §d`). Read `MAPBARD_LLM_KEY` / `MAPBARD_LLM_BASE_URL` / `MAPBARD_LLM_MODEL` (default `qwen3.7-max-2026-05-17`).
-- [ ] Ship `.env.example` with the three vars.
-- [ ] Plan stage: prompt the model with the data **and media** profiles to produce a schema-valid `GeoNarrative` (scenes with `content`/`narration`/`discourse`). **Validate vs Zod; on invalid → repair/retry**, never pass through.
-- [ ] **Media attachment:** the model attaches relevant assets to scenes (`media`) or anchors place-bound ones (`mediaAnchors`), **referencing only registered `assetId`s — never invent media**. Validate every referenced `assetId` resolves; on dangling reference → repair/retry.
-- [ ] **Fit check:** if a scene's `content.process` is requested but no source has a `temporalExtent`, flag it and **surface a question** rather than inventing data.
-- [ ] Tests: a stubbed/mocked adapter returns a fixture; validation, media-reference, and fit-check logic unit-tested without network.
+- [x] **LLM adapter** `complete({ system, prompt, schema }) → validated object`, single provider = **DashScope OpenAI-compat** (see `CLAUDE.md §d`). Read `MAPBARD_LLM_KEY` / `MAPBARD_LLM_BASE_URL` / `MAPBARD_LLM_MODEL` (default `qwen3.7-max-2026-05-17`). _Repair/retry lives in a provider-agnostic `completeWithRepair`._
+- [x] Ship `.env.example` with the three vars.
+- [x] Plan stage: prompt the model with the data **and media** profiles to produce a schema-valid plan (scenes with `content`/`narration`/`discourse`); the full `GeoNarrative` is assembled deterministically (ids, empty `layers`, default camera). **Validate vs Zod; on invalid → repair/retry**, never pass through.
+- [x] **Media attachment:** the model attaches relevant assets to scenes (`media`) or anchors place-bound ones (`mediaAnchors`), **referencing only registered `assetId`s — never invent media**. Enforced by `makePlanSchema(assetIds)` `superRefine`; dangling reference → adapter repair/retry.
+- [x] **Fit check:** if a scene's `content.process` is requested but no source has a `temporalExtent`, flag it and **surface a question** (in `questions[]`) rather than inventing data.
+- [x] Tests: a stubbed/mocked adapter returns a fixture; validation, media-reference, and fit-check logic unit-tested without network (21 new tests).
 
 **Done when:** an intent → a valid planned `GeoNarrative`.
 **Verify:** `pnpm --filter core test` (mocked) passes; a live smoke run with a real key turns one intent into a schema-valid `narrative.plan.json`.

@@ -1,0 +1,39 @@
+{
+  "projectVersion": "0.1.0",
+  "id": "synthetic-two-periods",
+  "revision": 1,
+  "artifacts": { "narrative": "narrative.geonarrative.json", "design": "design.json" },
+  "resources": {
+    "data": [
+      {
+        "id": "period-a",
+        "kind": "geojson",
+        "path": "data/period-a.geojson",
+        "sha256": "sha256:8cf185014c968f95be289316d6f3315e12969a54bd8586f038cf2e25706f72f7",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          { "name": "site", "observedType": "string", "inferredLevel": "nominal", "role": "identifier", "level": "nominal", "unit": null },
+          { "name": "value", "observedType": "number", "inferredLevel": "ratio", "role": "quantity", "level": "interval", "unit": "index points", "override": { "rationale": "Synthetic test declaration; zero is not an asserted absence." } }
+        ],
+        "attribution": { "label": "MapBard synthetic software fixture", "qualification": "Invented values; not geographic observations." },
+        "observationLabel": "Synthetic period A"
+      },
+      {
+        "id": "period-b",
+        "kind": "geojson",
+        "path": "data/period-b.geojson",
+        "sha256": "sha256:821cbc7de81620c40e59df3d071dfc678fac893ad7be04a4a579d9155ac3f3b5",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          { "name": "site", "observedType": "string", "inferredLevel": "nominal", "role": "identifier", "level": "nominal", "unit": null },
+          { "name": "value", "observedType": "number", "inferredLevel": "ratio", "role": "quantity", "level": "interval", "unit": "index points", "override": { "rationale": "Synthetic test declaration; zero is not an asserted absence." } }
+        ],
+        "attribution": { "label": "MapBard synthetic software fixture", "qualification": "Invented values; not geographic observations." },
+        "observationLabel": "Synthetic period B"
+      }
+    ],
+    "media": []
+  }
+}

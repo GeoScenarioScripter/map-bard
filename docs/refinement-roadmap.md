@@ -1,6 +1,6 @@
 # MapBard — Refinement Roadmap and Planning Brief
 
-Updated 2026-10-17. **Stage planning complete; implementation not started.**
+Updated 2026-10-18. **Stage planning complete; implementation not started.**
 This retains the refinement discussion and coverage inputs. Session 09 produced
 the [stage roadmap](implementation-stages.md) and detailed [Stage 1 plan](stage-1-plan.md).
 Only Stage 1 has waves/sessions; later stages remain outlines until their predecessor closes.
@@ -14,6 +14,14 @@ The [idea register](refinement-ideas.md) audits the discussion into stable R IDs
 including rationale, examples, candidate choices, and explicit deferrals. Keep
 those IDs traceable as future stages are detailed; not every retained idea is a
 first-release commitment.
+
+Session 10 reviewed that register against the existing plans. See the complete
+[R-ID disposition](implementation-stages.md#r01r40-planning-disposition) and
+[Stage 1 handoffs](stage-1-plan.md#required-handoffs-from-the-idea-review).
+The sequence is unchanged. Stage 1 now explicitly owns author-task framing,
+attention/comparison references, measurement overrides, stale-build checks and
+verification records. Evidence-led story redirection and denominator-sensitive
+revision are acceptance threads in Stages 2–3 and 6, not Stage 1 feature work.
 
 ## First product outcome
 
@@ -30,8 +38,8 @@ commercialization and marketplace planning are deferred.
 MapBard's own in-product agent will use **one LLM + a system prompt + dynamically
 loaded skills + a purpose-built harness maintaining the agent loop**. No LangGraph
 or comparable agent orchestration framework, and no fixed team of specialized
-agents. This architecture is decided; the minimum harness scope and delivery
-sequence still need planning. It must use the same engine operations as external
+agents. This architecture is decided; the minimum harness is outlined for Stage 6,
+with detailed planning after Stage 5 closes. It must use the same engine operations as external
 coding agents without becoming a dependency of their workflows.
 
 ## Baseline to carry forward
@@ -136,10 +144,10 @@ those decisions. Real-case discovery and runtime tooling resolve at Stage 1 G1;
 analysis-method, edit-protocol, UI and evaluation details resolve when their stages
 are planned. The original positions below are inputs, not overrides of that sequence.
 
-For the built-in agent, resolve the initial system-prompt responsibilities, skill
+When detailing Stage 6, resolve the initial system-prompt responsibilities, skill
 discovery/loading/versioning, context management, tool-call interface, session
 checkpoints, cancellation, stopping/waiting states, budgets, and test strategy.
-Choose the smallest useful harness slice and its delivery stage. The use of our
+Use the bounded harness outline and shared Stage 3 skills/scenarios. The use of our
 own single-agent harness rather than LangGraph or a specialized-agent team is not
 an open framework-selection question.
 

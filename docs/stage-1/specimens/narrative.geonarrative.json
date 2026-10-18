@@ -1,0 +1,16 @@
+{
+  "id": "synthetic-two-periods",
+  "title": "Synthetic comparison",
+  "intent": "Check stable scene and scale contracts with invented numbers.",
+  "schemaVersion": "0.1.0",
+  "basemap": { "style": "neutral" },
+  "dataSources": [
+    { "id": "period-a", "name": "Synthetic period A", "kind": "geojson", "path": "data/period-a.geojson", "profile": { "geometryType": "point", "featureCount": 7, "crs": "EPSG:4326", "attributes": [{ "name": "site", "dataType": "string", "measurement": "nominal" }, { "name": "value", "dataType": "number", "measurement": "ratio" }] } },
+    { "id": "period-b", "name": "Synthetic period B", "kind": "geojson", "path": "data/period-b.geojson", "profile": { "geometryType": "point", "featureCount": 7, "crs": "EPSG:4326", "attributes": [{ "name": "site", "dataType": "string", "measurement": "nominal" }, { "name": "value", "dataType": "number", "measurement": "ratio" }] } }
+  ],
+  "mediaAssets": [],
+  "scenes": [
+    { "id": "a", "title": "Period A", "narration": "Invented values for contract tests only.", "content": { "attribute": "value" }, "discourse": { "narrativeRole": "establish", "emphasis": "medium", "readerAgency": "none" }, "layers": [{ "id": "sites", "dataSourceId": "period-a", "technique": "point", "encode": { "attribute": "value", "visualVariable": "color" }, "classification": { "method": "equal-interval", "classes": 3 } }], "camera": { "center": [-77.2, 39.2], "zoom": 8 }, "transitionIn": "cut", "controls": [{ "id": "opacity", "kind": "slider", "label": "Opacity", "bindsTo": { "layerId": "sites", "property": "circle-opacity" }, "range": [0, 1], "default": 0.8 }] },
+    { "id": "b", "title": "Period B", "narration": "The same invented site IDs use the same color scale.", "content": { "relationship": "Compare the two synthetic periods." }, "discourse": { "narrativeRole": "compare", "emphasis": "medium", "readerAgency": "guided" }, "layers": [{ "id": "sites", "dataSourceId": "period-b", "technique": "point", "encode": { "attribute": "value", "visualVariable": "color" }, "classification": { "method": "equal-interval", "classes": 3 } }], "camera": { "center": [-77.2, 39.2], "zoom": 8 }, "transitionIn": "cut" }
+  ]
+}

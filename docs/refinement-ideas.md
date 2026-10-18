@@ -27,6 +27,15 @@ will ship in that stage. Stage 1 is planned and not started; later stages are
 outlines. When detailing a stage, explicitly select a minimum subset and retain
 the rest as deferred items. This register does not expand an active stage's scope.
 
+Session 10 (2026-10-18) reviewed all 40 IDs against the plans. The
+[planning disposition](implementation-stages.md#r01r40-planning-disposition)
+now assigns each ID to bounded work or an explicit deferral; the
+[Stage 1 handoffs](stage-1-plan.md#required-handoffs-from-the-idea-review)
+name owners and acceptance for the added attention, measurement, author-task and
+verification requirements. Later-stage outlines now preserve the narrative
+redirection and denominator-revision scenarios. The six-stage order is unchanged;
+no idea's status is promoted to implemented by that review.
+
 ## Product form and agent interfaces
 
 | ID  | Idea and why it matters                                                                                                                                                                                                                                                                                       | Status                             | Planning home / coverage                                                                       |

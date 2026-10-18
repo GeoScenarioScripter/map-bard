@@ -15,11 +15,11 @@ The single session/phase journal. Each work session is one chapter. This is how 
 
 ## Current state banner
 
-- **Phase:** stage planning complete (Session 09), following the direction reset. The original Phase A execution plan is superseded, not completed.
-- **Active implementation stage:** none. Next planned: **Stage 1 — Trustworthy Project and Publication**, NOT STARTED. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md). Later stages are outlines to detail only after the preceding stage closes.
+- **Phase:** Stage 1 opened in Session 11 after Session 10's R01–R40 planning review. The original Phase A execution plan is superseded, not completed.
+- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 in progress. S1-W1-A closed in Session 11 with a no-go real-case gate; S1-W1-B delivered a contract proposal and synthetic specimens in Session 12. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
 - **Historical milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ recorded done; M5–M7 were not started and their old sequence is superseded. See `phase-a-plan.md` and archived checklists.
 - **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench. Geographic data, text, and supplied images/video remain central. Hub/remixing is a later horizon; commercialization is deferred.
-- **Next action:** when implementation begins, open Stage 1 Wave 1: audit the real case, specify/freeze contracts, and verify the baseline/runtime build approach in parallel; integrate at G1 before dependent work. The real case and exact contracts are not yet verified/frozen. Do not resume old M5 automatically.
+- **Next action:** run S1-W1-C baseline/runtime spike, then review all Wave 1 handoffs at G1; reacquire and verify the conditional Potomac case or select another audited case before the real-case gate closes. Exact contracts are not frozen. Do not resume old M5 automatically.
 - **Actual code:** still the M0–M4 baseline with GeoNarrative v0.1.0, Stage 0, DashScope Plan, and example renderer. No new engine/compiler/workbench/toolkit capabilities implemented by this reset.
 - **Repo:** pushed to GitHub `origin` → `https://github.com/GeoScenarioScripter/map-bard.git` (`main` tracks `origin/main`) as of Session 04.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
@@ -27,6 +27,7 @@ The single session/phase journal. Each work session is one chapter. This is how 
 - **Built-in agent decision (Session 07):** one LLM + system prompt + dynamically loaded skills + a purpose-built harness managing the loop. No LangGraph-style framework or fixed specialized-agent team. The harness is not implemented and remains separate from the engine and story player.
 - **Agent guidance:** root `AGENTS.md` is shared; `CLAUDE.md` points to it. Original plans/instructions are preserved in `docs/archive/2026-10-17/` as history, not active commands.
 - **Idea retention:** Session 08's audit, resumed 2026-10-18, is captured in [the refinement idea register](refinement-ideas.md): 40 stable R IDs with rationale, status, planning coverage, concrete examples, and superseded/deferred discussion. Session 09's stage sequence is preserved.
+- **Idea-to-plan review:** Session 10 maps every R ID to planned work or deferral. Stage 1's existing sessions now explicitly cover author-task framing, attention/comparison references, measurement overrides, stale-build checks and verification records; later outlines add evidence-led story redirection and denominator-sensitive revision. No Stage 1 capability has been delivered yet.
 
 ---
 
@@ -275,6 +276,71 @@ Resumed and completed 2026-10-18, preserving the independent Session 09 planning
 **Verification:** Formatted the eight changed Markdown files; `git diff --check` passed. Checked 47 local Markdown links with no broken targets; confirmed all 12 Stage 1 session IDs (three per wave) and no detailed later-stage session IDs. Reviewed source-to-plan claims, legacy compatibility exceptions, parallel ownership, gates and deferred scope. Application tests and browser checks were not rerun for this documentation-only task; Session 05 remains the executed code baseline. Real-case selection and exact contract/runtime-build choices remain explicit Wave 1 gates, not claimed completed work.
 
 **Next:** When implementation begins, open Stage 1 and dispatch Wave 1's case audit, contract design and baseline/runtime spike under the coordinator's ownership rules. Integrate at G1 before dependent work. Check the independent Session 08 audit for completed coverage input; do not close or overwrite its work. Detail Stage 2 only after Stage 1 closes.
+
+---
+
+## Session 10 — 2026-10-18 — 🔴 CLOSED
+
+**Goal:** Review the completed R01–R40 idea register against the stage plans and incorporate bounded omissions without starting implementation or detailing later stages prematurely.
+
+**Did:**
+
+- Compared all R01–R40 ideas with the product/build direction, refinement roadmap and stage plans; added a complete per-ID disposition with minimum acceptance and explicit boundaries/deferrals.
+- Refined existing Stage 1 sessions/gates with an author/audience/question brief, feature-bound annotations and comparison references, declared measurement/override semantics, stale compiled-input checks and reproducible verification records. Added corresponding fixtures, owners and completion checks.
+- Added later-stage acceptance threads for insufficient evidence and narrative redirection, denominator-sensitive revision preserving locked text, shared skill/reference material, workbench inspection parity, and portable claim-consistent reader controls. Kept later stages at outline level.
+- Linked the dispositions from the idea register and roadmap, corrected stale references to the unfinished Session 08 audit, and updated the current-state banner.
+
+**Decisions:** Keep the six-stage order and Stage 1's four waves of three parallel sessions; no dependency justified reordering. Exact Stage 1 contracts still freeze at G1. The engine reports evidence prerequisites while authoring interfaces propose story changes; no automatic intent replacement. Measurement overrides do not certify facts or transform data. Local verification records are not a telemetry platform. Charts, richer attention/rendering, Hub/remixing, hosted features and commercial work retain explicit conditional/deferred boundaries. No product implementation or stage activation.
+
+**Files touched:** `docs/{BUILD_LOG.md,implementation-stages.md,stage-1-plan.md,refinement-ideas.md,refinement-roadmap.md}`.
+
+**Verification:** Formatted all five changed Markdown files and reviewed the diff, ownership and scope. Verified 105 local links including five heading anchors; all 40 IDs appear exactly once and in order in both the original register and the new disposition table. Checked the original register rows and historical Sessions 01–09 are unchanged, the 12 Stage 1 session IDs remain intact, and no later-stage wave/session breakdown was introduced. `git diff --check` and changed-file formatting checks passed. No application tests/browser checks were run for this documentation-only review; no source/dependency/fixture changes, commit or push.
+
+**Next:** When implementation begins, execute Stage 1 Wave 1 with the refined author brief, attention/measurement contracts and verification-record handoffs. Use G1 to freeze exact details and retain R IDs through stage closure. Detail Stage 2 only after Stage 1 completes.
+
+---
+
+## Session 11 — 2026-10-18 — 🔴 CLOSED
+
+### ▶ STAGE 1 — OPENED · WAVE 1 IN PROGRESS · S1-W1-A
+
+**Goal:** Audit at most two real cases and select a defensible, reusable vector comparison with supplied media for the first Stage 1 project, or record a precise no-go and missing inputs.
+
+**Did:**
+
+- Opened Stage 1 and S1-W1-A after inspecting the active plan, repository state, and pre-existing Session 10 planning edits.
+- Audited two real candidates: the USGS Matanuska River 1949/1962/2006 braid-plain-margin report and a narrower three-gauge Potomac River daily-discharge comparison. Checked source authority, stated methods/coverage, coordinates, units, stable station IDs, contextual photography and reuse notices against official USGS pages.
+- Wrote `docs/stage-1/case-dossier.md` with a repository-authored creator/audience/question brief, scene purposes, source inventory, qualifications, explicit no-go, acquisition/fingerprint requirements and handoffs for G1, S1-W1-B and S1-W2-B. No source data or media bytes were pinned because their original responses could not be retrieved and hashed.
+
+**Decisions:** S1-W1-A is complete as a bounded **no-go audit**, as the plan allows when neither candidate is fully qualified. Prefer the Potomac WGS84 point case conditionally; its six actual values, statuses, qualifiers and image bytes must be checked before selection. Keep G1's real-case gate open. The Matanuska vectors need source-file/CRS/identity inspection and must not silently expand Stage 1 into reprojection or geomorphology analysis. No schema or feature work begins before G1.
+
+**Files touched:** `docs/BUILD_LOG.md`, `docs/implementation-stages.md`, `docs/stage-1-plan.md`, `docs/stage-1/case-dossier.md`. No `examples/projects/first-slice/source/` files were created.
+
+**Verification:** Cross-checked the dossier's three Potomac station IDs and WGS84 coordinates against the USGS station pages, the discharge/mean codes and GeoJSON fields against USGS API documentation, and both proposed photos' public-domain notices against their individual media pages. The shell's USGS HTTPS request failed with a socket permission error; the research tool could not fetch query responses, and the in-app browser reported `ERR_BLOCKED_BY_CLIENT` for the legacy service. Therefore no data values, original hashes, source CRS files or image bytes were verified. Formatted changed Markdown files and reviewed the scoped diff; documentation-only work did not rerun application tests.
+
+**Next:** S1-W1-B can design contracts against synthetic specimens and the conditional station identities. S1-W1-C can verify the baseline independently. At G1, retrieve and hash the real observations and photo, or select another audited case; do not close the real-case gate using placeholders.
+
+---
+
+## Session 12 — 2026-10-18 — 🔴 CLOSED
+
+**Plan ID:** S1-W1-B — Contract design.
+
+**Goal:** Specify the Stage 1 project, design, compiled-spec and diagnostic contracts and synthetic producer/consumer specimens for G1 review, without implementing or freezing the contracts.
+
+**Did:**
+
+- Read the active Stage 1 plan, Session 11 case dossier, GeoNarrative schema, handwritten example, profiling and renderer/runtime source; preserved inherited Session 10/11 changes.
+- Wrote `contracts.md` with proposed strict versioned project/design/compiled/diagnostic Zod shapes, scoped identities and semantic checks, explicit legacy field mapping, public operation signatures, capability and measurement rules, stale-input publication checks, representation rationale and R-ID handoffs.
+- Added synthetic manifest/narrative/design/GeoJSON inputs, a proposed compiled consumer specimen, diagnostic mutations and edge-case oracles. The values are invented software fixtures and do not stand in for the unverified Potomac case.
+
+**Decisions:** Keep the proposal provisional for G1. GeoNarrative 0.1.0 stays unchanged; explicit import preserves legacy intent while unsupported PMTiles, quantile and conflicting radius control requests diagnose. A shared numeric scale requires compatible quantity declarations and full-data values. Snapshot fingerprints bind source, manifest, narrative and design bytes; export rejects stale results. No real case was selected and no Wave 2 feature work began.
+
+**Files touched:** `docs/stage-1/contracts.md`, `docs/stage-1/specimens/`, `docs/BUILD_LOG.md`, `docs/stage-1-plan.md` (status only).
+
+**Verification:** All seven specimen JSON/GeoJSON files parse; both manifest data hashes and the three compiled input snapshot hashes match their current bytes. Checked project IDs, scene/layer/comparison references and the synthetic full-data domain/count oracle. All six relative Markdown links in the new documents resolve, and their lines have no trailing whitespace. `git diff --check` passed. Prettier was unavailable because this checkout lacks `node_modules`; `pnpm install --offline --frozen-lockfile` stopped on a missing cached `@eslint/js` tarball. Formatting was reviewed manually. No application build/tests or browser checks were run for this documentation-only design session.
+
+**Next:** S1-W1-C establishes the baseline/runtime proposal. G1 reviews and freezes contract/specimen revision, exact public module names, floating-edge behavior, fingerprint canonicalization and publication API, while keeping the real-case gate open until source observations/media are verified or another audited case is chosen. Do not start Wave 2 before G1.
 
 ---
 

@@ -1,0 +1,8 @@
+{
+  "designVersion": "0.1.0",
+  "scenes": [
+    { "sceneId": "a", "layers": [{ "layerId": "sites", "constant": { "opacity": 0.8 } }], "annotations": [{ "id": "where-one", "text": "Invented site One", "at": [-77.5, 39.2], "target": { "kind": "features", "sourceId": "period-a", "featureIds": ["p1"] } }] },
+    { "sceneId": "b", "layers": [{ "layerId": "sites", "constant": { "opacity": 0.8 } }], "annotations": [{ "id": "comparison-note", "text": "Compare with the same extent and scale", "at": [-77.2, 39.25], "target": { "kind": "free" } }] }
+  ],
+  "sharedScales": [{ "id": "period-color", "members": [{ "sceneId": "a", "layerId": "sites", "sourceId": "period-a", "observationLabel": "Synthetic period A" }, { "sceneId": "b", "layerId": "sites", "sourceId": "period-b", "observationLabel": "Synthetic period B" }], "visualVariable": "color", "method": "equal-interval", "classes": 3, "palette": ["#edf8fb", "#66c2a4", "#238b45"] }]
+}

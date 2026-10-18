@@ -1,9 +1,16 @@
 # Stage 1 — Trustworthy Project and Publication
 
-Updated 2026-10-17, Session 09. **NOT STARTED — detailed plan only.**
+Updated 2026-10-18, Session 10 review of Session 09's plan.
+**IN PROGRESS — Wave 1; S1-W1-A closed with a no-go real-case gate in BUILD_LOG
+Session 11; S1-W1-B contract proposal closed in Session 12.**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
-The scheduled planning session implements no features and activates no workers.
+The prior planning/review sessions implemented no features. Wave 1 is now active;
+no Stage 1 product capability has been delivered or G1 contract frozen.
+The [R01–R40 disposition](implementation-stages.md#r01r40-planning-disposition)
+maps the completed [idea register](refinement-ideas.md) to stages and deferrals.
+This revision keeps four waves and twelve sessions; the added obligations below
+belong to those existing owners and gates.
 
 ## Outcome and scope
 
@@ -57,6 +64,16 @@ descriptive metadata, not a substitute for the bytes identified by the manifest.
 scene/layer IDs (shared scale groups and geographic text annotations initially).
 It must not duplicate prose, source definitions or a second scene ordering.
 
+For R12/R23, make each feature-bound annotation identify its source and stable
+feature ID(s), alongside an explicit authored anchor position. A free geographic
+text anchor remains allowed but must not imply a feature/evidence binding. Record
+comparison members (scene/layer/source IDs and observation labels) with the shared
+scale group; a camera and an unlabeled scale ID alone do not express the comparison.
+Validate missing/ambiguous targets against complete data, retain references in the
+compiled spec and show the text at the resolved anchor. No automatic label layout,
+region-selection language, spatial matching between periods, or new highlight
+renderer is required. Stage 2 can link evidence to these same identities.
+
 Keep `GeoNarrative` at 0.1.0 in Stage 1; use independently versioned project,
 design and compiled-spec contracts starting at 0.1.0. A new project manifest is
 not a claim that an old standalone narrative was already a portable project.
@@ -87,6 +104,26 @@ scene, and control IDs unique within each scene. Reuse of a layer ID in differen
 scenes is legal and maps to distinct compiled runtime IDs. Feature IDs should be
 stable in the selected case; the import report must state how any missing ones are
 assigned and invalidate them when their identity basis changes.
+
+### Measurement declarations and prerequisite checks
+
+R15 needs a narrow contract, not a general profiling rewrite. At G1 define
+per-source/attribute declarations in the manifest: identifier/category/quantity
+role, measurement level, units (including explicitly unknown), and any declared
+denominator reference needed by the selected encoding. Retain the observed type
+and inferred profile separately from the author's override and its rationale;
+an override does not change values or certify comparability. Validate referenced
+attributes and override compatibility. Record source-method/coverage qualifications
+in the case dossier and carry required display qualifications into the project.
+
+The compiler must reject an unmet declared prerequisite: for example, numeric
+identifiers treated as magnitudes, incompatible units in a shared scale, or a
+choropleth whose normalization requirements are not established. Return a reason,
+the missing input and a supported alternative where one exists (R20/R33). Do not
+invent units, denominators or a replacement technique. Constant/category encodings
+may still be valid without numerical measurement knowledge. Null/type/distribution
+checks use complete features; more sophisticated inference and normalization
+execution remain Stage 2 work.
 
 ### Package and operation boundaries
 
@@ -122,6 +159,17 @@ versions, resolved layers/scales/legends/annotations/cameras/controls and requir
 network resources. Runtime consumes these decisions; it must not recompute breaks
 or choose another technique. Stable inputs produce stable semantic output; exclude
 timestamps/absolute machine paths from deterministic comparisons.
+
+Use fingerprints to bind the loaded source bytes, declarations and design to the
+compiled result (R18). Editing an override, focus target or input invalidates reuse
+of an older result: rebuild or return a stale-input diagnostic before export. This
+is bounded project/build identity checking; analysis dependency graphs and live
+file-watching are not Stage 1 requirements.
+Core's project I/O produces the current input fingerprint snapshot; the composing
+caller supplies it alongside the compiled result for publication preflight. The
+renderer compares identity and checks its asset copy manifest, without importing
+core, reparsing the project or calling an LLM. G1 fixes this handoff and its
+failure behavior; the public example refreshes inputs before build/export.
 
 ### Supported rendering envelope
 
@@ -178,6 +226,14 @@ source authority/URL, access date, reuse terms, original file hashes, observatio
 dates, geography, CRS, method, resolution/coverage and comparability qualifications.
 Do not infer physical change simply from different outlines.
 
+Begin the dossier with the creator's task, intended reader, geographic question,
+available evidence and what a useful story would explain (R02/R22/R37). Mark a
+repository-authored brief as an assumption, not user-research evidence. Map the
+planned context/comparison/synthesis scenes to that question, visible targets and
+the role of supplied media. Record unsupported requests and missing evidence as a
+Stage 2/3 handoff (R16); Stage 1 may document a narrower descriptive angle but does
+not implement automatic story redirection or declare a trend proved.
+
 If the preferred case needs reprojection, new measurement methods or unavailable
 media, choose a smaller documented vector comparison using common feature IDs and
 units in EPSG:4326. Existing example fixtures and PNGs are regression fixtures,
@@ -205,10 +261,48 @@ Store fixtures close to owning package tests unless shared; put the real project
 under `examples/projects/first-slice/` and its source dossier there. G1 specifies
 whether each fixture is committed, reproducibly acquired, or generated in tests.
 
+Add focused fixtures for R12/R15/R18: an annotation targeting a missing/ambiguous
+feature, mismatched comparison members, a numeric identifier wrongly encoded as
+quantity, incompatible comparison units, an explicit valid override, and a changed
+override/source fingerprint presented with an old compiled result. Keep these as
+small software fixtures with explicit expected diagnostics, not invented case facts.
+
+## Required handoffs from the idea review
+
+These obligations supplement the session rows below and use the same exclusive
+paths. They do not authorize parallel sessions to write another owner's files.
+
+| Owner     | Added handoff                                                                                                                                                                                                       | Gate and acceptance                                                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1-W1-A   | Author/audience/question brief, scene-purpose sketch, source measurement facts and limits in the case dossier (R02/R13/R16/R22/R37).                                                                                | G1 checks case usefulness as well as availability; no trend asserted from mere timestamps.                                                                                          |
+| S1-W1-B   | Target/comparison references, measurement/override semantics, stale-input checks and categorized diagnostic specimens; short representation rationale in `contracts.md` (R01/R12/R15/R18/R20/R32).                  | G1 traces each new contract element to a reader/author need and a test. Explain content/discourse/attention boundaries without claiming novelty or implementing evidence contracts. |
+| S1-W1-C   | A small verification-record template in `baseline.md`, with actual baseline examples (R32/R34/R36).                                                                                                                 | G1 distinguishes model-free, browser and manual judgments and records skipped/unavailable checks honestly.                                                                          |
+| S1-W2-A/B | A implements the declaration/reference validation contract; B retains overrides, source facts and fingerprint inputs during load/import (R12/R15/R18).                                                              | G2 uses shared specimens to prove valid overrides round-trip and missing targets/invalid declarations diagnose. No cross-owner source edits.                                        |
+| S1-W3-A/B | A compiles target identities/shared comparisons and prerequisite explanations; B renders anchors/labels without reinterpreting their meaning (R12/R20/R23).                                                         | G3 inspects a target through source → compiled spec → playback; identical source IDs in different scenes do not lose membership.                                                    |
+| S1-W3-C   | Preflight verifies compiled input identity and preserves the publication's qualification/credit text (R13/R18/R26).                                                                                                 | G3 rejects reuse after changed source/design/override rather than exporting stale bindings.                                                                                         |
+| S1-W4-A   | The public example script writes a bounded verification record next to generated artifacts; README relates scenes/media to the brief (R02/R22/R36).                                                                 | G4 can reproduce the build and compare semantic artifact hashes; no new CLI/telemetry system.                                                                                       |
+| S1-W4-B/C | B checks reference/measurement/staleness negatives and record reproducibility; C separately reviews attention, legibility, comparison clarity, pacing and purposeful media against the brief (R12/R15/R32/R35/R36). | G4 records pass/fail/skipped/manual judgment separately. A functioning map alone does not establish a coherent story or research efficacy.                                          |
+
+The verification record identifies fixture/project revision and input hashes,
+engine/compiler/runtime versions, invoked operation/check, diagnostic codes and
+affected IDs, output hashes/artifact references, result and unresolved limitations.
+Record elapsed time and environment separately from deterministic semantic hashes;
+model/prompt/budget fields are **not applicable** for Stage 1's model-free path.
+Keep raw private data, credentials and absolute private paths out of shareable
+records. The example script captures automated results; reviewers append separate
+browser/manual reports with reviewer/method information, not fabricated automated
+passes. These are local files under ignored build output with sanitized summaries
+in verification docs, not a telemetry service or a new public reporting API.
+
 ## Waves and integration gates
 
-Four waves, three parallel sessions per wave. All session statuses are **NOT
-STARTED**. Each row defines exclusive write ownership; listed inputs are read-only.
+Four waves, three parallel sessions per wave. S1-W1-A **CLOSED with a no-go
+real-case gate** in BUILD_LOG Session 11; S1-W1-B **CLOSED with a G1 contract
+proposal** in Session 12; S1-W1-C is **NOT STARTED**. The
+[case dossier](stage-1/case-dossier.md) gives the conditional fallback, and the
+[contract proposal](stage-1/contracts.md) gives the G1 review specimens. Each
+row defines exclusive write ownership;
+listed inputs are read-only.
 Session outputs include a short handoff with changes, exported contracts,
 verification, unresolved issues and next consumer. No session depends on another
 session finishing inside its wave. Use frozen specimens or test doubles where a
@@ -228,6 +322,8 @@ This wave contains discovery/design spikes, not implementation of all proposals.
 **G1 — coordinator:** review all three outputs, select the real case or leave its
 gate blocked, resolve any envelope mismatch, freeze contract/specimen version and
 supported capability matrix, and approve the minimal runtime build approach.
+Confirm the idea-review handoffs above: author question, target/measurement
+specimens, representation rationale and baseline verification-record template.
 Own shared package-manifest/lockfile/root config edits; install only dependencies
 justified by the spike. Capture agreed module paths and public barrels. If local
 `file://` browser access is blocked, establish another available browser/manual
@@ -269,6 +365,8 @@ example smoke. Check the compiled output against its runtime-supported version.
 Every capability marked supported must have both a compiler and playback check;
 every unsupported request must diagnose before export. Assign bounded corrections
 to their owners; do not run Wave 4 while the composed slice is broken.
+Include the new target/override/stale-input negatives and categorized prerequisite
+diagnostics in this gate; do not leave them as commentary-only documentation.
 
 ### Wave 4 — Demonstrate, challenge and close
 
@@ -289,6 +387,9 @@ stage only when the checklist below passes. Update BUILD_LOG, stage status and
 agent guidance; then create the detailed Stage 2 plan from the actual case/method
 constraints. A defect loop is bounded by the original scope; new feature requests
 go into a later-stage thread rather than inflating closure.
+Review the author brief and verification records alongside functional results.
+Carry unmet evidence requests and the rationale for the chosen angle into Stage 2;
+do not mark R16 delivered merely because Stage 1 identified missing support.
 
 ## Shared ownership and handoff rules
 
@@ -296,8 +397,8 @@ The coordinator exclusively owns `docs/BUILD_LOG.md`, this plan, the stage roadm
 root guidance, all package `src/index.ts` barrels, manifests/lockfile, root lint/TS
 configuration and shared build wiring. A session proposes changes to those files
 in its handoff; it does not race another writer. Existing unrelated uncommitted
-work is preserved. Open Session 08's idea audit is independent; incorporate its
-completed findings as coverage input without rewriting its entry.
+work is preserved. Session 08's idea audit is complete; Session 10's R-ID mapping
+and handoffs above incorporate its findings without changing historical entries.
 
 Each worker owns only its row's paths during that wave. Ownership of player code
 transfers from W2-C to W3-B after G2. Tests of another package use public exports.
@@ -333,6 +434,13 @@ testing is a separate gate from generation and map-adapter tests.
 
 - [ ] Real-case dossier verifies origins, reuse, media, CRS and comparability;
       no fabricated findings or mislabeled placeholders.
+- [ ] Case brief names the author task, audience and geographic question; scene
+      purposes, attention and media receive a documented review against that brief.
+- [ ] Feature-bound annotations and comparison memberships resolve through load,
+      compilation and playback; missing/ambiguous targets return diagnostics.
+- [ ] Declared measurement and author overrides remain distinct from inferred
+      profiles; invalid units/identifier encodings/prerequisites diagnose; edits to
+      inputs/declarations/design prevent reuse of stale compiled output.
 - [ ] Explicit versioned load/import validates references/IDs and preserves the
       handwritten example's content and supported behavior; unsupported versions
       and unknown required extensions fail without silent data loss.
@@ -353,6 +461,9 @@ testing is a separate gate from generation and map-adapter tests.
 - [ ] Integrated build/test/lint passes; record counts and intentional legacy-test
       changes. No blanket claim that 53 old tests establish new functionality.
 - [ ] Stage closure lists remaining exclusions and provides Stage 2 planning inputs.
+- [ ] Reproducible records link inputs/versions, diagnostics and output artifacts;
+      browser/manual/not-run results stay distinct. Closure updates R-ID coverage
+      with evidence or deferral and hands off unsupported narrative requests.
 
 ## Risks, unresolved choices and stop conditions
 

@@ -13,6 +13,7 @@
   var payload = window.MAPBARD || {};
   var narrative = payload.narrative;
   var data = payload.data || {};
+  var localContextMap = payload.localContextMap;
   if (!narrative) {
     console.error('[mapbard] missing narrative payload (bundle-data.js not loaded?)');
     return;
@@ -20,7 +21,8 @@
 
   var scenes = narrative.scenes || [];
   var theme = narrative.theme || {};
-  var palette = theme.palette && theme.palette.length ? theme.palette : ['#dbe9ff', '#5b8def', '#0b3d91'];
+  var palette =
+    theme.palette && theme.palette.length ? theme.palette : ['#dbe9ff', '#5b8def', '#0b3d91'];
   var accent = palette[palette.length - 1];
 
   // ---------------------------------------------------------------- helpers
@@ -46,12 +48,16 @@
       inner =
         '<video controls preload="metadata"' +
         (asset.poster ? ' poster="' + esc(asset.poster) + '"' : '') +
-        ' src="' + esc(asset.path) + '"></video>';
+        ' src="' +
+        esc(asset.path) +
+        '"></video>';
     } else {
-      inner = '<img loading="lazy" src="' + esc(asset.path) + '" alt="' + esc(cap || asset.name) + '">';
+      inner =
+        '<img loading="lazy" src="' + esc(asset.path) + '" alt="' + esc(cap || asset.name) + '">';
     }
     var credit = asset.credit ? '<span class="mb-credit">' + esc(asset.credit) + '</span>' : '';
-    var figcap = cap || credit ? '<figcaption>' + (cap ? esc(cap) : '') + credit + '</figcaption>' : '';
+    var figcap =
+      cap || credit ? '<figcaption>' + (cap ? esc(cap) : '') + credit + '</figcaption>' : '';
     return '<figure class="mb-media">' + inner + figcap + '</figure>';
   }
 
@@ -109,7 +115,15 @@
           radius = ['interpolate', ['linear'], getNum, d[0], 5, d[1], 22];
         }
         if (enc.visualVariable === 'color') {
-          color = ['interpolate', ['linear'], getNum, d[0], palette[0], d[1], palette[palette.length - 1]];
+          color = [
+            'interpolate',
+            ['linear'],
+            getNum,
+            d[0],
+            palette[0],
+            d[1],
+            palette[palette.length - 1],
+          ];
         }
       }
       paint = {
@@ -140,7 +154,13 @@
       paint = { 'heatmap-radius': 24, 'heatmap-opacity': 0.85 };
     }
 
-    return { id: b.id, type: type, source: b.dataSourceId, paint: paint, layout: { visibility: 'none' } };
+    return {
+      id: b.id,
+      type: type,
+      source: b.dataSourceId,
+      paint: paint,
+      layout: { visibility: 'none' },
+    };
   }
 
   // tiny "attr OP value" filter parser -> MapLibre expression
@@ -171,13 +191,62 @@
   // ------------------------------------------------------------------- map
   var sources = {};
   (narrative.dataSources || []).forEach(function (ds) {
-    sources[ds.id] = { type: 'geojson', data: data[ds.id] || { type: 'FeatureCollection', features: [] } };
+    sources[ds.id] = {
+      type: 'geojson',
+      data: data[ds.id] || { type: 'FeatureCollection', features: [] },
+    };
   });
+  if (localContextMap) {
+    sources.__mb_context_land = { type: 'geojson', data: localContextMap.land };
+    sources.__mb_context_streets = { type: 'geojson', data: localContextMap.streets };
+  }
+
+  var baseLayers = [
+    {
+      id: '__background',
+      type: 'background',
+      paint: { 'background-color': localContextMap ? '#dce9e8' : '#e9e6df' },
+    },
+  ];
+  if (localContextMap) {
+    baseLayers.push(
+      {
+        id: '__mb_context_land',
+        type: 'fill',
+        source: '__mb_context_land',
+        paint: { 'fill-color': '#f1eee6', 'fill-antialias': false },
+      },
+      {
+        id: '__mb_context_local_streets',
+        type: 'line',
+        source: '__mb_context_streets',
+        minzoom: 14,
+        filter: [
+          'any',
+          ['==', ['get', 'classcode'], '0'],
+          ['==', ['get', 'classcode'], '5'],
+          ['==', ['get', 'classcode'], '6'],
+        ],
+        paint: { 'line-color': '#c9d0c9', 'line-width': 1 },
+      },
+      {
+        id: '__mb_context_major_streets',
+        type: 'line',
+        source: '__mb_context_streets',
+        filter: [
+          'all',
+          ['>=', ['to-number', ['get', 'classcode']], 1],
+          ['<=', ['to-number', ['get', 'classcode']], 4],
+        ],
+        paint: { 'line-color': '#aebdb5', 'line-width': 1.5 },
+      },
+    );
+  }
 
   var style = {
     version: 8,
     sources: sources,
-    layers: [{ id: '__background', type: 'background', paint: { 'background-color': '#e9e6df' } }],
+    layers: baseLayers,
   };
 
   var first = scenes[0] || { camera: { center: [0, 0], zoom: 1 } };
@@ -190,7 +259,18 @@
     pitch: first.camera.pitch || 0,
     attributionControl: false,
   });
+  // The page's wheel gesture advances the story. Map zoom remains available
+  // through the navigation control without trapping scroll over the canvas.
+  map.scrollZoom.disable();
   map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-right');
+
+  if (localContextMap) {
+    var credit = document.getElementById('map-credit');
+    if (credit) {
+      credit.textContent = localContextMap.attribution;
+      credit.hidden = false;
+    }
+  }
 
   var allLayerIds = [];
   var markers = [];
@@ -314,7 +394,8 @@
       visible[l.id] = true;
     });
     allLayerIds.forEach(function (id) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible[id] ? 'visible' : 'none');
+      if (map.getLayer(id))
+        map.setLayoutProperty(id, 'visibility', visible[id] ? 'visible' : 'none');
     });
 
     var sections = document.querySelectorAll('.scene');
@@ -331,7 +412,11 @@
       var el = document.createElement('div');
       el.className = 'mb-marker' + (asset.kind === 'video' ? ' is-video' : '');
       el.setAttribute('title', an.label || asset.name || '');
-      var popup = new maplibregl.Popup({ offset: 16, maxWidth: '320px', className: 'mb-popup' }).setHTML(
+      var popup = new maplibregl.Popup({
+        offset: 16,
+        maxWidth: '320px',
+        className: 'mb-popup',
+      }).setHTML(
         (an.label ? '<strong class="mb-popup-title">' + esc(an.label) + '</strong>' : '') +
           mediaTag(asset, asset.caption),
       );

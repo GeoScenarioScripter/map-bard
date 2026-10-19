@@ -7,12 +7,21 @@
 /** A map of `DataSource.id` → GeoJSON FeatureCollection (the actual features). */
 export type DataMap = Record<string, unknown>;
 
+/** Optional, explicitly supplied local geographic context for the legacy player. */
+export interface LocalContextMap {
+  land: unknown;
+  streets: unknown;
+  attribution: string;
+}
+
 export interface RenderOptions {
   /**
    * Base directory that local `MediaAsset.path` values resolve against (e.g. the
    * folder the narrative JSON lives in). Defaults to the current directory.
    */
   assetBaseDir?: string;
+  /** Inlined into the bundle so a small context map works from `file://`. */
+  localContextMap?: LocalContextMap;
 }
 
 /** A local media file to copy into the bundle. */

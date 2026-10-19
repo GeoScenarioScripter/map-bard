@@ -8,7 +8,9 @@ import type { DataMap } from './types.js';
 function readExample(): { narrative: ReturnType<typeof parseGeoNarrative>; data: DataMap } {
   const root = new URL('../../../examples/', import.meta.url);
   const narrative = parseGeoNarrative(
-    JSON.parse(readFileSync(fileURLToPath(new URL('sf-waterfront.geonarrative.json', root)), 'utf8')),
+    JSON.parse(
+      readFileSync(fileURLToPath(new URL('sf-waterfront.geonarrative.json', root)), 'utf8'),
+    ),
   );
   const landmarks = JSON.parse(
     readFileSync(fileURLToPath(new URL('data/landmarks.geojson', root)), 'utf8'),
@@ -49,6 +51,39 @@ describe('render() against the M1 example', () => {
     expect(js).not.toContain('</script>');
   });
 
+  it('inlines an explicit local context map for direct-file playback', () => {
+    const { narrative, data } = readExample();
+    const collection = { type: 'FeatureCollection', features: [] };
+    const bundle = render(narrative, data, {
+      localContextMap: {
+        land: collection,
+        streets: collection,
+        attribution: 'City and County of San Francisco',
+      },
+    });
+    expect(bundle.files['bundle-data.js']).toContain('"localContextMap"');
+    expect(bundle.files['bundle-data.js']).toContain('City and County of San Francisco');
+    expect(bundle.files['index.html']).toContain('id="map-credit"');
+    expect(bundle.warnings).toContain(
+      'basemap "protomaps-light" is unsupported by the legacy player; using supplied local context instead',
+    );
+  });
+
+  it('diagnoses invalid local context instead of writing it into the bundle', () => {
+    const { narrative, data } = readExample();
+    const bundle = render(narrative, data, {
+      localContextMap: {
+        land: null,
+        streets: { type: 'FeatureCollection', features: [] },
+        attribution: 'City and County of San Francisco',
+      },
+    });
+    expect(bundle.files['bundle-data.js']).not.toContain('"localContextMap"');
+    expect(bundle.warnings).toContain(
+      'local context map requires land and streets FeatureCollections plus attribution',
+    );
+  });
+
   it('lists both local images to copy, with bundle-relative destinations', () => {
     const { narrative, data } = readExample();
     const { mediaCopies } = render(narrative, data);
@@ -64,8 +99,10 @@ describe('render() against the M1 example', () => {
     expect(warnings.some((w) => w.includes('landmarks'))).toBe(true);
   });
 
-  it('is clean when all data is supplied', () => {
+  it('reports the unsupported requested basemap even when all data is supplied', () => {
     const { narrative, data } = readExample();
-    expect(render(narrative, data).warnings).toEqual([]);
+    expect(render(narrative, data).warnings).toEqual([
+      'basemap "protomaps-light" is unsupported by the legacy player; using a neutral background',
+    ]);
   });
 });

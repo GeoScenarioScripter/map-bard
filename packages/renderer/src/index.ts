@@ -10,5 +10,11 @@ export { render } from './render.js';
 export { writeBundle } from './write.js';
 export { buildIndexHtml } from './index-html.js';
 export { buildBundleData } from './bundle-data.js';
-export type { DataMap, MediaCopy, RenderedBundle, RenderOptions } from './types.js';
+export type {
+  DataMap,
+  LocalContextMap,
+  MediaCopy,
+  RenderedBundle,
+  RenderOptions,
+} from './types.js';
 export type { WriteResult } from './write.js';

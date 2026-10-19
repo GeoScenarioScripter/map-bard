@@ -11,12 +11,45 @@ import type { DataMap, MediaCopy, RenderedBundle, RenderOptions } from './types.
 
 const EMPTY_FC = { type: 'FeatureCollection', features: [] };
 
+function isFeatureCollection(value: unknown): boolean {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'type' in value &&
+    value.type === 'FeatureCollection' &&
+    'features' in value &&
+    Array.isArray(value.features)
+  );
+}
+
 export function render(
   narrative: GeoNarrative,
   dataMap: DataMap = {},
   options: RenderOptions = {},
 ): RenderedBundle {
   const warnings: string[] = [];
+
+  const proposedContext = options.localContextMap;
+  const localContextMap =
+    proposedContext &&
+    isFeatureCollection(proposedContext.land) &&
+    isFeatureCollection(proposedContext.streets) &&
+    typeof proposedContext.attribution === 'string' &&
+    proposedContext.attribution.trim()
+      ? proposedContext
+      : undefined;
+  if (proposedContext && !localContextMap) {
+    warnings.push(
+      'local context map requires land and streets FeatureCollections plus attribution',
+    );
+  }
+  if (narrative.basemap.style !== 'neutral') {
+    warnings.push(
+      localContextMap
+        ? `basemap "${narrative.basemap.style}" is unsupported by the legacy player; using supplied local context instead`
+        : `basemap "${narrative.basemap.style}" is unsupported by the legacy player; using a neutral background`,
+    );
+  }
 
   // Resolve data for every declared source; warn on (and fill) the gaps.
   const data: DataMap = {};
@@ -31,7 +64,7 @@ export function render(
 
   const files: Record<string, string> = {
     'index.html': buildIndexHtml(narrative),
-    'bundle-data.js': buildBundleData(narrative, data),
+    'bundle-data.js': buildBundleData(narrative, data, localContextMap),
   };
 
   // Local media gets copied into the bundle; URL media is referenced in place.

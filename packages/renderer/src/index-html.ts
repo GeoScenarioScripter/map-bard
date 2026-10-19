@@ -56,7 +56,10 @@ function sceneSection(narrative: GeoNarrative, scene: Scene, index: number): str
   const bg = (scene.media ?? []).find((m) => m.placement === 'background');
   const bgAsset = bg ? findAsset(narrative, bg.assetId) : undefined;
   const cardClass = bgAsset && bgAsset.kind === 'image' ? 'scene-card has-bg' : 'scene-card';
-  const cardStyle = bgAsset && bgAsset.kind === 'image' ? ` style="background-image:url('${esc(bgAsset.path)}')"` : '';
+  const cardStyle =
+    bgAsset && bgAsset.kind === 'image'
+      ? ` style="background-image:url('${esc(bgAsset.path)}')"`
+      : '';
 
   const panels = (scene.media ?? [])
     .filter((m) => m.placement !== 'background')
@@ -83,7 +86,8 @@ function themeStyle(narrative: GeoNarrative): string {
   const vars: string[] = [];
   if (t?.displayFont) vars.push(`--mb-display-font:'${t.displayFont}',Georgia,serif`);
   if (t?.bodyFont) vars.push(`--mb-body-font:'${t.bodyFont}',system-ui,sans-serif`);
-  if (t?.palette && t.palette.length) vars.push(`--mb-accent-color:${t.palette[t.palette.length - 1]}`);
+  if (t?.palette && t.palette.length)
+    vars.push(`--mb-accent-color:${t.palette[t.palette.length - 1]}`);
   return vars.length ? `\n    <style>:root{${vars.join(';')}}</style>` : '';
 }
 
@@ -100,11 +104,15 @@ export function buildIndexHtml(narrative: GeoNarrative): string {
   </head>
   <body>
     <div id="map"></div>
+    <aside id="map-credit" aria-label="Map data attribution" hidden></aside>
     <aside id="controls" class="mb-controls" hidden></aside>
     <main id="story">
       <header class="mb-intro">
-        <h1>${esc(narrative.title)}</h1>
-        <p>${esc(narrative.intent)}</p>
+        <div class="mb-intro-panel">
+          <h1>${esc(narrative.title)}</h1>
+          <p>${esc(narrative.intent)}</p>
+          <p class="mb-scroll-hint">Scroll to explore the story</p>
+        </div>
       </header>
 ${sections}
       <footer class="mb-outro">

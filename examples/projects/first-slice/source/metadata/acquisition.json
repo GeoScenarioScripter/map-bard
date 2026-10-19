@@ -1,0 +1,50 @@
+[
+  {
+    "file": "01613000-location.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01613000?f=json",
+    "retrievedAt": "2026-10-19T01:31:42.6381721Z",
+    "sha256": "6f06078dfad7cb7aa98e6c06a143c780ea2544c766db29da3f6388dd58753a45"
+  },
+  {
+    "file": "01613000-series.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items/3eb78a4c874c4716a30971ce02c5f39d?f=json",
+    "retrievedAt": "2026-10-19T01:31:43.4497759Z",
+    "sha256": "d262ff0f73fe0e9b17020972ffd83d6058cc0107ee1a69f7ec99c7e25ac4b0da"
+  },
+  {
+    "file": "01638500-location.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01638500?f=json",
+    "retrievedAt": "2026-10-19T01:31:44.3574874Z",
+    "sha256": "bb37dac35df244ee06332337bc2c9574f372b1ca92397feeb95e931681a9f93d"
+  },
+  {
+    "file": "01638500-series.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items/6fce477b4108481d950866411cdc1c00?f=json",
+    "retrievedAt": "2026-10-19T01:31:45.2960075Z",
+    "sha256": "5d7f3e3e85a84d893300fd69623093aa9bc5a57bdcb0fff252047e35f93b1405"
+  },
+  {
+    "file": "01646500-location.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items/USGS-01646500?f=json",
+    "retrievedAt": "2026-10-19T01:31:46.2247711Z",
+    "sha256": "c4e3cf0a284980be8dd6404c596fd8b98e328f7827c49dad63975d0d1513509b"
+  },
+  {
+    "file": "01646500-series.json",
+    "url": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/time-series-metadata/items/2cf409b0d9694c01828f5d4ff14586a5?f=json",
+    "retrievedAt": "2026-10-19T01:31:47.1346843Z",
+    "sha256": "0dbc4c077e60946915014373a5e18878ad62c4fe699b0a9d5c66dec61875e60c"
+  },
+  {
+    "file": "legacy-2024-10-01.json",
+    "url": "https://waterservices.usgs.gov/nwis/dv/?format=json&sites=01613000,01638500,01646500&startDT=2024-10-01&endDT=2024-10-01&parameterCd=00060&statCd=00003&siteStatus=all",
+    "retrievedAt": "2026-10-19T01:32:53.5986924Z",
+    "sha256": "e6434bb37414dccb20f8a92e41beb8813da94499380c6f9720061f573fbb6fb0"
+  },
+  {
+    "file": "legacy-2025-10-01.json",
+    "url": "https://waterservices.usgs.gov/nwis/dv/?format=json&sites=01613000,01638500,01646500&startDT=2025-10-01&endDT=2025-10-01&parameterCd=00060&statCd=00003&siteStatus=all",
+    "retrievedAt": "2026-10-19T01:32:54.4575875Z",
+    "sha256": "0eb52a59f349fb65dba98094357c35b8c94694753bdc0b2b7df25a74a4a578e5"
+  }
+]

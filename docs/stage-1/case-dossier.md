@@ -1,5 +1,19 @@
 # Stage 1 case dossier — S1-W1-A
 
+**Latest state, 2026-10-19 / Session 15:** the Potomac case is selected for the
+bounded descriptive Stage 1 fixture after the [comparability review](case-comparability.md).
+Six original observations, the context JPEG and eight metadata/cross-check
+responses are acquired and hashed. See the
+[source acquisition record](../../examples/projects/first-slice/source/README.md)
+and [G1 review](g1-review.md). All six records have Approved status and null
+qualifiers, matching station coordinates and `ft^3/s` units. Rights were checked
+against the agency policy and the photo's own page. **Source comparability is
+accepted for published station-day summaries; G1 remains blocked on direct-file
+browser evidence.** Wave 2 is not released.
+No derived project, trend, causal result or completed real-story acceptance is
+claimed. The original Session 11 no-go audit below is retained as history;
+its acquisition-failure statements describe that earlier run.
+
 Audited 2026-10-18 in BUILD_LOG Session 11. This is a repository-authored
 creator brief and source audit, **not** a user study, a finished project, or a
 verified geographic finding. Two candidates were considered. No source data or
@@ -153,6 +167,15 @@ not evidence of missing source data. No code, values, hashes or images were
 invented to work around them.
 
 ## Handoff
+
+Session 14 correction for future preparation: the actual API field is
+`approval_status` (singular), and `value` is a decimal string. Preserve the
+untouched responses. Explicitly validate/convert the numeric value only in a
+derived GeoJSON file, retaining source observation IDs and source hashes. The
+new project/compiler should still reject numeric strings in authored quantitative
+data rather than silently coerce them. Reacquisition is no longer the immediate
+blocker; finish comparability review using the pinned responses and official
+station/time-series metadata before selecting the case.
 
 - **G1:** keep the real-case selection gate open. The supported capability set
   can be frozen for WGS84 point comparison without claiming the case verified.

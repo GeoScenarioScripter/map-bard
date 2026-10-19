@@ -1,1 +1,4 @@
 docs/stage-1/specimens/** text eol=lf
+# Original acquisition bytes are hashed; never normalize them on checkout.
+examples/projects/first-slice/source/*.json -text
+examples/projects/first-slice/source/metadata/*.json -text

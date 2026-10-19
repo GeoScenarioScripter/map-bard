@@ -130,7 +130,7 @@ authoring should lower friction without creating an incompatible product.
 | Engine                  | Resource inspection, executable analysis, validation, design compilation, preview, tests, and export    |
 | Agent toolkit           | Skills/plugin guidance, examples, capability discovery, and an inspect–edit–render–test–repair workflow |
 | Local Studio/workbench  | Scene outline, map preview, evidence/design inspector, direct manipulation, and change review           |
-| Hub, later              | Publish, inspect, attribute, and remix stories and reusable recipes                                     |
+| Community / market center, later | Upload, serve, and visualize creator-written story pages; support community discovery and reuse |
 
 The first product target is **Engine + agent toolkit + local visual workbench**.
 No account or MapBard-hosted assistant should be required for the local workflow.
@@ -237,16 +237,20 @@ do not automatically round-trip into the structured project. Supported custom
 themes, scenes, and interactions should declare parameters and capabilities;
 unknown extensions should be preserved or diagnosed, never silently discarded.
 
-### Hub and community horizon
+### Community / market center — confirmed, sequenced after the local pipeline
 
-Start with curated examples and inspectable, remixable projects. Reusable story
-recipes combine analysis requirements, narrative structure, and design choices;
-dataset substitution should trigger compatibility checks. Show attribution and
-reuse conditions, and separate public story assets from restricted source data.
+MapBard will provide its own center where creators can upload user-written story
+map pages for MapBard to serve and visualize, and where people can discover and
+reuse community work. This is a confirmed product destination, not part of the
+first local pipeline release. First complete the portable project, model-independent
+engine, coding-agent toolkit, and local workbench workflow; then plan and build the
+hosted center against that working foundation.
 
-Hosted Studio, team features, feeds, and a full Hub are later possibilities.
-Marketplace, payment, pricing, and commercialization planning are deferred and
-are not success criteria for the current work.
+The center should support inspectable stories and reusable recipes, attribution,
+reuse conditions, and separation of public story assets from restricted source
+data. Exact upload formats, publishing controls, community features, and market
+mechanics remain to be designed. Pricing, payments, and commercialization are
+still deferred; confirming the center does not settle those decisions.
 
 ## Decisions revised from the first plan
 

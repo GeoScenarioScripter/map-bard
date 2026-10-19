@@ -32,8 +32,11 @@ workbench permits inspection and visual adjustments to that same project.
 No MapBard account, hosted assistant, or mandatory built-in model call is required.
 
 The first release is **engine + agent toolkit + local visual workbench**, with a
-portable editable format and publication output. Hub/remixing is a later horizon;
-commercialization and marketplace planning are deferred.
+portable editable format and publication output. A MapBard-hosted community /
+market center for uploading, serving, and visualizing user-written story pages
+is a confirmed later product capability. Complete the local authoring pipeline
+first; plan the hosted center afterward. Pricing, payments, and commercialization
+remain deferred.
 
 MapBard's own in-product agent will use **one LLM + a system prompt + dynamically
 loaded skills + a purpose-built harness maintaining the agent loop**. No LangGraph
@@ -166,8 +169,9 @@ an open framework-selection question.
 
 ## Later horizons and explicit non-goals
 
-- Curated Hub: inspectable stories, recipes, attribution, remix compatibility;
-  publishable artifacts must be separated from restricted source data.
+- Confirmed later community / market center: upload, serve, and visualize
+  user-written story pages; support discoverable, inspectable and reusable work.
+  Preserve attribution and separate public artifacts from restricted source data.
 - Hosted creation, team collaboration, and richer extensions only after the local
   workflow is useful; no account system or server platform is required now.
 - General raster/temporal pipelines, elaborate branching/version graphs,
@@ -175,7 +179,9 @@ an open framework-selection question.
   integrations are outside the initial slice.
 - Vision critique may be explored as advisory feedback; no claim that it certifies
   geography, factual truth, or complete accessibility.
-- Commercialization, pricing, payment systems, and a marketplace are deferred.
+- Pricing, payment systems, and commercialization are deferred. The community /
+  market center itself is confirmed, but its detailed mechanics and sequencing
+  remain to be planned after the local pipeline.
 
 ## Planning output and continuing rule
 

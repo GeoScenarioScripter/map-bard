@@ -34,6 +34,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@mapbard/knowledge':
+        specifier: workspace:*
+        version: link:../knowledge
       '@mapbard/schema':
         specifier: workspace:*
         version: link:../schema
@@ -44,7 +47,11 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
 
-  packages/knowledge: {}
+  packages/knowledge:
+    dependencies:
+      '@mapbard/schema':
+        specifier: workspace:*
+        version: link:../schema
 
   packages/renderer:
     dependencies:

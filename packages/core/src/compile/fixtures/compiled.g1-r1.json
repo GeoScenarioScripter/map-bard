@@ -1,0 +1,187 @@
+{
+  "compiledVersion": "0.1.0",
+  "contractVersions": {
+    "project": "0.1.0",
+    "narrative": "0.1.0",
+    "design": "0.1.0"
+  },
+  "compilerVersion": "s1-w3-a.1",
+  "input": {
+    "projectId": "synthetic-two-periods",
+    "revision": 1,
+    "narrativeSha256": "sha256:49f6b273ff8bcaec5a87945cbbb8b188fe89e64f4b3b18ce67b9d33f55a310cd",
+    "designSha256": "sha256:5eb821a663ccd02395a895a06c5987e65b2c4e989182a069100d4c8e34f4b8cc",
+    "manifestSha256": "sha256:24b8d1d09b2b287473a3fe55f1144d0db1d1960c5ae5d7b738561db24b5ca8b6",
+    "resources": [
+      {
+        "id": "period-a",
+        "sha256": "sha256:8cf185014c968f95be289316d6f3315e12969a54bd8586f038cf2e25706f72f7"
+      },
+      {
+        "id": "period-b",
+        "sha256": "sha256:821cbc7de81620c40e59df3d071dfc678fac893ad7be04a4a579d9155ac3f3b5"
+      }
+    ]
+  },
+  "id": "synthetic-two-periods",
+  "title": "Synthetic comparison",
+  "intent": "Check stable scene and scale contracts with invented numbers.",
+  "basemap": "neutral",
+  "scenes": [
+    {
+      "id": "a",
+      "title": "Period A",
+      "narration": "Invented values for contract tests only.",
+      "content": {
+        "attribute": "value"
+      },
+      "discourse": {
+        "narrativeRole": "establish",
+        "emphasis": "medium",
+        "readerAgency": "none"
+      },
+      "camera": {
+        "center": [-77.2, 39.2],
+        "zoom": 8
+      },
+      "transitionIn": "cut",
+      "media": [],
+      "mediaAnchors": [],
+      "layers": [
+        {
+          "sceneId": "a",
+          "authoredLayerId": "sites",
+          "runtimeId": "mb:1:a:5:sites",
+          "sourceId": "period-a",
+          "geometry": "point",
+          "technique": "point",
+          "attribute": "value",
+          "scaleId": "period-color",
+          "constant": {
+            "opacity": 0.8
+          }
+        }
+      ],
+      "annotations": [
+        {
+          "id": "where-one",
+          "text": "Invented site One",
+          "at": [-77.5, 39.2],
+          "target": {
+            "kind": "features",
+            "sourceId": "period-a",
+            "featureIds": ["p1"]
+          },
+          "sceneId": "a"
+        }
+      ],
+      "controls": [
+        {
+          "sceneId": "a",
+          "id": "opacity",
+          "kind": "slider",
+          "label": "Opacity",
+          "runtimeLayerId": "mb:1:a:5:sites",
+          "property": "opacity",
+          "default": 0.8,
+          "range": [0, 1]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "title": "Period B",
+      "narration": "The same invented site IDs use the same color scale.",
+      "content": {
+        "relationship": "Compare the two synthetic periods."
+      },
+      "discourse": {
+        "narrativeRole": "compare",
+        "emphasis": "medium",
+        "readerAgency": "guided"
+      },
+      "camera": {
+        "center": [-77.2, 39.2],
+        "zoom": 8
+      },
+      "transitionIn": "cut",
+      "media": [],
+      "mediaAnchors": [],
+      "layers": [
+        {
+          "sceneId": "b",
+          "authoredLayerId": "sites",
+          "runtimeId": "mb:1:b:5:sites",
+          "sourceId": "period-b",
+          "geometry": "point",
+          "technique": "point",
+          "attribute": "value",
+          "scaleId": "period-color",
+          "constant": {
+            "opacity": 0.8
+          }
+        }
+      ],
+      "annotations": [
+        {
+          "id": "comparison-note",
+          "text": "Compare with the same extent and scale",
+          "at": [-77.2, 39.25],
+          "target": {
+            "kind": "free"
+          },
+          "sceneId": "b"
+        }
+      ],
+      "controls": []
+    }
+  ],
+  "scales": [
+    {
+      "id": "period-color",
+      "memberKeys": [
+        {
+          "sceneId": "a",
+          "layerId": "sites",
+          "sourceId": "period-a"
+        },
+        {
+          "sceneId": "b",
+          "layerId": "sites",
+          "sourceId": "period-b"
+        }
+      ],
+      "unit": "index points",
+      "noDataLabel": "No data",
+      "noDataColor": "#9e9e9e",
+      "counts": {
+        "valid": 13,
+        "missing": 1,
+        "invalid": 0
+      },
+      "kind": "numeric-color",
+      "domain": [0, 120],
+      "edges": [0, 40, 80, 120],
+      "colors": ["#edf8fb", "#66c2a4", "#238b45"],
+      "labels": ["[0, 40) index points", "[40, 80) index points", "[80, 120] index points"],
+      "effectiveClasses": 3
+    }
+  ],
+  "resources": [
+    {
+      "id": "period-a",
+      "kind": "data",
+      "bundlePath": "data/period-a-8cf18501.geojson",
+      "credit": "MapBard synthetic software fixture",
+      "qualification": "Invented values; not geographic observations."
+    },
+    {
+      "id": "period-b",
+      "kind": "data",
+      "bundlePath": "data/period-b-821cbc7d.geojson",
+      "credit": "MapBard synthetic software fixture",
+      "qualification": "Invented values; not geographic observations."
+    }
+  ],
+  "requiredNetwork": []
+}

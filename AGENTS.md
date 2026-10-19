@@ -38,7 +38,7 @@ Check source/tests before treating a target capability as implemented.
 
 **Stage 1 — Trustworthy Project and Publication is active; Wave 1 handoffs are
 complete (Sessions 11–13), G1 closed in Session 19, and G2 closed in Session 24.
-Wave 2 is integrated; Wave 3 is released, not started.**
+Wave 2 is integrated; Wave 3A compiler/rules closed in Session 26, with B/C and G3 pending.**
 See `docs/stage-1/g1-review.md` for frozen contract revision g1-r1, verified
 acquisitions, the bounded Potomac comparison and selected esbuild IIFE approach.
 Sessions 16–17 repaired reader-reported legacy demo issues, including an explicit
@@ -47,7 +47,8 @@ Console/Network, offline and relocated-copy report, recorded in
 `docs/stage-1/browser-handoff.md`. This closes the G1 build-choice gate; it does
 not certify the planned compiled player or full capability matrix.
 See `docs/stage-1/g2-review.md` for public load/import/validation and player asset
-contracts, 89 passing tests and the bounded Node VM check. Begin S1-W3-A next.
+contracts, 89 passing tests and the bounded Node VM check. See
+`docs/stage-1/w3-a-handoff.md` for the compiler/rules handoff. Begin S1-W3-B next.
 No complete Stage 1 publication capability is delivered. Do not resume old M5. Only Stage 1
 has detailed waves/sessions; detail each later stage after its predecessor closes.
 
@@ -81,8 +82,9 @@ commercialization details are outside current concerns.
 | `@mapbard/renderer`  | Legacy render/write/runtime plus separate TypeScript player foundation; classic IIFE asset at `@mapbard/renderer/player.js` |
 | `@mapbard/cli`       | Scaffold only; no public executable commands yet                                                                            |
 
-Project loading/import/validation and shared contracts are integrated; compilation,
-compiled publication, analysis/evidence, agent toolkit and workbench remain targets.
+Project loading/import/validation and shared contracts are integrated; the W3-A
+compiler is implemented on its owned paths, pending G3 public export/composition.
+Compiled publication, analysis/evidence, agent toolkit and workbench remain targets.
 The player still needs MapLibre and compiled HTML wiring. Stage 1 uses existing
 packages and the frozen g1-r1 contracts; keep new work within its released wave.
 

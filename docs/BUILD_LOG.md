@@ -16,18 +16,18 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** Stage 1 opened in Session 11 after Session 10's R01–R40 planning review. The original Phase A execution plan is superseded, not completed.
-- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 is released, not started. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
+- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 S1-W3-A closed in Session 26; B/C and G3 remain. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
 - **Historical milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ recorded done; M5–M7 were not started and their old sequence is superseded. See `phase-a-plan.md` and archived checklists.
 - **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench, followed by MapBard's own hosted community / market center for uploading, serving, and visualizing user-written story pages. Geographic data, text, and supplied images/video remain central. Complete the local pipeline first; pricing, payment, and commercialization details remain deferred.
-- **Next action:** start S1-W3-A (compiler and rules) in a new session using G2's public schema/core contracts and unchanged g1-r1 specimens. W3-B/C consume the dedicated player asset contract. The [browser report](stage-1/browser-handoff.md) closes only the G1 direct-file gate; the new player's browser behavior and full capability matrix remain unverified. Do not resume old M5 automatically.
-- **Actual code:** GeoNarrative v0.1.0, Stage 0, DashScope Plan and the legacy example renderer remain available. G2 integrates public project/design/compiled schemas, strict load/import/validation and a separate TypeScript player foundation. The normal build emits the IIFE at the public `@mapbard/renderer/player.js` asset subpath. Shared frozen-specimen composition passes; the player still has no MapLibre adapter or compiled HTML wiring. The legacy renderer accepts an explicit, inlined local context map for the example; authored PMTiles remain unimplemented. No complete Stage 1 publication/workbench/toolkit capability is delivered.
-- **Repo:** `main` tracks GitHub `origin/main` → `https://github.com/GeoScenarioScripter/map-bard.git`. Session 25 collects the accumulated work through G2 into separate commits and records the new standing per-session local commit rule. Push is explicitly authorized for that handoff; future pushes still require authorization.
+- **Next action:** start S1-W3-B faithful playback in a separate session against the [W3-A compiler handoff](stage-1/w3-a-handoff.md), frozen g1-r1 specimens and G2 player asset contract. W3-C and G3 remain. The [browser report](stage-1/browser-handoff.md) closes only the G1 direct-file gate; the new player's browser behavior and full capability matrix remain unverified. Do not resume old M5 automatically.
+- **Actual code:** GeoNarrative v0.1.0, Stage 0, DashScope Plan and the legacy example renderer remain available. G2 integrates public project/design/compiled schemas, strict load/import/validation and a separate TypeScript player foundation. W3-A adds a pure compiler and bounded knowledge rules on owned paths, with an actual compiled fixture matching g1-r1 semantic output; G3 still needs the public barrel/composition. The normal build emits the IIFE at the public `@mapbard/renderer/player.js` asset subpath. The player still has no MapLibre adapter or compiled HTML wiring. The legacy renderer accepts an explicit, inlined local context map for the example; authored PMTiles remain unimplemented. No complete Stage 1 publication/workbench/toolkit capability is delivered.
+- **Repo:** `main` tracks GitHub `origin/main` → `https://github.com/GeoScenarioScripter/map-bard.git`. Session 25 collected work through G2 into separate commits and established the standing per-session local commit rule. Session 26 is committed locally only; no push is authorized for it.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
 - **LLM:** DashScope remains the only implemented adapter, default `qwen3.7-max-2026-05-17`; its target role is optional authoring. External agents must not require that provider. See `AGENTS.md`.
 - **Built-in agent decision (Session 07):** one LLM + system prompt + dynamically loaded skills + a purpose-built harness managing the loop. No LangGraph-style framework or fixed specialized-agent team. The harness is not implemented and remains separate from the engine and story player.
 - **Agent guidance:** root `AGENTS.md` is shared; `CLAUDE.md` points to it. Original plans/instructions are preserved in `docs/archive/2026-10-17/` as history, not active commands.
 - **Idea retention:** Session 08's audit, resumed 2026-10-18, is captured in [the refinement idea register](refinement-ideas.md): 40 stable R IDs with rationale, status, planning coverage, concrete examples, and superseded/deferred discussion. Session 09's stage sequence is preserved.
-- **Idea-to-plan review:** Session 10 maps every R ID to planned work or deferral. Stage 1's existing sessions now explicitly cover author-task framing, attention/comparison references, measurement overrides, stale-build checks and verification records; later outlines add evidence-led story redirection and denominator-sensitive revision. No Stage 1 capability has been delivered yet.
+- **Idea-to-plan review:** Session 10 maps every R ID to planned work or deferral. Stage 1's existing sessions now explicitly cover author-task framing, attention/comparison references, measurement overrides, stale-build checks and verification records; later outlines add evidence-led story redirection and denominator-sensitive revision. W3-A's compiler implementation does not establish Stage 1 end-to-end acceptance.
 
 ---
 
@@ -798,6 +798,24 @@ in this task's handoff; no force-push or historical rewrite is authorized.
 
 **Next:** After publishing this closure commit, start S1-W3-A compiler/rules in
 a new numbered session. Commit that session's own verified work before handoff.
+
+---
+
+## Session 26 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** S1-W3-A — Compiler and rules.
+
+**Goal:** Implement pure compilation and the bounded capability/prerequisite rules against G2's loaded-project contract and frozen g1-r1 specimens; hand off tested compiled output and actionable diagnostics to G3/W4-A.
+
+**Did:** Opened after confirming a clean `main` checkout and G2 handoff. Added the bounded knowledge catalog/prerequisite rules and a pure compiler over validated loaded projects. It rechecks data buffer hashes and map consistency, resolves complete-feature shared/local scales, filters, scene-local IDs, legends, annotations, media locations and presentation controls, and rejects unsupported or incompatible requests with typed diagnostics. Generated a real compiled g1-r1 fixture; added 15 focused compiler/scale tests and the [handoff record](stage-1/w3-a-handoff.md). Updated active status docs.
+
+**Decisions:** Preserve the frozen contracts/specimens and legacy example. Keep `compileProject` inside its owned module until G3 updates the public core barrel and composes playback/publication. Use a direct core→knowledge workspace dependency. Do not treat the compiler catalog as evidence that the player or export has passed. Data bytes are checked in pure compilation; fresh authored manifest/design identity remains a loader/publication responsibility.
+
+**Files touched:** `packages/core/src/compile/{compile,data,scales}*` and `fixtures/compiled.g1-r1.json`, `packages/knowledge/src/index.ts`, `packages/{core,knowledge}/package.json`, `pnpm-lock.yaml`, `AGENTS.md`, `docs/{BUILD_LOG,stage-1-plan,implementation-stages}.md`, `docs/stage-1/w3-a-handoff.md`.
+
+**Verification:** Frozen offline lockfile update/install passed. Five package builds, all 104 tests (schema 22, core 65, renderer 17), lint, and targeted strict typechecks of both new test files passed. The actual compiled fixture matches all frozen semantic fields aside from its real compiler version, and repeat calls leave input unchanged. Legacy nine-file generation passed with the expected unsupported-basemap warning; legacy/data/player JavaScript syntax checks and the G1 source/specimen verifier passed. Changed-file formatting and `git diff --check` passed. No model/provider call or new-player browser acceptance is claimed.
+
+**Next:** Commit this session locally. Start S1-W3-B faithful playback in a new Codex task with GPT-6 Sol high; W3-C and G3 follow their plan ownership and gate.
 
 ---
 

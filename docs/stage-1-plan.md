@@ -4,7 +4,7 @@ Updated 2026-10-19, Session 24 G2 foundation integration.
 **IN PROGRESS — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
 real-case gate in BUILD_LOG Session 11, S1-W1-B contract proposal closed in
 Session 12, and S1-W1-C baseline/runtime spike closed in Session 13, with its
-final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3 released, not started.**
+final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A compiler/rules closed in Session 26, with B/C and G3 pending.**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
 The prior planning/review sessions implemented no features. The
@@ -389,6 +389,10 @@ every unsupported request must diagnose before export. Assign bounded correction
 to their owners; do not run Wave 4 while the composed slice is broken.
 Include the new target/override/stale-input negatives and categorized prerequisite
 diagnostics in this gate; do not leave them as commentary-only documentation.
+
+**S1-W3-A disposition — Session 26: CLOSED.** Compiler/rules and an actual compiled
+g1-r1 fixture are handed off in [the W3-A record](stage-1/w3-a-handoff.md).
+Wave 3B/C and G3 composition remain pending; no compiled browser story is claimed.
 
 ### Wave 4 — Demonstrate, challenge and close
 

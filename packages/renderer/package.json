@@ -5,20 +5,28 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "runtime"],
+  "files": [
+    "dist",
+    "runtime"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./player.js": "./dist/player/player.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && pnpm run build:player",
+    "build:player": "tsc -p player/tsconfig.json && node scripts/build-player.mjs",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@mapbard/schema": "workspace:*",
     "maplibre-gl": "^4.7.1",
     "scrollama": "^3.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.21.5"
   }
 }

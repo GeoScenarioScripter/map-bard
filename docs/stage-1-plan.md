@@ -392,7 +392,10 @@ diagnostics in this gate; do not leave them as commentary-only documentation.
 
 **S1-W3-A disposition — Session 26: CLOSED.** Compiler/rules and an actual compiled
 g1-r1 fixture are handed off in [the W3-A record](stage-1/w3-a-handoff.md).
-Wave 3B/C and G3 composition remain pending; no compiled browser story is claimed.
+**S1-W3-B disposition — Session 27: CLOSED.** The MapLibre adapter, compiled
+styling/legends/annotations, keyboard interactions and scene lifecycle are handed
+off in [the W3-B record](stage-1/w3-b-handoff.md). W3-C and G3 composition remain
+pending; no compiled browser story is claimed.
 
 ### Wave 4 — Demonstrate, challenge and close
 

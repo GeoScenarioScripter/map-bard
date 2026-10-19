@@ -38,6 +38,12 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
       events.push('marker:add');
       return marker;
     },
+    addAnnotation: () => {
+      const marker = { remove: vi.fn(() => events.push('annotation:remove')) };
+      markers.push(marker);
+      events.push('annotation:add');
+      return marker;
+    },
     setControl: (id, property, value) => {
       events.push(`control:${id}:${property}:${value}`);
     },
@@ -98,9 +104,10 @@ describe('compiled player foundation', () => {
     story.resources.push({ id: 'photo', kind: 'image', bundlePath: 'media/photo.jpg' });
     const { player, events, markers } = harness(story);
     player.enter('a');
-    expect(markers).toHaveLength(1);
+    expect(markers).toHaveLength(2);
     player.enter('b');
     expect(markers[0]!.remove).toHaveBeenCalledOnce();
+    expect(markers[1]!.remove).toHaveBeenCalledOnce();
     expect(events.indexOf('view:dispose')).toBeLessThan(
       events.indexOf('bind:mb:1:b:5:sites:period-b'),
     );

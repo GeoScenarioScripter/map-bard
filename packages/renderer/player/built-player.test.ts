@@ -24,16 +24,24 @@ const script = readFileSync(
 
 function harness(reducedMotion = false) {
   const sandbox: {
-    MapBardCompiledPlayer?: { createPlayer: typeof createPlayer; createDomView: unknown };
+    MapBardCompiledPlayer?: {
+      createPlayer: typeof createPlayer;
+      createDomView: unknown;
+      createMapLibreAdapter: unknown;
+      observeScenes: unknown;
+    };
   } = {};
   runInNewContext(script, sandbox, { timeout: 1000 });
   expect(typeof sandbox.MapBardCompiledPlayer?.createDomView).toBe('function');
+  expect(typeof sandbox.MapBardCompiledPlayer?.createMapLibreAdapter).toBe('function');
+  expect(typeof sandbox.MapBardCompiledPlayer?.observeScenes).toBe('function');
   if (!sandbox.MapBardCompiledPlayer) throw new Error('Built player global is missing');
   const map: MapAdapter = {
     setCamera: vi.fn(),
     bindLayer: vi.fn(),
     unbindLayer: vi.fn(),
     addMarker: vi.fn(() => ({ remove: vi.fn() })),
+    addAnnotation: vi.fn(() => ({ remove: vi.fn() })),
     setControl: vi.fn(),
   };
   const disposeView = vi.fn();

@@ -1,9 +1,9 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-19, Session 24 G2 foundation integration.
+Updated 2026-10-19, Session 27 W3-B playback handoff.
 **Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
 handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
-Wave 3A compiler/rules closed in Session 26; B/C and G3 remain. No complete Stage 1 publication capability is delivered yet.**
+Wave 3A compiler/rules and 3B playback closed in Sessions 26–27; C and G3 remain. No complete Stage 1 publication capability is delivered yet.**
 The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
 records source acquisitions and accepted bounded Potomac comparability, and
 selects the runtime build approach after the direct-file browser report.
@@ -13,8 +13,9 @@ old M5.
 The [G2 record](stage-1/g2-review.md) integrates public project contracts,
 load/import/validation and the dedicated player asset build. All 89 tests pass;
 the compiled player's browser acceptance still waits for Wave 3 wiring and
-Wave 4 review. S1-W3-A is recorded in [the compiler handoff](stage-1/w3-a-handoff.md);
-next is S1-W3-B faithful playback in a separate session.
+Wave 4 review. S1-W3-A is recorded in [the compiler handoff](stage-1/w3-a-handoff.md)
+and S1-W3-B in [the playback handoff](stage-1/w3-b-handoff.md); next is S1-W3-C
+publication and assets.
 
 Read this alongside the [product direction](mapbard-plan.md),
 [architecture](mapbard-build-guide.md), [refinement inputs](refinement-roadmap.md),

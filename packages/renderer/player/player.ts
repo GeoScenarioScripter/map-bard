@@ -1,4 +1,5 @@
 import { anchorMarkup, sceneMediaMarkup } from './media.js';
+import { legendMarkup } from './legend.js';
 import type {
   CompiledControl,
   CompiledScene,
@@ -72,21 +73,27 @@ export function createPlayer(
     // Resolve media and bindings before disturbing the currently visible scene.
     const mediaHtml = sceneMediaMarkup(next, story.resources);
     const anchorHtml = next.mediaAnchors.map((anchor) => anchorMarkup(anchor, story.resources));
+    const legendHtml = legendMarkup(next, story);
     for (const control of next.controls) controlFor(next, control.id);
     const firstEntry = !active;
     clearActive();
     const transition =
       firstEntry || options.reducedMotion?.() ? 'cut' : (next.transitionIn ?? 'ease');
-    map.setCamera(next.camera, transition);
-    for (const layer of next.layers) map.bindLayer(layer);
     active = next;
-    for (const control of next.controls) {
-      setControl(control.id, control.default);
+    try {
+      map.setCamera(next.camera, transition);
+      for (const layer of next.layers) map.bindLayer(layer);
+      for (const control of next.controls) setControl(control.id, control.default);
+      for (const [index, anchor] of next.mediaAnchors.entries()) {
+        markers.push(map.addMarker(anchor, anchorHtml[index]!));
+      }
+      for (const annotation of next.annotations) markers.push(map.addAnnotation(annotation));
+      disposeView = view.showScene(next, mediaHtml, setControl, legendHtml);
+    } catch (error) {
+      clearActive();
+      view.clear();
+      throw error;
     }
-    for (const [index, anchor] of next.mediaAnchors.entries()) {
-      markers.push(map.addMarker(anchor, anchorHtml[index]!));
-    }
-    disposeView = view.showScene(next, mediaHtml, setControl);
   }
 
   function dispose(): void {

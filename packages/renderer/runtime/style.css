@@ -192,6 +192,46 @@ body {
 #controls[hidden] {
   display: none;
 }
+.mb-legend-host {
+  position: fixed;
+  left: 12px;
+  bottom: 42px;
+  z-index: 3;
+  width: min(250px, calc(100vw - 24px));
+  max-height: min(44vh, 380px);
+  overflow: auto;
+  background: var(--mb-card-bg);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+}
+.mb-legend-host[hidden] {
+  display: none;
+}
+.mb-legend h3 {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+}
+.mb-legend ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.mb-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 0.78rem;
+}
+.mb-legend-swatch,
+.mb-legend-size {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #34433d;
+  border-radius: 50%;
+}
 .mb-controls-title {
   font-weight: 600;
   font-size: 0.74rem;
@@ -216,6 +256,13 @@ body {
   width: 100%;
   accent-color: var(--mb-accent);
 }
+.mb-control-value {
+  display: block;
+  color: var(--mb-muted);
+  font-size: 0.8rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 /* teardrop markers */
 .mb-marker {
@@ -230,6 +277,35 @@ body {
 }
 .mb-marker.is-video {
   background: #b3261e;
+}
+.mb-marker,
+.mb-annotation-marker {
+  display: block;
+  padding: 0;
+}
+.mb-annotation-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--mb-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+.mb-marker:focus-visible,
+.mb-annotation-marker:focus-visible,
+.mb-control-input:focus-visible {
+  outline: 3px solid #172b71;
+  outline-offset: 3px;
+}
+.mb-annotation-text {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--mb-ink);
+}
+.mb-popup .maplibregl-popup-close-button:focus-visible {
+  outline: 3px solid #172b71;
+  outline-offset: 2px;
 }
 .mb-popup .maplibregl-popup-content {
   padding: 10px;
@@ -270,6 +346,12 @@ body {
     width: auto;
     top: auto;
     bottom: 14px;
+  }
+  .mb-legend-host {
+    left: 14px;
+    top: 14px;
+    bottom: auto;
+    max-height: 25vh;
   }
 }
 

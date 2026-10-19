@@ -1,49 +1,34 @@
-# Compiled player foundation (S1-W2-C)
+# Compiled player — S1-W3-B
 
-`player.ts` owns scene lifetime. A `MapAdapter` binds and unbinds **runtime** layer
-IDs, sets the camera, places/removes markers, and applies scene-local controls.
-`SceneView` presents panel media and controls. This separation lets tests use a
-fake map without MapLibre or a browser. Re-entering a scene rebuilds its bindings
-and reapplies authored control defaults. The first camera change and all changes
-under reduced motion use `cut`.
+`player.ts` owns scene lifetime. It removes the prior scene's map layers, sources,
+media/annotation markers, popups, controls and legend before binding the next
+scene. Re-entering a scene reapplies compiled defaults. The first camera change
+and reduced-motion changes use `cut`.
 
-`entry.ts` builds to the classic-script IIFE at
-`packages/renderer/dist/player/player.js`. The normal workspace build includes
-the dedicated player typecheck and esbuild bundle; to rebuild just the player
-after schema has been built:
+The normal renderer build emits the classic script at
+`@mapbard/renderer/player.js`. Its global `MapBardCompiledPlayer` exposes
+`createPlayer`, `createDomView`, `createMapLibreAdapter` and `observeScenes`.
+Schema and MapLibre imports are type-only in the player bundle; G3/W3-C must load
+MapLibre, create the map, supply GeoJSON by compiled resource ID and wire the page.
 
-```sh
-pnpm --filter @mapbard/renderer build:player
-```
+`createMapLibreAdapter(story, data, map, maplibregl)` owns MapLibre source and
+layer registration. Data must contain every compiled source ID. The adapter uses
+compiled `scaleId`, exact edges, colors, labels and size transfer functions;
+it never infers a domain or category from a sample. It renders only neutral
+basemap stories. The caller creates a neutral MapLibre map and waits for its
+`load` event before entering a scene.
 
-It exposes `globalThis.MapBardCompiledPlayer.createPlayer` and
-`createDomView`. The bundle has no external module imports. This is an
-**injection surface**, not yet a complete browser player: W3-B supplies the
-MapLibre adapter, resolved scale/layer styling, annotations and scroll wiring;
-W3-C wires the compiled payload and page assets. G2 derives all consumer types
-from public `@mapbard/schema` types. Type-only imports keep schema/Zod execution
-out of the browser IIFE. The legacy `runtime/app.js` stays separate.
+`createDomView({ scenes, media, controls, legends })` expects authored scene
+elements with `data-scene-id` and distinct media, control and legend hosts. Give
+the legend host class `mb-legend-host`; the included runtime stylesheet styles it.
+`observeScenes(player, scenes)` activates the most visible scene with an
+IntersectionObserver and returns a disconnect function. Call that and
+`player.dispose()` on page teardown. Native buttons open marker/annotation
+popups; checkboxes and sliders are keyboard operable. Slider arrow keys move by
+one percent of the authored range, Page keys by ten percent, and Home/End to
+the endpoints.
 
-The public asset subpath is `@mapbard/renderer/player.js`. A Node publication
-writer resolves it using `import.meta.resolve('@mapbard/renderer/player.js')`
-(or `createRequire(import.meta.url).resolve(...)`) and copies the resulting
-bytes into its bundle. This is a **classic-script asset**, not an ESM API:
-do not import it for side effects or load it with `type="module"`. The build
-fails if esbuild reports any external module imports. Missing build output must
-be diagnosed by the future writer; never silently use the legacy runtime.
-
-Run build before tests. `built-player.test.ts` resolves that public asset and
-executes the actual IIFE in Node VM with injected map/view adapters, consuming
-the same schema-validated frozen `compiled.expected.json` used at the G2 gate.
-It checks scene isolation, control reset, cleanup, reduced motion and version
-rejection. This is model-free bundle evidence, not DOM/MapLibre/browser acceptance.
-
-The compiled page will need the locally bundled MapLibre and scrollama classic
-scripts, the IIFE, an inline or bundled compiled payload, and GeoJSON data keyed
-by compiled resource ID. Local media use `bundlePath`; remote media require
-their declared network URL. `createDomView` expects scene elements with
-`data-scene-id`, plus media and control hosts. The existing CSS class names
-`mb-media` (with placement modifier), `mb-credit`, `mb-qualification`,
-`mb-control`, `mb-control-input`, and `mb-popup-title` are emitted for later
-styling. The browser layer must pass current
-`prefers-reduced-motion` state through the `reducedMotion` option.
+Run the build before tests. The W3-B adapter tests consume the actual W3-A
+compiled fixture and full g1-r1 GeoJSON sources; built-IIFE tests consume the
+frozen specimen. These tests are not browser acceptance. W3-C publication wiring
+and G3 composition remain separate.

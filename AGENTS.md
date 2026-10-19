@@ -36,10 +36,20 @@ Check source/tests before treating a target capability as implemented.
 
 ## Current scope and status
 
-**Stage planning complete (Session 09); Stage 1 — Trustworthy Project and Publication
-is next and NOT STARTED.** No implementation stage is active. Do not continue old
-M5 automatically. Only Stage 1 has detailed waves/sessions; detail each later stage
-after its predecessor closes. The planning task does not authorize implementation.
+**Stage 1 — Trustworthy Project and Publication is active; Wave 1 handoffs are
+complete (Sessions 11–13), G1 closed in Session 19, and G2 closed in Session 24.
+Wave 2 is integrated; Wave 3 is released, not started.**
+See `docs/stage-1/g1-review.md` for frozen contract revision g1-r1, verified
+acquisitions, the bounded Potomac comparison and selected esbuild IIFE approach.
+Sessions 16–17 repaired reader-reported legacy demo issues, including an explicit
+local context map. Session 19 accepted the reader's direct-file Edge/Chrome,
+Console/Network, offline and relocated-copy report, recorded in
+`docs/stage-1/browser-handoff.md`. This closes the G1 build-choice gate; it does
+not certify the planned compiled player or full capability matrix.
+See `docs/stage-1/g2-review.md` for public load/import/validation and player asset
+contracts, 89 passing tests and the bounded Node VM check. Begin S1-W3-A next.
+No complete Stage 1 publication capability is delivered. Do not resume old M5. Only Stage 1
+has detailed waves/sessions; detail each later stage after its predecessor closes.
 
 Historical M0–M4 are recorded done. M5–M7 were not started and their execution
 sequence is superseded, not completed. The existing code remains the baseline.
@@ -52,25 +62,29 @@ and export; a local workbench edits the same project. A MapBard account or hoste
 assistant must not be required. The old prohibition on any early Studio/temporal
 work is superseded by a narrow workbench and compatible vector comparisons.
 
-Later: Hub/remix workflows, hosted creation, collaboration, richer extensions.
+Later, after the local pipeline: MapBard's own community / market center, where
+creators can upload user-written story pages for MapBard to serve and visualize,
+along with discovery and reuse workflows. This is a confirmed destination; its
+detailed scope follows the local pipeline.
 Deferred from the initial slice: general raster/temporal GIS, elaborate branching,
 RAG infrastructure, unrestricted generated execution, multiple built-in provider
-integrations, and mandatory cloud infrastructure. Pricing, marketplace, and other
-commercial planning are outside current concerns.
+integrations, and mandatory cloud infrastructure. Pricing, payments, and
+commercialization details are outside current concerns.
 
 ## Existing repository map
 
-| Package              | Implemented today                                                                                               |
-| -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `@mapbard/schema`    | `src/geo-narrative.ts`: Zod schemas, inferred types, parse helpers, SCHEMA_VERSION 0.1.0                        |
-| `@mapbard/core`      | `src/stage0/` ingestion/profiling/media; `src/llm/` repair/DashScope; `src/stage1/plan.ts` constrained planning |
-| `@mapbard/knowledge` | Scaffold only                                                                                                   |
-| `@mapbard/renderer`  | Pure `src/render.ts`, I/O `src/write.ts`, plain-JS/CSS browser runtime                                          |
-| `@mapbard/cli`       | Scaffold only; no public executable commands yet                                                                |
+| Package              | Implemented today                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `@mapbard/schema`    | GeoNarrative plus public project/design/compiled/diagnostic Zod contracts, strict parsers and reference validation          |
+| `@mapbard/core`      | Stage 0 ingestion/profiling/media; optional DashScope planning; public project load/import/validation                       |
+| `@mapbard/knowledge` | Scaffold only                                                                                                               |
+| `@mapbard/renderer`  | Legacy render/write/runtime plus separate TypeScript player foundation; classic IIFE asset at `@mapbard/renderer/player.js` |
+| `@mapbard/cli`       | Scaffold only; no public executable commands yet                                                                            |
 
-The new project format, analysis/evidence layer, compiler boundary, agent toolkit,
-and workbench are targets, not delivered APIs. Stage 1 plans modules within the
-existing packages; freeze exact contracts at its first integration gate.
+Project loading/import/validation and shared contracts are integrated; compilation,
+compiled publication, analysis/evidence, agent toolkit and workbench remain targets.
+The player still needs MapLibre and compiled HTML wiring. Stage 1 uses existing
+packages and the frozen g1-r1 contracts; keep new work within its released wave.
 
 Depend inward toward shared contracts. Use direct `workspace:*` dependencies and
 public package barrels; do not import private source across packages. Stage 0
@@ -119,8 +133,9 @@ Inspect `packages/renderer/runtime/app.js` before relying on an encoding.
   color interpolation; data-driven opacity is not implemented.
 - Controls set paint properties or toggle visibility; general filter controls are
   absent. Layers are registered once by ID, so reused IDs do not rebuild bindings.
-- The player constructs a neutral basemap and ignores basemap configuration.
-  PMTiles is not implemented.
+- The player ignores authored basemap configuration. The example can explicitly
+  supply a bounded local context map, but PMTiles is not implemented and other
+  outputs still use a neutral background.
 - Profiling infers number→ratio/date→interval/other→nominal and samples only five
   distinct values. Exact classifications need actual distributions.
 - Ingest helpers read local files; CRS is recorded/defaulted, not reprojected.
@@ -153,8 +168,10 @@ does not activate implementation; scope and delivery order are still to be plann
 
 Node 20+, pnpm 9.15.0, strict TypeScript ESM/NodeNext, `.js` relative import
 suffixes, no `any` in public APIs. Use existing per-package exports. The runtime
-is currently plain JS copied verbatim; a tested TypeScript/bundled runtime is a
-planned refinement, not today's build behavior.
+has a legacy plain-JS path copied verbatim and a separate tested TypeScript
+foundation. The renderer build includes `build:player` (typecheck plus esbuild
+IIFE); publication consumers resolve `@mapbard/renderer/player.js` as an asset,
+not an ESM API. It is not yet a complete compiled browser player.
 
 Run from the root:
 
@@ -176,6 +193,7 @@ After building, renderer smoke:
 node packages/renderer/scripts/render-example.mjs
 node --check packages/renderer/runtime/app.js
 node --check out/bundle-data.js
+node --check packages/renderer/dist/player/player.js
 ```
 
 For runtime changes, open the output and exercise scrolling, cameras, layers,
@@ -208,7 +226,15 @@ model-independent engine tests.
 
 ## Session protocol
 
-- Inspect git status first and preserve unrelated work. Commit/push only when asked.
+- Inspect git status first and preserve unrelated work.
+- Commit every completed session's work before handing it off. Use focused,
+  descriptive commits for coherent changes, include the session's journal/docs,
+  and run the applicable checks before committing. Stage explicit paths or hunks;
+  never sweep unrelated work or secrets into a session commit. This is standing
+  authorization to make local session commits; do not ask again each session.
+  If checks or Git permissions block a commit, record the exact blocker and leave
+  the work intact. Push only when explicitly requested or separately authorized;
+  a local session commit does not authorize a push or history rewrite.
 - Open a numbered, dated entry in BUILD_LOG before implementation; close it with
   Goal / Did / Decisions / Files touched / Verification / Next.
 - Maintain the banner and the active stage plan when stages exist. Never rewrite

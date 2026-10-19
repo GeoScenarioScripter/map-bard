@@ -1,12 +1,24 @@
 # Stage 1 — Trustworthy Project and Publication
 
-Updated 2026-10-18, Session 10 review of Session 09's plan.
-**IN PROGRESS — Wave 1; S1-W1-A closed with a no-go real-case gate in BUILD_LOG
-Session 11; S1-W1-B contract proposal closed in Session 12.**
+Updated 2026-10-19, Session 24 G2 foundation integration.
+**IN PROGRESS — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
+real-case gate in BUILD_LOG Session 11, S1-W1-B contract proposal closed in
+Session 12, and S1-W1-C baseline/runtime spike closed in Session 13, with its
+final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3 released, not started.**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
-The prior planning/review sessions implemented no features. Wave 1 is now active;
-no Stage 1 product capability has been delivered or G1 contract frozen.
+The prior planning/review sessions implemented no features. The
+[G1 review](stage-1/g1-review.md) records frozen g1-r1 contract decisions,
+reviewed specimens, acquired source bytes and the selected runtime build approach.
+Session 15 accepts Potomac source comparability only for the bounded descriptive
+fixture. The [browser handoff](stage-1/browser-handoff.md) records the direct-file
+reader report. No Stage 1 product capability has
+been delivered or full capability matrix certified.
+Sessions 16–17 reader screenshots revealed legacy wheel capture and blank
+geographic context. The reader confirmed the bounded local context after a
+direct-file hard refresh. Session 19 accepted their Edge/Chrome interaction,
+Console/Network, spike, offline and relocation report for G1. This does not
+implement the requested PMTiles basemap or the compiled player.
 The [R01–R40 disposition](implementation-stages.md#r01r40-planning-disposition)
 maps the completed [idea register](refinement-ideas.md) to stages and deferrals.
 This revision keeps four waves and twelve sessions; the added obligations below
@@ -141,9 +153,10 @@ renderer → schema; the example script composes core + renderer. Add only direc
 `workspace:*` edges actually used. No new engine package is necessary in Stage 1.
 The built-in planner stays optional and unchanged; compilation never invokes it.
 
-Proposed public operations are `loadProject`, `importLegacyNarrative`,
-`validateProject`, `compileProject`, and `renderCompiled`; these names are reserved
-plan targets, not current exports. G1 fixes signatures and input/output specimens.
+G2 exports `loadProject`, `importLegacyNarrative` and `validateProject` through
+`@mapbard/core`; validation currently composes schema/reference checks.
+`compileProject` and `renderCompiled` remain reserved Wave 3 targets, not current
+exports. G1 fixes signatures and input/output specimens.
 Keep existing `render(narrative, dataMap, options)` usable for the legacy example.
 Avoid a renderer→core cycle: the new example explicitly calls compilation, then
 `renderCompiled`. Legacy generation is a compatibility path; it does not acquire
@@ -298,7 +311,8 @@ in verification docs, not a telemetry service or a new public reporting API.
 
 Four waves, three parallel sessions per wave. S1-W1-A **CLOSED with a no-go
 real-case gate** in BUILD_LOG Session 11; S1-W1-B **CLOSED with a G1 contract
-proposal** in Session 12; S1-W1-C is **NOT STARTED**. The
+proposal** in Session 12; S1-W1-C **CLOSED with a baseline/runtime spike** in
+Session 13. The
 [case dossier](stage-1/case-dossier.md) gives the conditional fallback, and the
 [contract proposal](stage-1/contracts.md) gives the G1 review specimens. Each
 row defines exclusive write ownership;
@@ -346,6 +360,14 @@ build and affected tests, and replace temporary boundary doubles in composition
 tests with real schema/resource modules. Confirm a loaded project validates and
 the built player consumes the same frozen compiled specimen. Reconcile errors
 before Wave 3. The legacy example remains runnable throughout.
+
+**Disposition — Session 24: G2 CLOSED / PASS.** The [G2 review](stage-1/g2-review.md)
+records public exports, existing direct dependencies, strict loaded-project
+composition and the `@mapbard/renderer/player.js` classic-script asset contract.
+Build, 89 tests, lint and legacy/frozen-specimen smoke checks pass. The built IIFE
+consumes the same frozen compiled specimen in Node VM; this is not browser
+acceptance. Wave 3 may begin with S1-W3-A in a new session. No Wave 3 work started
+at this gate.
 
 ### Wave 3 — Compile, play and export the supported slice
 

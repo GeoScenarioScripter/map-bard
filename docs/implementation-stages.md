@@ -1,9 +1,19 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-18, Session 10 review of Session 09's plan.
-**Stage 1 Wave 1 in progress (S1-W1-A closed in Session 11); no new capability delivered.**
+Updated 2026-10-19, Session 24 G2 foundation integration.
+**Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
+handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
+Wave 3 released, not started. No complete Stage 1 publication capability is delivered yet.**
+The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
+records source acquisitions and accepted bounded Potomac comparability, and
+selects the runtime build approach after the direct-file browser report.
 Only its [wave/session plan](stage-1-plan.md) is detailed. This does not resume
 old M5.
+
+The [G2 record](stage-1/g2-review.md) integrates public project contracts,
+load/import/validation and the dedicated player asset build. All 89 tests pass;
+the compiled player's browser acceptance still waits for Wave 3 wiring and
+Wave 4 review. Next is S1-W3-A compiler/rules in a new session.
 
 Read this alongside the [product direction](mapbard-plan.md),
 [architecture](mapbard-build-guide.md), [refinement inputs](refinement-roadmap.md),
@@ -245,54 +255,55 @@ Each row records a minimum commitment or a reason for deferral. Stage 1 owners u
 the session IDs in [its detailed plan](stage-1-plan.md); later stages remain outlines.
 No idea is marked implemented by this mapping.
 
-| ID  | Planning home and minimum acceptance                                                                                              | Boundary / deferred remainder                                                                        |
-| --- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| R01 | S1-W1-B explains why slice contracts represent content/discourse/attention; Stage 5 tests stated hypotheses.                      | A design rationale is not a novelty claim; full landscape review/pilot waits for Stage 5.            |
-| R02 | S1-W1-A records creator, audience, question, available evidence and a useful first-story outcome; W4 reviews against it.          | Do not select a case solely because it is easy to render; no broad user study in Stage 1.            |
-| R03 | Stage 1 format/engine → Stage 3 toolkit → Stage 4 peer workbench.                                                                 | Shared artifacts first; no separate host/editor document model.                                      |
-| R04 | Stage 3 fresh Codex session completes documented author/revise/recover loop without MapBard model/account.                        | Additional hosts wait until the first integration works.                                             |
-| R05 | Stage 6 single-LLM harness over shared operations, with wait/cancel/resume tests.                                                 | Never an engine dependency; no specialized-agent framework.                                          |
-| R06 | Stage 3 versions portable skills/references and validates discovery/repair; Stage 6 reuses them.                                  | No giant static prompt or duplicate geographic rules per host.                                       |
-| R07 | Stage 3 CLI/SDK structured outcomes, bounded output, clear exits and public contracts.                                            | MCP only if access needs justify a thin wrapper.                                                     |
-| R08 | Stage 1 compilation and export run without credentials/model calls; Stages 2–3 preserve this.                                     | Optional provider refactoring belongs to Stage 6, not the engine foundation.                         |
-| R09 | S1-W2-B/W3-C/W4 verify editable-project relocation separately from publication portability.                                       | Larger static-host export remains a later horizon.                                                   |
-| R10 | S1-W2-A/B preserve optional opaque extension data and diagnose missing required extensions.                                       | Custom execution/themes/components need a later explicit capability/trust design.                    |
-| R11 | Stage 2 claim → selected source/result/context trace, inspectable with qualifications.                                            | Stage 1 annotations are not evidence certification.                                                  |
-| R12 | S1-W1-B/W2-A/W3-A/B bind annotation targets to source/feature IDs and comparison members; Stage 2 links evidence.                 | Arbitrary regions, target inference and a general attention grammar wait for demonstrated need.      |
-| R13 | Stage 1 records case limits and declared units; Stage 2 types claims/qualifications; Stage 5 preserves them across reader states. | Provenance never establishes causal truth automatically.                                             |
-| R14 | Stage 2 selects and tests only operations needed for the real finding.                                                            | Broad filter/join/distance/area operator catalogs are not Stage 1 work.                              |
-| R15 | S1-W1-B/W2-A/B/W3-A record inferred versus declared measurement, units and overrides and reject unmet encoding prerequisites.     | Rich statistical profiling and geographic calculations remain Stage 2 choices.                       |
-| R16 | Stage 2 exposes insufficient evidence; Stage 3 tests alternate angle or request for data; Stage 6 reuses scenario.                | No automatic intent replacement or branch-tree UI.                                                   |
-| R17 | Stage 2 compares focused analysis with an embedded-engine candidate against the selected method.                                  | DuckDB Spatial is not selected; playback must not require an analysis service.                       |
-| R18 | Stage 1 records fingerprints and detects stale build inputs; Stage 2 result dependencies; Stage 3 edit invalidation.              | A general dependency graph/service is unnecessary in Stage 1.                                        |
-| R19 | S1-W2-A/W3-A/C establish versioned compile → generate → write boundaries with deterministic fixtures.                             | Compiled rendering is derived, never canonical authoring content.                                    |
-| R20 | S1-W3-A records prerequisites, rationale and a supported alternative or missing requirement in diagnostics.                       | Rules do not autonomously redesign a story; broader techniques wait.                                 |
-| R21 | S1-W1-C/W2-C/W3-B deliver and test the TypeScript player/build path.                                                              | Preserve MapLibre/scrollama unless the spike demonstrates a need to change.                          |
-| R22 | S1-W4-A/C check context → comparison → synthesis against the author question and attention targets.                               | Progression/drill/exception/reveal breadth follows evidence and a scoped need, not dimension counts. |
-| R23 | S1-W3-A/B align scales, text annotation targets and generated legends.                                                            | Brackets, drawn highlights and rich callouts are deferred beyond the minimal text-anchor vocabulary. |
-| R24 | Stage 1 retains purposeful supplied panel/anchored media and credits; Stage 5 reviews any chart need.                             | Linked charts remain conditional; no chart engine in Stage 1.                                        |
-| R25 | S1-W1-A audits compatible vector views; Stage 2 computes a justified change if supported.                                         | No general temporal/raster processing or time-slider platform.                                       |
-| R26 | S1-W3-C/W4 test safe paths/posters/credits/missing files and network requirements.                                                | PMTiles needs a separate verified access/export strategy.                                            |
-| R27 | Stage 4 delivers a limited peer workbench over existing operations and shared state.                                              | No hosted Studio, full GIS editor or mandatory desktop shell.                                        |
-| R28 | Stage 3 tests denominator-sensitive revision, locks, diff, undo and affected dependencies.                                        | No whole-story regeneration or elaborate branching as a prerequisite.                                |
-| R29 | Stage 4 proves both edit orders and conflict detection using Stage 3's revision rules.                                            | No editor-private canonical data; concurrent collaboration is later.                                 |
-| R30 | Stage 2 exposes evidence inspection; Stage 5 adds one meaningful data-scope question.                                             | Paint-property controls alone do not meet the acceptance condition.                                  |
-| R31 | Stage 5 checks all linked facts/annotations through scope change and return to authored state.                                    | Bounded prepared/local results or explicit exploration; no hidden mandatory server.                  |
-| R32 | Stage 1 categorizes actual checks and records browser/accessibility outcomes; later stages add evidence/interaction checks.       | Not-run and manual judgment stay distinct from pass.                                                 |
-| R33 | Stage 1 diagnostic path/ID/remedy; Stage 3 local bounded repair; Stage 6 harness stopping behavior.                               | Screenshot/model critique remains advisory and optional.                                             |
-| R34 | Stage 1 retains reusable positive/negative fixtures; Stage 5 defines and runs controlled comparisons.                             | No pilot outcome or ablation efficacy claimed before evaluation.                                     |
-| R35 | S1-W4-C reviews purpose, attention and pacing; Stage 3 measures unintended edits/repair; Stage 5 reader/author outcomes.          | No proxy scoring by schema-dimension or control count.                                               |
-| R36 | S1-W1-C/W4-A/B/C establish repeatable local verification records; later stages add observable model/tool budgets.                 | No telemetry platform or hidden-reasoning logs.                                                      |
-| R37 | S1-W1-A selects one audited useful case, with a documented simpler fallback.                                                      | Socioeconomic/movement cases wait until the first product slice passes.                              |
-| R38 | All Stage 1 gates preserve inward dependencies, explicit migrations and a runnable legacy example.                                | No sunk-cost requirement to preserve silent misrendering in the new path.                            |
-| R39 | Later Hub thread retains inspect → remix → compatibility check → publish and recipe examples.                                     | Outside Stages 1–6: reuse infrastructure is premature before one trustworthy project loop.           |
-| R40 | Explicitly deferred hosted/community/commercial thread.                                                                           | User deferred commercialization; no pricing, payment, marketplace or license decision.               |
+| ID  | Planning home and minimum acceptance                                                                                                              | Boundary / deferred remainder                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| R01 | S1-W1-B explains why slice contracts represent content/discourse/attention; Stage 5 tests stated hypotheses.                                      | A design rationale is not a novelty claim; full landscape review/pilot waits for Stage 5.            |
+| R02 | S1-W1-A records creator, audience, question, available evidence and a useful first-story outcome; W4 reviews against it.                          | Do not select a case solely because it is easy to render; no broad user study in Stage 1.            |
+| R03 | Stage 1 format/engine → Stage 3 toolkit → Stage 4 peer workbench.                                                                                 | Shared artifacts first; no separate host/editor document model.                                      |
+| R04 | Stage 3 fresh Codex session completes documented author/revise/recover loop without MapBard model/account.                                        | Additional hosts wait until the first integration works.                                             |
+| R05 | Stage 6 single-LLM harness over shared operations, with wait/cancel/resume tests.                                                                 | Never an engine dependency; no specialized-agent framework.                                          |
+| R06 | Stage 3 versions portable skills/references and validates discovery/repair; Stage 6 reuses them.                                                  | No giant static prompt or duplicate geographic rules per host.                                       |
+| R07 | Stage 3 CLI/SDK structured outcomes, bounded output, clear exits and public contracts.                                                            | MCP only if access needs justify a thin wrapper.                                                     |
+| R08 | Stage 1 compilation and export run without credentials/model calls; Stages 2–3 preserve this.                                                     | Optional provider refactoring belongs to Stage 6, not the engine foundation.                         |
+| R09 | S1-W2-B/W3-C/W4 verify editable-project relocation separately from publication portability.                                                       | Larger static-host export remains a later horizon.                                                   |
+| R10 | S1-W2-A/B preserve optional opaque extension data and diagnose missing required extensions.                                                       | Custom execution/themes/components need a later explicit capability/trust design.                    |
+| R11 | Stage 2 claim → selected source/result/context trace, inspectable with qualifications.                                                            | Stage 1 annotations are not evidence certification.                                                  |
+| R12 | S1-W1-B/W2-A/W3-A/B bind annotation targets to source/feature IDs and comparison members; Stage 2 links evidence.                                 | Arbitrary regions, target inference and a general attention grammar wait for demonstrated need.      |
+| R13 | Stage 1 records case limits and declared units; Stage 2 types claims/qualifications; Stage 5 preserves them across reader states.                 | Provenance never establishes causal truth automatically.                                             |
+| R14 | Stage 2 selects and tests only operations needed for the real finding.                                                                            | Broad filter/join/distance/area operator catalogs are not Stage 1 work.                              |
+| R15 | S1-W1-B/W2-A/B/W3-A record inferred versus declared measurement, units and overrides and reject unmet encoding prerequisites.                     | Rich statistical profiling and geographic calculations remain Stage 2 choices.                       |
+| R16 | Stage 2 exposes insufficient evidence; Stage 3 tests alternate angle or request for data; Stage 6 reuses scenario.                                | No automatic intent replacement or branch-tree UI.                                                   |
+| R17 | Stage 2 compares focused analysis with an embedded-engine candidate against the selected method.                                                  | DuckDB Spatial is not selected; playback must not require an analysis service.                       |
+| R18 | Stage 1 records fingerprints and detects stale build inputs; Stage 2 result dependencies; Stage 3 edit invalidation.                              | A general dependency graph/service is unnecessary in Stage 1.                                        |
+| R19 | S1-W2-A/W3-A/C establish versioned compile → generate → write boundaries with deterministic fixtures.                                             | Compiled rendering is derived, never canonical authoring content.                                    |
+| R20 | S1-W3-A records prerequisites, rationale and a supported alternative or missing requirement in diagnostics.                                       | Rules do not autonomously redesign a story; broader techniques wait.                                 |
+| R21 | S1-W1-C/W2-C/W3-B deliver and test the TypeScript player/build path.                                                                              | Preserve MapLibre/scrollama unless the spike demonstrates a need to change.                          |
+| R22 | S1-W4-A/C check context → comparison → synthesis against the author question and attention targets.                                               | Progression/drill/exception/reveal breadth follows evidence and a scoped need, not dimension counts. |
+| R23 | S1-W3-A/B align scales, text annotation targets and generated legends.                                                                            | Brackets, drawn highlights and rich callouts are deferred beyond the minimal text-anchor vocabulary. |
+| R24 | Stage 1 retains purposeful supplied panel/anchored media and credits; Stage 5 reviews any chart need.                                             | Linked charts remain conditional; no chart engine in Stage 1.                                        |
+| R25 | S1-W1-A audits compatible vector views; Stage 2 computes a justified change if supported.                                                         | No general temporal/raster processing or time-slider platform.                                       |
+| R26 | S1-W3-C/W4 test safe paths/posters/credits/missing files and network requirements.                                                                | PMTiles needs a separate verified access/export strategy.                                            |
+| R27 | Stage 4 delivers a limited peer workbench over existing operations and shared state.                                                              | No hosted Studio, full GIS editor or mandatory desktop shell.                                        |
+| R28 | Stage 3 tests denominator-sensitive revision, locks, diff, undo and affected dependencies.                                                        | No whole-story regeneration or elaborate branching as a prerequisite.                                |
+| R29 | Stage 4 proves both edit orders and conflict detection using Stage 3's revision rules.                                                            | No editor-private canonical data; concurrent collaboration is later.                                 |
+| R30 | Stage 2 exposes evidence inspection; Stage 5 adds one meaningful data-scope question.                                                             | Paint-property controls alone do not meet the acceptance condition.                                  |
+| R31 | Stage 5 checks all linked facts/annotations through scope change and return to authored state.                                                    | Bounded prepared/local results or explicit exploration; no hidden mandatory server.                  |
+| R32 | Stage 1 categorizes actual checks and records browser/accessibility outcomes; later stages add evidence/interaction checks.                       | Not-run and manual judgment stay distinct from pass.                                                 |
+| R33 | Stage 1 diagnostic path/ID/remedy; Stage 3 local bounded repair; Stage 6 harness stopping behavior.                                               | Screenshot/model critique remains advisory and optional.                                             |
+| R34 | Stage 1 retains reusable positive/negative fixtures; Stage 5 defines and runs controlled comparisons.                                             | No pilot outcome or ablation efficacy claimed before evaluation.                                     |
+| R35 | S1-W4-C reviews purpose, attention and pacing; Stage 3 measures unintended edits/repair; Stage 5 reader/author outcomes.                          | No proxy scoring by schema-dimension or control count.                                               |
+| R36 | S1-W1-C/W4-A/B/C establish repeatable local verification records; later stages add observable model/tool budgets.                                 | No telemetry platform or hidden-reasoning logs.                                                      |
+| R37 | S1-W1-A selects one audited useful case, with a documented simpler fallback.                                                                      | Socioeconomic/movement cases wait until the first product slice passes.                              |
+| R38 | All Stage 1 gates preserve inward dependencies, explicit migrations and a runnable legacy example.                                                | No sunk-cost requirement to preserve silent misrendering in the new path.                            |
+| R39 | Confirmed later community / market center retains inspect → remix → compatibility check → publish and recipe examples, after the local pipeline.  | Detailed hosted reuse scope follows the first trustworthy local project loop.                        |
+| R40 | MapBard-hosted upload, serving, and visualization of user-written story pages, with community / market discovery, is confirmed for a later phase. | Pricing, payments, and commercialization remain deferred; detailed mechanics are unplanned.          |
 
-Hub/remixing, larger static-host exports/tiles, richer extension execution, hosted
-creation/collaboration and additional datasets remain unnumbered future threads.
-General raster/temporal GIS, RAG infrastructure, elaborate branching, marketplace
-and commercialization are outside this sequence. Do not turn every recorded idea
-into a Stage 1 requirement. Session 08's register is complete; Session 10 maps its
+The confirmed community / market center, larger static-host exports/tiles, richer
+extension execution, hosted collaboration and additional datasets remain outside
+Stages 1–6 and must be planned after the local authoring pipeline. General
+raster/temporal GIS, RAG infrastructure, elaborate branching, pricing, payments,
+and commercialization are outside this sequence. Do not turn later capabilities
+into Stage 1 requirements. Session 08's register is complete; Session 10 maps its
 ideas above. Keep IDs and reasons when later planning revises a disposition.
 
 ## Stage closure and replanning rule

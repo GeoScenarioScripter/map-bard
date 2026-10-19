@@ -16,12 +16,12 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** Stage 1 opened in Session 11 after Session 10's R01–R40 planning review. The original Phase A execution plan is superseded, not completed.
-- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 in progress. S1-W1-A closed in Session 11 with a no-go real-case gate; S1-W1-B delivered a contract proposal and synthetic specimens in Session 12. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
+- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 is released, not started. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
 - **Historical milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ recorded done; M5–M7 were not started and their old sequence is superseded. See `phase-a-plan.md` and archived checklists.
-- **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench. Geographic data, text, and supplied images/video remain central. Hub/remixing is a later horizon; commercialization is deferred.
-- **Next action:** run S1-W1-C baseline/runtime spike, then review all Wave 1 handoffs at G1; reacquire and verify the conditional Potomac case or select another audited case before the real-case gate closes. Exact contracts are not frozen. Do not resume old M5 automatically.
-- **Actual code:** still the M0–M4 baseline with GeoNarrative v0.1.0, Stage 0, DashScope Plan, and example renderer. No new engine/compiler/workbench/toolkit capabilities implemented by this reset.
-- **Repo:** pushed to GitHub `origin` → `https://github.com/GeoScenarioScripter/map-bard.git` (`main` tracks `origin/main`) as of Session 04.
+- **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench, followed by MapBard's own hosted community / market center for uploading, serving, and visualizing user-written story pages. Geographic data, text, and supplied images/video remain central. Complete the local pipeline first; pricing, payment, and commercialization details remain deferred.
+- **Next action:** start S1-W3-A (compiler and rules) in a new session using G2's public schema/core contracts and unchanged g1-r1 specimens. W3-B/C consume the dedicated player asset contract. The [browser report](stage-1/browser-handoff.md) closes only the G1 direct-file gate; the new player's browser behavior and full capability matrix remain unverified. Do not resume old M5 automatically.
+- **Actual code:** GeoNarrative v0.1.0, Stage 0, DashScope Plan and the legacy example renderer remain available. G2 integrates public project/design/compiled schemas, strict load/import/validation and a separate TypeScript player foundation. The normal build emits the IIFE at the public `@mapbard/renderer/player.js` asset subpath. Shared frozen-specimen composition passes; the player still has no MapLibre adapter or compiled HTML wiring. The legacy renderer accepts an explicit, inlined local context map for the example; authored PMTiles remain unimplemented. No complete Stage 1 publication/workbench/toolkit capability is delivered.
+- **Repo:** `main` tracks GitHub `origin/main` → `https://github.com/GeoScenarioScripter/map-bard.git`. Session 25 collects the accumulated work through G2 into separate commits and records the new standing per-session local commit rule. Push is explicitly authorized for that handoff; future pushes still require authorization.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
 - **LLM:** DashScope remains the only implemented adapter, default `qwen3.7-max-2026-05-17`; its target role is optional authoring. External agents must not require that provider. See `AGENTS.md`.
 - **Built-in agent decision (Session 07):** one LLM + system prompt + dynamically loaded skills + a purpose-built harness managing the loop. No LangGraph-style framework or fixed specialized-agent team. The harness is not implemented and remains separate from the engine and story player.
@@ -344,9 +344,466 @@ Resumed and completed 2026-10-18, preserving the independent Session 09 planning
 
 ---
 
+## Session 13 — 2026-10-18 — 🔴 CLOSED
+
+**Plan ID:** S1-W1-C — Baseline and runtime spike.
+
+**2026-10-19 completion audit (Session 14):** The original baseline lint run
+predated the final spike files: full-tree lint found eight `no-undef` errors in
+the three Node scripts. Reopened verification in Session 14 before continuing
+G1; explicit Node imports and `globalThis.structuredClone` fix that scope without
+changing runtime behavior. Final rerun results are recorded in Session 14.
+
+**Goal:** Re-establish the M0–M4 build/runtime baseline, spike a TypeScript player bundle and scene-isolation approach outside production source, and hand a bounded build/browser proposal to G1 and W2-C.
+
+**Did:** Re-ran the existing build, tests, lint, example generation and JS syntax checks; documented the environment, hashes and a small verification-record template in `baseline.md`. Reproduced the legacy scene-layer reuse and unapplied slider-default bugs with a mock runtime. Built a disposable TypeScript player IIFE with the transitively installed esbuild and checked local classic-script initialization plus scene-local bindings, marker cleanup and revisit defaults in Node's VM. Browser access to the local file was rejected by the browser URL policy, so no browser/visual pass is claimed.
+
+**Decisions:** Propose esbuild as a minimal candidate for G1, with MapLibre/scrollama retained as vendored local scripts and scene-local runtime IDs. Do not add a direct dependency or select the build path until authorized `file://` browser loading can be verified. The spike is illustrative, not a frozen player contract; no production source changed.
+
+**Files touched:** `docs/BUILD_LOG.md`, `docs/stage-1-plan.md` (status), `docs/stage-1/baseline.md`, `docs/stage-1/runtime-spike/`. Generated artifacts stayed under ignored `out/`.
+
+**Verification:** Five packages build; 53 tests pass; lint passes; nine-file example generated without warnings; both syntax checks pass. Spike TypeScript check, esbuild IIFE build, VM verification and legacy bug reproduction pass. Changed files pass Prettier and diff checks. Clean dependency install and real browser playback remain unverified; the browser blocked the local URL and prohibited an alternate route.
+
+**Next:** G1 reviews the case, contracts and baseline handoffs; keeps the real-case gate open until source bytes/rights are verified, and establishes an authorized direct-file browser check before approving the player build path. W2-C begins only after G1 freezes contracts and the runtime approach.
+
+---
+
+## Session 14 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** S1-G1 — Wave 1 integration review.
+
+**Goal:** Verify the completed Session 13 handoff, review the case/contracts/runtime
+inputs, and resolve supported G1 decisions without passing blocked checks.
+
+**Did:** Confirmed the preceding task completed and preserved all inherited
+uncommitted work. Finished Session 13 verification by fixing eight Node-global
+lint errors in its spike scripts, then reviewed all three Wave 1 handoffs.
+Recorded G1 decisions and revised contracts/specimens to g1-r1: typed categories,
+explicit size mapping/legend labels, class-edge rules, byte-backed publication
+inputs, auxiliary types and module/export ownership. Added a review-only checker.
+An approved network retry acquired six original USGS daily responses and the
+context JPEG with source URLs, retrieval times, hashes and credits. Checked
+record identity, WGS84 coordinates, units, Approved status and null qualifiers;
+kept station-day/method comparability open. Updated active guidance and plans.
+
+**Decisions:** This review session is complete, but **G1 remains OPEN/BLOCKED**.
+The reviewed input/numeric-color expectations and g1-r1 design decisions do not
+certify the entire planned capability matrix. No runtime build dependency was
+selected without direct-file browser evidence. Wave 2 is not released. Source
+records are actual observations, separate from synthetic fixtures; numeric-string
+conversion belongs in documented derived preparation, never silent loader
+coercion. No production package implementation, branch, commit, push or PR.
+Commit/push/PR authorization remains conditional on G1 closing.
+
+**Files touched:** `AGENTS.md`, `.gitattributes`, `docs/BUILD_LOG.md`,
+`docs/implementation-stages.md`, `docs/stage-1-plan.md`,
+`docs/stage-1/{g1-review,contracts,case-dossier,baseline}.md`, reviewed compiled
+and scale-variant specimens/README, three runtime-spike Node scripts,
+`docs/stage-1/scripts/verify-g1.mjs`, and
+`examples/projects/first-slice/source/` (original bytes, acquisition manifest,
+README). Preserved handwritten examples, package source/manifests and lockfile.
+
+**Verification:** Five packages build; 53 tests pass (12 schema, 35 core, 6
+renderer); final integrated lint passes. Nine-file legacy generation has no
+warnings; both syntax checks pass. TypeScript spike check, IIFE build, VM scene
+checks and legacy bug reproduction pass. Review checker passes proposed shapes,
+seven scale variants, 12 diagnostic shapes, five authored input hashes,
+full-data/reference oracles, six original observations and seven acquisition
+hashes. JPEG decoded and visually inspected. Verified 43 local Markdown links,
+changed-file formatting and `git diff --check`. Install did not establish a
+clean dependency tree: reinstall prompt and registry metadata network failure;
+checks used existing dependencies. Production new-path behavior, browser,
+accessibility/offline relocation and real-story comparability are not passed.
+
+**Next:** Resume G1 with an authorized direct-file browser/manual report for
+the legacy output and spike, and authoritative station-day aggregation/time
+basis plus method qualifications for the pinned records. Record case selection
+or a precise no-go, finalize runtime/capability approval and rerun affected checks.
+Only after G1 closes create the scoped codex/ branch, commit/push and Stage 1
+Wave 1/G1 PR requested by the user. Stage 1 as a whole remains in progress.
+
+---
+
+## Session 15 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G1 — continuation after Session 14.
+
+**Goal:** Resolve source time/method comparability for the acquired Potomac case,
+and prepare an actionable direct-file browser handoff without bypassing the
+previously recorded browser URL restriction. Preserve inherited uncommitted work.
+
+**Did:** Confirmed the 02:00 scheduled task completed and is idle, with no other
+active MapBard writer listed at takeover. Preserved inherited uncommitted changes.
+Retrieved and hashed three station metadata records, three exact time-series
+records and two legacy daily-service cross-check responses. Joined both observation
+dates to their primary Daily/Mean series; verified unit/time-zone metadata and
+all six values against the legacy responses. Recorded source-backed regulation,
+diversion, drainage-area and interpretation qualifications, and selected the
+Potomac case for the bounded descriptive fixture. Extended the G1 review checker
+and byte-preservation attributes. Prepared a direct-file browser procedure/report
+template and regenerated the existing example/spike, including copying the spike
+HTML beside its generated script. Updated current status without changing history.
+
+**Decisions:** Source comparability is accepted only for published station-day
+summaries. Calendar labels are not UTC measurement instants; no rating-curve or
+source daily-mean recomputation, trend or causal finding is claimed. The metadata
+review supports this bounded case selection, not a general comparability engine.
+The prior browser URL-policy restriction remains respected; no alternate
+automated route or browser pass was attempted/claimed. This session is complete,
+but **G1 remains OPEN/BLOCKED** on direct-file evidence and resulting runtime
+build/capability approval. No Wave 2 release, Stage 2 planning or production changes.
+
+**Files touched:** `.gitattributes`, `AGENTS.md`, `docs/BUILD_LOG.md`,
+`docs/implementation-stages.md`, `docs/stage-1-plan.md`,
+`docs/stage-1/{g1-review,case-dossier,case-comparability,browser-handoff}.md`,
+`docs/stage-1/scripts/verify-g1.mjs`,
+`examples/projects/first-slice/source/README.md` and `source/metadata/` (eight
+original responses and acquisition inventory). Generated files remain in ignored
+`out/`. No changes to the seven original acquired files or synthetic specimens.
+
+**Verification:** Five packages build; 53 tests pass (schema 12, core 35, renderer
+6); lint passes. Nine-file legacy render has no warnings; generated data syntax,
+spike IIFE build and VM checks pass. G1 checker passes existing contract/specimen
+checks, all 15 acquisition hashes, both-date series joins, metadata fields and
+six legacy-value cross-checks. Its first new date assertion exposed the legacy
+response's optional `.000` suffix; corrected the assertion/documentation without
+rewriting source bytes, and reran successfully. Changed files pass formatting,
+39 local Markdown file targets resolve (anchors not checked), and
+`git diff --check` passes. The new metadata JSON paths have Git text normalization
+disabled. Checks used existing dependencies; no new install/clean-install pass.
+Browser, offline relocation and production new-path behavior remain unverified.
+
+**Next:** An authorized reviewer supplies the [direct-file browser report](stage-1/browser-handoff.md)
+for the legacy output and spike. Review failures and finalize G1 before starting
+Wave 2. Commit/push/PR remain conditional on completed G1, so none was performed;
+checkout remains on `main` at `8b8d3f0` with inherited and continuation edits intact.
+Stage 1 has not passed G4 and Stage 2 remains unstarted.
+
+---
+
+## Session 16 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G1 — direct-file browser feedback and bounded legacy playback repair.
+
+**Goal:** Investigate the reader's direct-file screenshots, restore ordinary
+mouse-wheel story scrolling, and improve legibility of the legacy story shell
+without claiming the unsupported basemap or compiled player.
+
+**Did:** Reviewed four screenshots of the direct-file legacy output. The reader
+could reach the intro, both scenes and outro with the scrollbar, but wheel input
+over the map zoomed it instead of advancing the document. The neutral background
+is the implemented legacy map style; the solid blue panel exactly matches the
+handwritten example's placeholder image. Disabled MapLibre wheel zoom while
+retaining zoom buttons. Gave intro, outro and scene cards darker text and clearer
+surfaces; added a scroll cue and reduced-motion treatment. Regenerated `out/` and
+updated the G1 browser handoff/review with the partial evidence and remaining
+checks. A localhost Browser Use attempt was rejected with
+`net::ERR_BLOCKED_BY_CLIENT` and its temporary server was stopped.
+
+**Decisions:** This is a bounded repair to the existing legacy player, not a
+decision to implement PMTiles, quantile classification or the compiled player.
+The screenshots prove direct-file scene progression by scrollbar but do not prove
+post-fix wheel behavior, Console/Network cleanliness, offline portability or
+runtime-spike initialization. G1 remains **OPEN/BLOCKED**; Wave 2 remains closed.
+
+**Files touched:** `packages/renderer/runtime/{app.js,style.css}`,
+`packages/renderer/src/index-html.ts`,
+`docs/stage-1/runtime-spike/legacy-repro.mjs`, `docs/BUILD_LOG.md`,
+`docs/stage-1/{browser-handoff,g1-review}.md`, and `docs/stage-1-plan.md`.
+Generated files stayed in ignored `out/`.
+
+**Verification:** Five packages build; 53 tests and lint pass. The legacy Node
+mock verifies wheel zoom is disabled and preserves its known-bug reproductions;
+example generation produces nine files without warnings; runtime and generated
+data syntax checks pass. The checked-in skyline image was visually confirmed as
+the blue placeholder. Browser Use could not open either local file or localhost;
+no post-fix browser, offline or relocation pass is claimed.
+
+**Next:** Human reviewer reloads the regenerated `out/index.html` directly and
+tests wheel scrolling over the map, scene camera/layer/media/popup/controls,
+Console/Network, spike, offline and relocated-copy checks in the browser handoff.
+Review failures before deciding G1. No commit/push/PR while G1 is open.
+
+---
+
+## Session 17 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G1 — reader-reported local basemap failure in the legacy example.
+
+**Goal:** Supply truthful, portable geographic context for the San Francisco
+example and make the renderer's basemap behavior explicit.
+
+**Did:** The reader's two new direct-file screenshots confirmed the Session 16
+text repair and the persistent neutral background. Traced the cause to the
+legacy runtime ignoring the handwritten narrative's `protomaps-light`/PMTiles
+request and the absence of a PMTiles archive. Acquired two bounded, untouched
+City and County of San Francisco GeoJSON extracts under PDDL: shoreline-clipped
+2020 block groups as a land mask and active street centerlines. Recorded official
+query URLs, SHA-256 hashes, counts and coverage in
+`examples/basemap/README.md`. Added an explicit `localContextMap` render option;
+the example script supplies those sources, which are inlined into
+`bundle-data.js`. The runtime paints water, land and street layers under story
+points and shows city attribution. Unsupported authored basemaps now yield a
+warning explaining the neutral fallback or explicit local substitution.
+
+**Decisions:** Keep the handwritten narrative unchanged. The bounded city
+context is an explicit legacy-example fallback, not a silent PMTiles
+implementation or a frozen Stage 1 compiled basemap contract. Source geometry
+remains untouched and bundled inline for direct-file portability. G1 remains
+**OPEN/BLOCKED** pending wheel/interaction, Console/Network, spike, offline and
+relocation evidence of the newly generated candidate; Wave 2 remains closed.
+
+**Files touched:** `packages/renderer/src/{types,bundle-data,render,index-html,index,render.test}.ts`,
+`packages/renderer/runtime/{app.js,style.css}`,
+`packages/renderer/scripts/render-example.mjs`,
+`docs/stage-1/runtime-spike/legacy-repro.mjs`,
+`examples/basemap/`, `docs/BUILD_LOG.md`, `AGENTS.md`,
+`docs/stage-1/{browser-handoff,g1-review}.md`, and `docs/stage-1-plan.md`.
+Generated files stayed in ignored `out/`.
+
+**Verification:** Five packages build; 55 tests and lint pass. Example generation
+produces nine files and an explicit unsupported-PMTiles/substitution warning.
+Both runtime and generated data pass Node syntax checks. The Node VM probe checks
+wheel zoom, base layers, local source/credit wiring and preserves its known-bug
+reproductions. MapLibre's style validator reports no errors for the constructed
+local style. Source hashes, feature counts and all three point/land joins were
+checked. Formatting and diff checks pass. The reader hard-refreshed the direct-file
+page and confirmed land, water, streets and city attribution are visible. Browser
+Use remains blocked for local and localhost URLs, and no wheel/interaction,
+Console/Network, offline or relocation pass is claimed.
+
+**Next:** Human reviewer checks wheel scrolling, scene changes and popup/control
+behavior in `out/index.html`. Complete the browser handoff's Console/Network, spike,
+offline and relocated-copy checks before deciding G1. No commit/push/PR while
+G1 is open.
+
+---
+
+## Session 18 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G1 — candidate preparation, relocation byte check and browser access attempt.
+
+**Goal:** Complete the available model-free G1 checks and narrow the remaining direct-file browser handoff.
+
+**Did:** Rebuilt all five packages; generated the nine-file legacy bundle and
+the spike player; ran the spike VM verifier, 55 tests, lint and the G1 specimen/
+source verifier. Recorded SHA-256 for the six browser review files. Copied the
+entire generated `out/` tree to a fresh temporary directory outside the checkout
+and compared SHA-256 for all 14 files, with zero mismatches. Checked generated
+JavaScript syntax and confirmed all eight local HTML script/style/media references
+resolve to files.
+Tried the available browser UI: inventory failed twice, Chrome was unavailable,
+Edge failed to connect, and the in-app browser rejected the `file:` URL under
+browser security policy. Stopped browser attempts and updated the G1 evidence
+record without claiming interaction or offline playback.
+
+**Decisions:** Byte-identical relocation and local automated checks are recorded
+as model-free evidence only. G1 remains **OPEN/BLOCKED** pending human direct-file
+browser observations; the runtime build choice and Wave 2 remain unapproved.
+
+**Files touched:** `docs/BUILD_LOG.md`, `docs/stage-1/browser-handoff.md`, `docs/stage-1/g1-review.md`.
+
+**Verification:** Build, 55 tests, lint, G1 verifier, spike VM verifier and three
+generated JavaScript syntax checks and eight local HTML reference checks pass.
+Six review-file hashes recorded in the browser handoff; all 14 copied file hashes
+match. No browser/offline result was
+obtained through automation.
+
+**Next:** Human reviewer runs the wheel/scene/media/control and Console/Network
+checks in the direct-file legacy page, the spike global check, and offline reloads
+in the original and relocated copy. Coordinator adjudicates failures and G1.
+
+---
+
+## Session 19 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G1 — reader direct-file report review and gate disposition.
+
+**Goal:** Record the reader's Edge/Chrome observations, resolve any ambiguous browser evidence, and decide the G1 runtime gate.
+
+**Did:** Received the reader's Windows direct-file report from Edge
+`155.0.4283.45` and Chrome `155.0.8059.80`. The reader reported working legacy
+interactions, including the popup on marker click, a spike global type of
+`"function"`, no Console errors or failed/remote Network requests, and matching
+behavior for original and relocated story/spike files after reload with both
+networking and cache disabled. Checked the handwritten example's `marker`
+trigger against runtime behavior and reconfirmed the six candidate hashes.
+Accepted this bounded browser evidence for G1. Selected esbuild `0.21.5` as the
+direct renderer development dependency for W2-C's browser IIFE build; updated
+the renderer manifest and lockfile. The first offline `pnpm add` hit a store-path
+mismatch. Retrying with the existing store stalled after resolving and was
+cancelled; it had written the lockfile importer, so the manifest was aligned
+explicitly. Updated the G1 handoff/review and current stage guidance.
+
+**Decisions:** **G1 CLOSED; Wave 2 released but not started.** The browser report
+approves the bounded legacy/spike direct-file check and build approach, not the
+new compiled player or full capability matrix. The current `node_modules` tree
+was not relinked; W2-C must install before importing esbuild. No commit/push/PR
+was performed as part of this gate record.
+
+**Files touched:** `AGENTS.md`, `docs/BUILD_LOG.md`,
+`docs/{implementation-stages,stage-1-plan}.md`,
+`docs/stage-1/{browser-handoff,g1-review}.md`,
+`packages/renderer/package.json`, `pnpm-lock.yaml`.
+
+**Verification:** Reader browser report with versions, direct-file interactions,
+Console/Network, spike and offline relocation recorded separately from automation.
+Six output hashes unchanged. Five packages build; 55 tests, lint, G1 specimen/
+source verifier and spike VM verifier pass. Pnpm frozen lockfile-only offline
+check passes. Formatting and diff checks pass. No clean install or new compiled
+player browser check is claimed.
+
+**Next:** Begin S1-W2-A/B/C against g1-r1 and the bounded Potomac dossier,
+respecting their file ownership. W2-C installs the pinned direct dependency and
+builds the new player separately from the legacy runtime. G2 integrates the
+foundation outputs and tests their composition.
+
+---
+
+## Session 20 — 2026-10-19 — 🔴 CLOSED
+
+**Goal:** Record the confirmed hosted story-page and community / market-center direction while preserving the local-pipeline-first sequence.
+
+**Did:** Updated the product plan, refinement roadmap, idea dispositions, active stage overview, and agent guidance to distinguish a confirmed later destination from deferred commercial details. The confirmed destination includes upload, serving, and visualization of user-written story pages in MapBard's own center.
+
+**Decisions:** The local portable-project, engine, coding-agent, and workbench pipeline is the first release. MapBard's community / market center is a confirmed later product capability, planned only after that pipeline. Upload-format and hub / market mechanics remain to be designed. Pricing, payments, and commercialization remain deferred.
+
+**Files touched:** `AGENTS.md`, `docs/{BUILD_LOG,mapbard-plan,refinement-roadmap,refinement-ideas,implementation-stages}.md`.
+
+**Verification:** Documentation diff reviewed for consistency with the Stage 1 scope and later-stage sequencing. No code behavior changed; no code tests run.
+
+**Next:** Complete Stage 1 and the local authoring pipeline in the agreed sequence; plan the hosted center after the local loop is established.
+
+---
+
+## Session 21 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** S1-W2-A — Wave 2 kickoff and schemas/validation.
+
+**Goal:** Implement the frozen g1-r1 project, design, compiled, and diagnostic contracts in `@mapbard/schema`, including version dispatch and reference validation, while preserving the legacy narrative parser.
+
+**Did:** Opened Wave 2 against the G1 handoff. Added strict project, design, compiled, diagnostic and process-local operation schemas with independently dispatched `0.1.0` versions and JSON-only namespaced extensions. Added a new validation boundary that detects unknown nested fields before the legacy narrative parser can strip them, checks ID/reference scopes and full-data feature targets, validates measurement declarations, paths and WGS84 coordinates, and checks compiled scale/resource consistency. Tested the frozen positive specimens and mutations for versions, unknown fields, required extensions, duplicates, missing/mismatched targets, measurements, paths, coordinates and compiled variants. The legacy GeoNarrative module and package barrel were left unchanged.
+
+**Decisions:** Serialize Wave 2 sessions in this checkout. S1-W2-A owns only its new schema modules/tests; the coordinator owns this journal and stage status documents. Existing uncommitted changes are preserved. The new modules remain private until G2 wires public exports. Schema validation uses supplied full data; W2-B owns real-path containment, byte hashing, import and loaded-data construction. W3 owns capability compilation and complete data value checks. No Stage 1 story/player capability is claimed from these schemas alone.
+
+**Files touched:** `packages/schema/src/{project,design,compiled,diagnostics,project-validation}.ts`, `packages/schema/src/project-validation.test.ts`, `docs/{BUILD_LOG,stage-1-plan,implementation-stages}.md`.
+
+**Verification:** `pnpm -r build` passed; 65 tests passed (schema 22, core 35, renderer 8); `pnpm lint` passed; frozen G1 verifier passed. New tests: 10. Formatting and diff review completed. No production compiler/player or browser acceptance is claimed.
+
+**Next:** S1-W2-B builds project/resource I/O and the derived Potomac resources against these schema contracts, using local boundary doubles until G2. G2 later exports the modules publicly and composes a loaded-project validation test; W2-C remains independently owned.
+
+---
+
+## Session 22 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** S1-W2-B — Project and resource I/O.
+
+**Goal:** Implement the g1-r1 project loader and legacy import boundary in `packages/core/src/project/`, materialize the bounded Potomac data/media resources, and verify relocation, hashes, safe paths, source preservation, and extension round-trip without touching final authored story files.
+
+**Did:** Implemented project-relative path checks with real-path containment, case-insensitive collision detection, exact SHA-256 fingerprints and a `loadProject` boundary that reads narrative/design and data/media from declared bytes. Added a staged, non-overwriting legacy import that preserves the original narrative and source-resource bytes, reports normalized paths and leaf fields, identifies stable feature keys, and retains unsupported author intent as warnings. Materialized two three-station Potomac GeoJSON resources and the credited context photo from pinned acquisitions, with a repeatable derive/verify script and byte hashes. Recorded the G1 loaded snapshot and handwritten-example import report for G2/W3-A.
+
+**Decisions:** Preserve the existing uncommitted work and stay within the W2-B ownership boundary. Keep local boundary types private until G2 wires public schema/core exports and cross-package composition. Require an explicit `EPSG:4326` legacy profile before import rather than treating an absent CRS as proof; retain CSV copies with an unsupported-compilation warning. The derived station-day values are descriptive reported daily means, not a trend or causal inference. No final narrative/design files were written.
+
+**Files touched:** `packages/core/src/project/{types,paths,fingerprint,load,import-legacy,project.test}.ts`, `packages/core/src/project/README.md`, `examples/projects/first-slice/data/{.gitattributes,derive.mjs,README.md,potomac-2024-10-01.geojson,potomac-2025-10-01.geojson}`, `examples/projects/first-slice/media/potomac-context.jpg`, `docs/{BUILD_LOG,stage-1-plan,implementation-stages}.md`.
+
+**Verification:** Five packages build; 72 tests pass (schema 22, core 42, renderer 8); lint and G1 verifier pass. The derive script passes again without changing existing bytes. Tests exercise relocation/fingerprint identity, extension/override retention, hash/missing/traversal failures, byte-preserving import, path mapping, non-destructive failure and six source-to-derived observation joins. Formatting and `git diff --check` pass. No compiler, public API composition or new-player browser acceptance is claimed.
+
+**Next:** Begin S1-W2-C player foundation in a new session, separate from the legacy runtime. G2 later integrates schema/core/player outputs and public exports.
+
+---
+
+## Session 23 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** S1-W2-C — Wave 2 runtime foundations.
+
+**Goal:** Build the separate TypeScript compiled-player foundation and dedicated browser IIFE, consuming the frozen g1-r1 specimen with a testable map adapter. Verify scene binding isolation, control resets, marker cleanup, reduced motion, and safe media markup without changing the legacy player or publication writer.
+
+**Did:** Added a private typed consumer of the frozen compiled specimen, a scene controller with map/view adapters, safe media and anchor markup, a DOM control/panel view, and a classic-script IIFE entry. Media markup retains placement, caption, credit and qualification. The controller removes scene bindings, markers and view listeners before switching; re-entry reapplies authored defaults. It uses `cut` for first entry and reduced motion. Added tests for shared authored IDs with distinct runtime IDs, reset and control bounds, marker cleanup, media escaping and unsafe paths, version rejection, and preflight failure preserving the active scene. Built `out/player/player.js` with no external module imports and recorded its integration surface and asset requirements.
+
+**Decisions:** Preserve the existing uncommitted Wave 1/2 work and own only `packages/renderer/player/`, its dedicated browser build script, and session/status docs. Keep a private structural compiled type until G2 connects the public schema barrel. The IIFE exposes injection functions rather than claiming a complete browser player; W3-B supplies MapLibre styling and scroll wiring, and W3-C supplies compiled publication wiring.
+
+**Files touched:** `packages/renderer/player/{README.md,tsconfig.json,types.ts,media.ts,player.ts,dom-view.ts,entry.ts,player.test.ts}`, `packages/renderer/scripts/build-player.mjs`, `docs/{BUILD_LOG.md,stage-1-plan.md,implementation-stages.md}`.
+
+**Verification:** Frozen-lockfile install restored the local dependencies. Dedicated player typecheck, IIFE build, `node --check`, and Node VM global-surface smoke passed; the bundle has no external imports. All five packages build; 79 tests pass (schema 22, core 42, renderer 15); lint and changed-file formatting/diff checks pass. The legacy nine-file example renders with its expected unsupported-basemap warning, and both legacy JS syntax checks pass. The new player was not exercised in a browser because compiled HTML/MapLibre wiring belongs to W3-B/C.
+
+**Next:** G2 integrates public schema/core exports, the player build contract and cross-package composition against the frozen specimen, preserving the legacy example.
+
+---
+
+## Session 24 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** G2 — Wave 2 foundation integration.
+
+**Goal:** Wire public schema/core contracts and the dedicated compiled-player build, validate loaded artifacts and exercise the built IIFE against the frozen g1-r1 specimen, preserving the legacy example and all existing uncommitted work.
+
+**Did:** Read the active guidance and Sessions 21–23 handoffs. Checked task inventory: this was the only active MapBard G2 task; the W2-C task was idle. Started after the scheduled time (17:52 Asia/Shanghai). Exported shared schemas and core load/import/validation, replaced temporary contract shapes, and connected strict artifact parsers to loading. Added the renderer's dedicated player build to the normal build and exposed its classic-script asset subpath. Added eight public core composition tests and two built-IIFE tests against the unchanged g1-r1 specimen. Recorded the contract, artifact hash and gate evidence in `docs/stage-1/g2-review.md`.
+
+**Decisions:** **G2 CLOSED / PASS; Wave 3 released but not started.** Core validation currently re-exports the schema validator; capability compilation remains W3-A. The public player asset resolves to `packages/renderer/dist/player/player.js`, separate from legacy runtime. Existing direct dependencies already cover all new imports; no dependency/lockfile additions were needed. Corrected the shared Uint8Array generic to match Node Buffer/runtime acceptance. All pre-existing uncommitted work remains; no commit/push, provider call or browser acceptance is claimed.
+
+**Files touched:** `packages/schema/src/{index,project-validation}.ts`, `packages/core/src/index.ts`, `packages/core/src/project/{types,load,g2.integration.test}.ts`, `packages/core/src/project/README.md`, `packages/renderer/package.json`, `packages/renderer/scripts/build-player.mjs`, `packages/renderer/player/{types,built-player.test}.ts`, `packages/renderer/player/README.md`, `AGENTS.md`, `docs/{BUILD_LOG,stage-1-plan,implementation-stages}.md`, `docs/stage-1/g2-review.md`.
+
+**Verification:** Frozen offline install using the existing store passed (already up to date; no clean reinstall claim). Five packages and the dedicated IIFE build passed. All 89 tests passed (schema 22, core 50, renderer 17); lint passed after correcting two prefer-const findings, followed by successful build and affected core tests. Both new test files passed a strict NodeNext typecheck. Legacy nine-file generation passed with its expected unsupported-basemap warning; legacy source, generated data and new IIFE syntax checks passed. G1 verifier, changed-file formatting, documentation links and diff review passed. Built player is 7,806 bytes; exact SHA-256 and earlier corrected integration/test failures are in the G2 review. New-player browser/offline/accessibility checks were not run because W3-B/C page and map wiring do not exist yet.
+
+**Next:** Start S1-W3-A compiler/rules in a new session; W3-B/C follow their owned paths and the G2 asset contract. G3 integrates compile → playback → publication before Wave 4 acceptance.
+
+---
+
+## Session 25 — 2026-10-19 — 🔴 CLOSED
+
+**Plan ID:** Repository handoff — commit accumulated work through G2.
+
+**Goal:** Preserve and commit all preceding uncommitted work in coherent groups,
+push the resulting history to `main`, and establish a standing per-session local
+commit rule in `AGENTS.md`.
+
+**Did:** Reviewed Git status, branch/history and the accumulated Wave 1/G1,
+legacy renderer, product-direction, Wave 2 and G2 changes. Added the requested
+rule to the existing canonical `AGENTS.md` rather than creating a second file.
+Created these focused commits; this journal and the shared gate/status documents
+form the eighth, final governance commit:
+
+| Commit    | Scope and provenance                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| `62387a9` | G1 g1-r1 contracts, specimens, source acquisition and comparability; Sessions 14–15.              |
+| `aaeab66` | Legacy playback/local context, baseline/spike and reader browser evidence; Sessions 13 and 16–19. |
+| `3cb9388` | Confirmed later community / market center; Session 20.                                            |
+| `049829e` | Public schema contracts and validation; S1-W2-A / Session 21 plus G2 integration.                 |
+| `7ea738c` | Project load/import and derived Potomac resources; S1-W2-B / Session 22 plus G2 integration.      |
+| `647dc90` | Typed player, esbuild dependency and public asset build; S1-W2-C / Session 23 plus G2 wiring.     |
+| `c2e3156` | Public project and built-IIFE composition tests, G2 gate report; Session 24.                      |
+
+Historical journal entries retain their accurate statements that no commits had
+been made at those earlier handoffs; Session 25 commits the accumulated results.
+
+**Decisions:** Use separate topic commits with session/plan provenance. Do not
+invent historical snapshots of overlapping uncommitted edits. Keep generated
+output and dependencies ignored; preserve pinned source bytes. Future completed
+sessions commit their own verified work by default; pushing still requires
+authorization. This request explicitly authorizes pushing these commits to main.
+
+**Files touched:** `AGENTS.md`, `docs/BUILD_LOG.md`; accumulated prior changes
+staged by ownership/topic without rewriting their implementation.
+
+**Verification:** Fresh fetch showed `HEAD` and `origin/main` both at `8b8d3f0`
+before this commit series. Five packages build; all 89 tests and lint pass.
+Legacy nine-file generation passes with the documented basemap fallback warning;
+all three JavaScript syntax checks, G1 source/specimen verifier, runtime-spike
+build/VM check and legacy reproduction pass. No new browser check is claimed.
+Changed governance files pass formatting. Staged groups pass whitespace checks;
+the original acquisition inventories retain CRLF bytes and were checked with
+Git's `cr-at-eol` setting rather than rewriting source bytes. Reviewed all staged
+paths; `.env`, dependencies and generated output remain ignored. The final
+governance commit is followed by a normal push and remote-HEAD/status verification
+in this task's handoff; no force-push or historical rewrite is authorized.
+
+**Next:** After publishing this closure commit, start S1-W3-A compiler/rules in
+a new numbered session. Commit that session's own verified work before handoff.
+
+---
+
 ## Parking lot (review against the new stage plan before implementation)
 
-- **Real PMTiles basemap:** the baseline has a neutral background. Revisit tileset availability and access/export strategy during planning; do not assume `file://` range requests or silently introduce an online dependency.
+- **Real PMTiles basemap:** the legacy example has an explicit bounded local context fallback, while PMTiles remains unimplemented. Revisit tileset availability and access/export strategy during planning; do not assume `file://` range requests or silently introduce an online dependency.
 - Stray empty `D:\code\MapBard\code\` directory — delete when convenient.
 
 ---

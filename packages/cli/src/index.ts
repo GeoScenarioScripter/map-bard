@@ -198,7 +198,16 @@ export async function run(argv: string[] = process.argv): Promise<number> {
     const options = command.optsWithGlobals() as Global;
     await execute('lock', options, async () => {
       const result = await refreshProjectLock(rootOf(options));
-      return { result: result.ok ? result.value : undefined, diagnostics: result.diagnostics };
+      return {
+        result: result.ok
+          ? {
+              revision: result.value.revision,
+              resources: result.value.inputs.resources.length,
+              profiles: Object.keys(result.value.profiles).length,
+            }
+          : undefined,
+        diagnostics: result.diagnostics,
+      };
     });
   });
   program.command('check').action(async (_local: unknown, command: Command) => {

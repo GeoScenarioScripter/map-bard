@@ -1,6 +1,7 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-20. Status: **in progress; A–D implemented**. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-20. Status: **in progress; A–D implemented, E pack expanded
+with the fresh-agent trial pending**. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -137,6 +138,12 @@ references:
 It is versioned with the CLI. A Claude Code skill and a Codex `AGENTS.md`
 snippet are thin wrappers around the same content. M6's built-in agent reuses
 it.
+
+The expanded pack was exercised through the CLI from raw Potomac files on
+2026-10-20. A fresh Claude Code invocation could not reach its API
+(`ECONNREFUSED`, zero tokens and tool calls), so the agent-trial acceptance item
+remains open. The direct trial also led to a concise `lock` command response;
+the full profiles remain in the written lockfile.
 
 ### F. Example, tests and quickstart
 

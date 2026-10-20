@@ -1,16 +1,18 @@
 ---
 name: mapbard
-description: Author and verify a MapBard map story with the deterministic CLI.
+description: Author and verify a MapBard 0.2 map story from local geographic data with the mapbard CLI.
 version: 0.1.0
 ---
 
 # MapBard authoring
 
-1. Run `mapbard capabilities` to discover supported techniques and basemaps.
-2. Run `mapbard init <dir>` and `mapbard add <files...> --attribution <credit>`.
-3. Run `mapbard inspect [resourceId]`; review extent, missing values and attribute types.
-4. Edit `mapbard.json` and `story.json` only. Never edit `mapbard.lock.json` or generated output. See [format](format.md).
-5. Run `mapbard check`, then `mapbard preview`; fix every error before building.
-6. Run `mapbard build --out out`. Use `--offline` only after ensuring all media is local and the story has local geographic context.
+Use the CLI to register sources, validate the authored files, and publish the story. It does not call a model. The project root contains `mapbard.json` and `story.json`; the CLI owns `mapbard.lock.json` and generated output.
 
-The CLI never calls a model. Do not invent observations, infer missing units, or claim a longer trend from two snapshots. Keep attribution and qualifications in authored resources. See [data honesty](data-honesty.md).
+1. Run `mapbard capabilities` to see current techniques, basemaps, and format version.
+2. Run `mapbard init <project-dir>`. For later commands, work inside that directory or put the global `--project <project-dir>` before the command. For example, `mapbard --project <project-dir> add <file.geojson> --attribution "Source name"`.
+3. Register each data or media file with `add`, then run `inspect [resourceId]`. Check geometry, extent, unique feature IDs, missing values, and attribute distributions before choosing a depiction. `add` drafts attribute declarations; confirm roles, levels, units, observation dates, and source credit against the source material.
+4. Edit `mapbard.json` and `story.json` for the intent, sources, scenes, and visual bindings. Keep IDs and references consistent. Read [format](format.md) for a minimal scene and field names, [techniques](techniques.md) when choosing a layer, and [data honesty](data-honesty.md) before writing claims.
+5. After editing authored files, run `mapbard lock`, then `mapbard check`. Fix every error by its code and remedy; see [diagnostics](diagnostics.md). `check` intentionally reports lock drift, while `build` refreshes the lock itself. Use `--json` for machine-readable diagnostics and `--limit <n>` for bounded output.
+6. Run `mapbard preview` and inspect the actual page, scene changes, legends, labels, and attribution. Use [cartography](cartography.md) for visual review. Then run `mapbard build --out out`. Inspect `out/verification.json` for required network hosts. Use `--offline` when the story must make no network requests; verify that local geographic context and local media still communicate the claim.
+
+Do not hand-edit the lockfile, hashes, or published files. Do not invent observations, units, denominators, credits, or geographic context. If source evidence is insufficient, narrow the claim or report the gap.

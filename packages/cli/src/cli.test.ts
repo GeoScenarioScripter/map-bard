@@ -67,6 +67,9 @@ describe('CLI binary', () => {
     const stale = await cli('--project', root, 'check');
     expect(stale.code).toBe(1);
     expect(stale.envelope.diagnostics[0].code).toBe('INPUT_STALE');
+    const refreshed = await cli('--project', root, 'lock');
+    expect(refreshed.envelope.result).toEqual({ revision: 3, resources: 1, profiles: 1 });
+    expect((await cli('--project', root, 'check')).code).toBe(0);
     expect((await cli('--project', root, 'build', '--offline', '--out', 'offline')).code).toBe(0);
     const skill = await cli('--project', root, 'skill', 'install', '--codex');
     expect(skill.code).toBe(0);

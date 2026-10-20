@@ -1,7 +1,22 @@
 # Format 0.2
 
-`mapbard.json` holds the title, intent, basemap and resource declarations. `story.json` holds ordered scenes and shared scales. `mapbard.lock.json` is CLI-managed derived state with hashes and profiles. Run `mapbard schema mapbard.json` or `mapbard schema story.json` for exact contracts.
+`mapbard.json` holds the title, intent, basemap, and resource declarations. `story.json` holds ordered scenes and shared scales. `mapbard.lock.json` stores CLI-derived hashes and profiles. Run `mapbard schema mapbard.json` or `mapbard schema story.json` for the exact strict contracts. Unknown fields and format versions fail validation.
 
-Each data resource needs an ID, project-relative path, feature ID rule, declared attributes, CRS `EPSG:4326`, and attribution. `mapbard add` drafts these fields; confirm roles, levels and units against the source. Each scene has an ID, title, narration, camera, layers and annotations. A layer references a registered data `sourceId` and a supported technique.
+`mapbard init` supplies valid starter files. `mapbard add` copies each local source into the project and drafts a resource declaration. In `mapbard.json`, review its `id`, project-relative `path`, `crs`, `featureId`, `attributes`, and `attribution`. For a numeric binding, confirm the declared `role`, measurement `level`, and `unit` from source documentation. `add` leaves units as `null`. Record the date or period in `observationLabel` when it matters. A placeholder credit must be replaced before publishing.
 
-When an authored file changes, `mapbard check` reports lock drift. `mapbard lock` refreshes derived state; `mapbard build` refreshes it automatically before compiling.
+In `story.json`, each scene needs an `id`, `title`, `narration`, `layers`, `camera`, and `annotations`. Layer `sourceId` must match a registered data resource ID; `encode.attribute` must match a declared attribute. Camera `center` is `[longitude, latitude]`. A minimal point scene is:
+
+```json
+{
+  "id": "stations",
+  "title": "Survey stations",
+  "narration": "These markers show the surveyed locations.",
+  "layers": [{ "id": "locations", "sourceId": "stations", "technique": "point" }],
+  "camera": { "center": [-77.5, 39.2], "zoom": 7 },
+  "annotations": []
+}
+```
+
+Add the scene to `scenes`; keep `formatVersion: "0.2.0"` and `sharedScales: []` at the story root. The example is a location depiction, so it makes no claim about an attribute value. For values, bind a supported encoding and declare the attribute's real unit. Use a shared equal-interval color scale when comparing that quantity across scenes.
+
+After any authored file or registered resource changes, run `mapbard lock` before `mapbard check`. `mapbard build` refreshes the lock automatically, then compiles and publishes. An `INPUT_STALE` diagnostic from `check` means the lock no longer matches the authored inputs; inspect the edit before refreshing it.

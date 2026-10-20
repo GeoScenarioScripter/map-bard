@@ -1,7 +1,8 @@
 # MapBard — Status
 
 **Updated 2026-10-20. Active milestone: [M1 — CLI and foundation](m1-cli.md),
-in progress. M1-A through M1-D implemented; next: M1-E and M1-F.** See the [roadmap](ROADMAP.md).
+in progress. M1-A through M1-D implemented; M1-E pack expanded, agent trial
+pending; next: complete M1-E and M1-F.** See the [roadmap](ROADMAP.md).
 
 ## What works today
 
@@ -20,8 +21,9 @@ in progress. M1-A through M1-D implemented; next: M1-E and M1-F.** See the [road
   catalog for OpenFreeMap, VersaTiles, Mapterhorn and AWS Terrarium.
 - `@mapbard/cli`: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
-- `skills/mapbard`: an initial versioned agent workflow pack, installed by the
-  CLI; M1-E expands and trials it.
+- `skills/mapbard`: a versioned agent workflow pack with format, technique,
+  cartography, diagnostic and data-honesty guidance, installed by the CLI.
+  A direct CLI trial from raw Potomac files reached `check` and `build`.
 - Example: `examples/projects/first-slice` (Potomac, three scenes), built by
   `node examples/scripts/build-first-slice.mjs <out>`.
 - Checks: 107 tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
@@ -40,12 +42,22 @@ in progress. M1-A through M1-D implemented; next: M1-E and M1-F.** See the [road
   publication also loaded from `file://`.
 - M1-F still needs an automated browser smoke test, Potomac CLI migration and
   quickstart. M1-G covers npm release packaging and CI.
+- A fresh Claude Code agent trial for M1-E could not start in this environment:
+  its API connection was refused before any tokens or tool calls. The direct
+  CLI trial passed, but it does not satisfy the agent-trial acceptance item.
 
 ## Log
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-20: M1-E expanded the skill pack with a tested project-root workflow,
+  format example, technique limits and diagnostic remedies. A direct CLI trial
+  from raw Potomac files completed `init` → `add` → `inspect` → `lock` →
+  `check` → `build`; it exposed an oversized `lock` response, now summarized.
+  Build, 107 tests and lint pass. Fresh Claude Code trial was blocked by API
+  `ECONNREFUSED` before any tokens or tool calls. Next: retry that trial when
+  reachable, then M1-F example and smoke test.
 - 2026-10-20: M1-C/D added the CLI binary and commands, JSON diagnostics,
   preview server, initial skill pack, MapLibre 6 IIFE/worker, provider catalog,
   fallback, terrain, attribution and offline mode. Build, 107 tests and lint

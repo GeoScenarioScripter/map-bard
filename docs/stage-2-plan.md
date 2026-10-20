@@ -1,9 +1,15 @@
 # Stage 2 — Reproducible findings and evidence
 
 Detailed after Stage 1's [G4 closure](stage-1/g4-review.md) on 2026-10-20.
-**PLANNED; no Stage 2 feature is implemented by this plan.** Parent:
+**OPEN — Wave 1 kicked off in Session 35; W1-A complete, W1-B/C pending,
+G1 open. No Stage 2 production feature is implemented.** Parent:
 [implementation stages](implementation-stages.md). Actual session numbers belong
 in `BUILD_LOG.md` when work opens.
+
+The [kickoff and method dossier](stage-2/kickoff.md) pins the input revision,
+records the checked oracle and gives the next sessions their concrete handoffs.
+The machine-readable [case fixture](stage-2/specimens/method-case.json) is a
+review specimen, not a released analysis schema.
 
 ## User outcome and bounded case
 
@@ -79,6 +85,116 @@ frozen Stage 1 inputs; W2 starts only after G1, and W3 starts only after G2.
 Exclusive source ownership is frozen at each gate before work is dispatched.
 Unrelated edits are preserved, and a gate records any contract deviation before
 dependent work resumes.
+
+### Execution order and actual status
+
+Work units may be serialized; no extra task or agent is required. Budget nine
+work-unit sessions plus three gate reviews, with correction sessions as needed;
+these are scope estimates, not elapsed-time promises.
+
+| Step          | Release dependency                            | Status / required artifact                                                                                                     |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| W1-A          | Stage 1 G4                                    | Complete, Session 35: `stage-2/kickoff.md`, `specimens/method-case.json`, `scripts/verify-kickoff.mjs`                         |
+| W1-B          | W1-A case revision                            | Next: `stage-2/contracts.md`, executable proposed Zod blocks and valid/invalid JSON specimens                                  |
+| W1-C          | W1-A method; coordinate proposed types with B | Pending: isolated `stage-2/scripts/` spike and `stage-2/runtime-choice.md` with challenge results                              |
+| G1            | A, B and C reviewed together                  | Pending: `stage-2/g1-review.md`, frozen `s2-g1-r1`, exact exports and file ownership                                           |
+| W2-B          | G1                                            | First W2 slice: implement schemas; coordinator exports/builds them and integrates the loader bridge before releasing consumers |
+| W2-A and W2-C | Built W2-B public contracts and loader bridge | Then independent engine and presentation work; no private imports or placeholder public types                                  |
+| G2            | W2 A/B/C                                      | Public compute → validate → compile → render → write composition and Stage 1 regressions                                       |
+| W3-A and W3-B | G2                                            | Real example and independent adversarial checks; browser baseline freezes after example integration                            |
+| W3-C          | Integrated W3-A output                        | Direct-file browser evidence tied to exact output hashes                                                                       |
+| G3            | W3 A/B/C and corrections                      | Stage closure and Stage 3 detail                                                                                               |
+
+This dependency order refines the wave table: W2 is not three consumers starting
+simultaneously from documentation. The coordinator owns loader/import/compiler
+bridges in `core/src/project/` and `core/src/compile/`; W2-A owns new analysis
+modules, W2-B schema modules, and W2-C renderer modules. Shared schema diagnostic
+enums, barrels and manifests integrate serially. Every work-unit handoff records
+files, commands/results, specimen revision, deviations and remaining limits.
+
+### Decisions W1-B must make concrete at G1
+
+1. **Persistence and versions:** propose independently versioned analysis,
+   result and evidence files. The current strict 0.1.0 manifest accepts only
+   narrative/design paths: do not silently append fields. Compare an explicit
+   new manifest version with a required namespaced extension; select one at G1.
+   Specify old-project loading, opt-in non-destructive migration to a new
+   destination, unknown-version rejection, and behavior in older readers.
+   GeoNarrative 0.1.0 and the handwritten example remain readable. Evidence
+   bindings reference existing scene IDs without creating a second scene order.
+2. **Public interfaces:** freeze typed parse/validate, execute, freshness and
+   trace-inspection signatures, their `Result<T>` diagnostics, filesystem versus
+   pure boundaries, and compile/render arguments. Document proposed names as
+   proposals until exported. Trace inspection must work without an LLM.
+3. **Identity:** authored operation/claim IDs persist across recomputation;
+   result identity includes method version, selection and input fingerprint.
+   References include source ID, feature ID, attribute, original observation ID
+   and series ID. Reject duplicate IDs, dangling links and cycles if the selected
+   representation permits them; no general evidence graph is required.
+4. **Freshness:** specify canonical serialization, ordered selections, missing
+   versus null, hash algorithm and all included fields. Start conservatively with
+   hashes of selected source files plus measurement declarations, method/version
+   and parameters. An edit anywhere in a selected source file may invalidate it;
+   row-granular caching is deferred. Design-only edits preserve the analysis
+   result but still invalidate the Stage 1 compiled snapshot. Qualifier/credit
+   or claim edits invalidate prepared evidence/publication, even if arithmetic
+   stays identical. A claim/result mismatch or forged cached value must not pass
+   merely because its input hash matches: recompute/compare before publication.
+5. **Failure policy:** fail the entire selected calculation on a missing or
+   invalid required pair; retain diagnostic facts separately, never a partial
+   successful claim. Unsupported trend is a typed request/prerequisite case,
+   not natural-language fact checking. Stale linked computed claims block
+   publication until recomputed and revalidated; no silent stripping or prose
+   rewrite. An old exported page is a static snapshot, not a live monitor.
+6. **Prepared evidence:** freeze a minimal compiled evidence payload and version
+   dispatch. Reader inspection shows claim, exact before/after values, signed
+   difference, dates, unit, method/version, provenance IDs and qualifications.
+   Embed enough trace to inspect offline; external source links are optional
+   navigation, never required fetches. Keep local/private paths out of output.
+
+### Verification matrix and gate checklist
+
+| Acceptance case                                                                     | Owner / gate            | Required evidence                                                                          |
+| ----------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
+| Six original records → derived selections → three signed differences                | W1-A/C, W2-A / G1–G2    | Exact oracle, no feature-order join, stable station/date identities                        |
+| Null, missing, duplicate, string/non-finite value, wrong unit/statistic/series/date | W1-C, W2-A/B / G1–G2    | Stable codes, artifact path/IDs and remedy; no successful result                           |
+| Two snapshots requested as trend                                                    | W1-A/C, W2-A / G2       | Insufficient-evidence diagnostic and available observations; no generated conclusion       |
+| Source bytes/declarations/selection/method change                                   | W2-A, W3-B / G2–G3      | Stale result and blocked dependent publication, including updated manifest hash            |
+| Design edit; qualifier edit; tampered result; removed scene                         | W2 A/B/C, W3-B / G2–G3  | Correct dependency boundary; recompile, revalidate evidence, or reject as appropriate      |
+| Old project, migrated project, unsupported artifact version                         | W2-B + coordinator / G2 | No content loss, explicit version dispatch, old and new public build paths                 |
+| Deterministic rerun and relocation                                                  | W3-A/B / G3             | Two fresh runs with identical shareable records; no timestamps/private paths in identity   |
+| Escaping, unsafe URLs, missing evidence, unknown required extension                 | W2-C + coordinator / G2 | Safe or rejected publication with actionable diagnostics                                   |
+| Trace access on direct-file/offline page                                            | W3-C / G3               | Browser/version, hashes, Console/Network, keyboard focus, narrow layout and qualifications |
+
+G1 closes only with runnable proposed-schema specimens, the method spike's
+negative cases, a justified engine choice, selected migration, signed-off public
+signatures and a frozen presentation specimen. A requirements comparison may
+reject DuckDB Spatial without installation; do not call that a benchmark.
+
+G2 runs frozen install, recursive build/tests, root `pnpm test` (including public
+integration tests), lint and both legacy and compiled example smoke checks.
+G3 repeats these after final changes, verifies two fresh publications and records
+actual browser evidence separately. Use `corepack pnpm` if the Windows shim
+requires it. Documentation-only sessions need formatting, links and diff review;
+review scripts run against pinned inputs. Failures keep the gate open with a
+specific correction owner. Browser restrictions require an authorized/manual
+reader check; serving work from Session 33 cannot replace direct-file acceptance.
+
+### Refinement coverage and explicit deferrals
+
+| Ideas   | Stage 2 disposition                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R11–R13 | W1-B/W2-B observation, result, authored interpretation and context contracts; W2-C inspectable scene evidence                                                |
+| R14–R15 | W1-A/C and W2-A only the selected compatible snapshot operation and necessary measurement declarations; general aggregation/normalization/profiling deferred |
+| R16     | W1-A/C insufficient-trend specimen; author-led redirection goes to Stage 3                                                                                   |
+| R17–R18 | W1-C method choice; W2-A fingerprints/freshness; no general spatial engine or dependency graph                                                               |
+| R09/R25 | Prepared offline result for a compatible vector comparison, no browser analysis                                                                              |
+| R20/R33 | Explicit method prerequisites and actionable failures; no expanded cartographic technique catalog                                                            |
+| R32/R36 | Separate structural, arithmetic, provenance, determinism and browser evidence through G1–G3                                                                  |
+
+Stage 2 closure requires all matrix rows to pass or an explicitly narrowed scope
+accepted in the gate record; a generated page cannot substitute for the reader
+trace check. No research efficacy claim follows from this case alone.
 
 ## Out of scope and research handoff
 

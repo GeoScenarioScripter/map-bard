@@ -1,0 +1,168 @@
+{
+  "specimenRevision": "s2-w1-a-r1",
+  "purpose": "Review-only method oracle; not a public artifact schema",
+  "baselineCommit": "f32ad03cd2eb583f6d6b8c61b90bb3decfb7b4d3",
+  "projectId": "potomac-daily-discharge",
+  "projectRevision": 2,
+  "method": {
+    "id": "station-snapshot-difference",
+    "version": "1",
+    "formula": "after - before",
+    "dates": ["2024-10-01", "2025-10-01"],
+    "unit": "ft^3/s",
+    "parameterCode": "00060",
+    "statisticId": "00003",
+    "timeBasis": "Published USGS station-local daily means; Eastern time calendar dates"
+  },
+  "pinnedFiles": [
+    {
+      "path": "mapbard.project.json",
+      "sha256": "sha256:a0dc4df7184d8152f2e6b35bdec94adb00f772d197a97ed379658d5ef036262f"
+    },
+    {
+      "path": "narrative.geonarrative.json",
+      "sha256": "sha256:d469b42fe3b6bb8d2fa0068a7e9c613841e42fad681dc47b8c7e44358b5123f7"
+    },
+    {
+      "path": "design.json",
+      "sha256": "sha256:f0666d95810288db39fbff12f2ca4831ff76094178a9a33ebe4b0bd590971a9a"
+    },
+    {
+      "path": "source/acquisition.json",
+      "sha256": "sha256:ab7dd6f5a1e35ad29dd9e590b2728894aedf5472a342db79fd46c6561968b347"
+    },
+    {
+      "path": "source/metadata/acquisition.json",
+      "sha256": "sha256:16cc6ed5fd72eaba0c0c14f9d0fc9da908598aae3efa944f9eb72cd300f02c89"
+    },
+    {
+      "path": "data/derive.mjs",
+      "sha256": "sha256:d999bc2012415f394d8092e134be36248bd4cf02f0ae8e67e4af7fb33e6814dd"
+    },
+    {
+      "path": "data/potomac-2024-10-01.geojson",
+      "sha256": "sha256:517eb654caa03bc030882b50053afdf1644d1eb1166b072e92aa91c5a3daf30e"
+    },
+    {
+      "path": "data/potomac-2025-10-01.geojson",
+      "sha256": "sha256:92ddb1b06bd1920bae501c5fc14a8f3cf625828766a469232719d832e036fd51"
+    }
+  ],
+  "rows": [
+    {
+      "stationId": "USGS-01613000",
+      "stationName": "Hancock",
+      "before": 5580,
+      "after": 580,
+      "expectedDifference": -5000,
+      "observations": [
+        {
+          "sourceId": "potomac-2024",
+          "featureId": "USGS-01613000",
+          "attribute": "daily_mean_discharge",
+          "date": "2024-10-01",
+          "observationId": "d45c708f-0c19-49c1-807a-38cb78c7ce9c",
+          "seriesId": "3eb78a4c874c4716a30971ce02c5f39d",
+          "sourceFile": "source/01613000-2024-10-01.json",
+          "sourceSha256": "sha256:921c151556099983fda9faef25220c47700f03dbedcfbf056dfb21425f03242f",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01613000&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10",
+          "qualification": "Upstream power-plant effects at low flow and reservoir regulation."
+        },
+        {
+          "sourceId": "potomac-2025",
+          "featureId": "USGS-01613000",
+          "attribute": "daily_mean_discharge",
+          "date": "2025-10-01",
+          "observationId": "9806ef56-69ba-4d13-8c85-82444ba134c0",
+          "seriesId": "3eb78a4c874c4716a30971ce02c5f39d",
+          "sourceFile": "source/01613000-2025-10-01.json",
+          "sourceSha256": "sha256:3af4e613dc6b99a12634328cceef4f73815e39b1d12f372fac57373188040eca",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01613000&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10",
+          "qualification": "Upstream power-plant effects at low flow and reservoir regulation."
+        }
+      ]
+    },
+    {
+      "stationId": "USGS-01638500",
+      "stationName": "Point of Rocks",
+      "before": 23600,
+      "after": 2020,
+      "expectedDifference": -21580,
+      "observations": [
+        {
+          "sourceId": "potomac-2024",
+          "featureId": "USGS-01638500",
+          "attribute": "daily_mean_discharge",
+          "date": "2024-10-01",
+          "observationId": "0b77a04c-06c7-4879-a3c5-94fa0449e3b0",
+          "seriesId": "6fce477b4108481d950866411cdc1c00",
+          "sourceFile": "source/01638500-2024-10-01.json",
+          "sourceSha256": "sha256:592ea0eff4edb977ffbfd77b8e980784747d76dbd3eecd3078f39e9160821234",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01638500&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10",
+          "qualification": "Reservoir and run-of-river hydroelectric effects may affect low flow."
+        },
+        {
+          "sourceId": "potomac-2025",
+          "featureId": "USGS-01638500",
+          "attribute": "daily_mean_discharge",
+          "date": "2025-10-01",
+          "observationId": "7c15554d-c037-4d46-9682-9034b7d00c0a",
+          "seriesId": "6fce477b4108481d950866411cdc1c00",
+          "sourceFile": "source/01638500-2025-10-01.json",
+          "sourceSha256": "sha256:a01412d273582a73eed70ffeeaac53935d9fe667f33558979c61ddb58708a5f5",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01638500&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10",
+          "qualification": "Reservoir and run-of-river hydroelectric effects may affect low flow."
+        }
+      ]
+    },
+    {
+      "stationId": "USGS-01646500",
+      "stationName": "Little Falls",
+      "before": 17300,
+      "after": 1800,
+      "expectedDifference": -15500,
+      "observations": [
+        {
+          "sourceId": "potomac-2024",
+          "featureId": "USGS-01646500",
+          "attribute": "daily_mean_discharge",
+          "date": "2024-10-01",
+          "observationId": "0827c0b2-9e90-4e68-9ca3-0897d40674bd",
+          "seriesId": "2cf409b0d9694c01828f5d4ff14586a5",
+          "sourceFile": "source/01646500-2024-10-01.json",
+          "sourceSha256": "sha256:d05334b4826863dae4b730f6920f19ec2ee547f737abd00c2e0d0d1fe2262f2d",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10",
+          "qualification": "Water diversions and reservoir effects; not unregulated natural flow."
+        },
+        {
+          "sourceId": "potomac-2025",
+          "featureId": "USGS-01646500",
+          "attribute": "daily_mean_discharge",
+          "date": "2025-10-01",
+          "observationId": "813daf35-25f5-4317-b8c8-e94af9ace17f",
+          "seriesId": "2cf409b0d9694c01828f5d4ff14586a5",
+          "sourceFile": "source/01646500-2025-10-01.json",
+          "sourceSha256": "sha256:0f82fd49461495e8dcd414c5466e9813309d3106c5b63f2df818829080523a37",
+          "sourceUrl": "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10",
+          "qualification": "Water diversions and reservoir effects; not unregulated natural flow."
+        }
+      ]
+    }
+  ],
+  "claim": {
+    "kind": "authored-qualified-comparison",
+    "text": "At each of the three selected stations, the published daily mean discharge was lower on 2025-10-01 than on 2024-10-01.",
+    "qualifications": [
+      "Two station-local daily summaries, not a trend or annual mean.",
+      "Station catchments differ; these differences are not reach loss, basin change or causal attribution.",
+      "Regulation, hydroelectric effects and diversions limit interpretation. Approved is source publication status, not proof of a general claim."
+    ]
+  },
+  "unsupportedRequest": {
+    "intent": "trend",
+    "expectedOutcome": "insufficient-evidence",
+    "availableFacts": "Only the six selected published daily means and their qualified pairwise differences.",
+    "remedy": "Provide an appropriate time series and a separately reviewed trend method, or explicitly choose the bounded two-date comparison.",
+    "mustNotProduce": ["trend result", "causal attribution", "automatic replacement narrative"]
+  }
+}

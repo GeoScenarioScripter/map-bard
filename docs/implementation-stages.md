@@ -1,13 +1,13 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-20, Session 34 Stage 1 G4 closure.
+Updated 2026-10-20, Session 35 Stage 2 kickoff.
 **Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
 handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
 Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 A/B closed
 in Sessions 30–31; W4-C's Session 32 reader review found defects. Session 34
 corrected those defects, received positive real-page and control-specimen Edge
 retests, and [closed G4](stage-1/g4-review.md). Stage 1's bounded publication
-target is delivered; Stage 2 is planned, not implemented.**
+target is delivered; Stage 2 Wave 1 is open in Session 35, with W1-A complete and W1-B/C pending. No production analysis feature is implemented.**
 The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
 records source acquisitions and accepted bounded Potomac comparability, and
 selects the runtime build approach after the direct-file browser report.
@@ -86,7 +86,7 @@ at a time. Never treat an uncommitted shared checkout as an isolated branch.
 
 ## Stage sequence and acceptance gates
 
-Stage 1 is **IN PROGRESS**; Stages 2–6 are **NOT STARTED**. Stage 1 is detailed;
+Stage 1 is **CLOSED**; Stage 2 is **IN PROGRESS (Wave 1)**; Stages 3–6 are **NOT STARTED**. Stage 1 is recorded;
 Stage 2 has a [detailed plan](stage-2-plan.md); Stages 3–6 remain outlines.
 The first product acceptance review occurs in Stage 5. The optional built-in agent
 follows in Stage 6 and does not gate the external-agent product.
@@ -100,11 +100,15 @@ follows in Stage 6 and does not gate the external-agent product.
 | **5. Meaningful interaction and product evaluation** | A reader can explore a supported data-scope change without seeing misleading stale claims; an author can complete the first product loop.                              | Stage 4 closed; shared project and revision path proven.                                          | Reader control updates qualified facts or visibly enters exploration with return to authored state; full first-slice envelope passes; usability/research pilot records failures and bounded claims. Then detail Stage 6.                       |
 | **6. Optional built-in agent**                       | A user can use MapBard's own single-LLM authoring loop over the same engine and project.                                                                               | Stage 5 closed; engine operations, portable skills, edit protocol and evaluation fixtures stable. | Scripted and opt-in live runs cover skill loading, tool feedback, waiting/completion, budgets, cancellation and resume without repeated mutations; engine-only workflow remains independent. Later expansion requires a new planning decision. |
 
-## Later-stage threads — intentionally not wave/session plans
+## Stage 2 summary and later-stage outlines
 
 ### Stage 2 — Reproducible findings and evidence
 
-Likely ownership: `schema` for analysis/result/claim contracts, `core` for bounded
+The [detailed Stage 2 plan](stage-2-plan.md) supersedes this original outline's
+pending planning choices. [Session 35 kickoff](stage-2/kickoff.md) completes W1-A;
+W1-B/C and G1 remain pending.
+
+Ownership: `schema` for analysis/result/claim contracts, `core` for bounded
 execution and dependency tracking, `knowledge` for justified design requirements,
 and `renderer` for evidence presentation. Select the minimum operation set from
 the actual Stage 1 case: compatible attribute change or a documented geographic
@@ -117,8 +121,8 @@ values, incompatible observations, changed input fingerprints and an interpretat
 that must not be presented as a computed fact. Verify determinism, units,
 denominators, stale dependencies, and browser-visible qualifications. Exclude a
 general GIS/query platform, causal inference, raster processing and unrestricted
-generated execution. Method choice, exact schemas and session breakdown wait for
-Stage 1's closure.
+generated execution. The method case and session breakdown are now detailed; exact schemas and
+public signatures freeze at Stage 2 G1.
 
 Carry R11–R18 into the exit criteria: distinguish observation, computed finding,
 interpretation and cited context, and expose a trace from claim to source selection,

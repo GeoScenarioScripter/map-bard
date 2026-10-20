@@ -44,7 +44,7 @@ Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; the S1-W4-C reader revi
 in Session 32 found compiled wheel, geographic-context and presentation defects.
 Session 34 corrected them, received positive real-page and synthetic-control
 Edge retests, and closed G4. Stage 1's bounded publication target is delivered;
-Stage 2 has a detailed plan but no implementation.**
+Stage 2 Wave 1 opened in Session 35: W1-A method dossier and checked oracle are complete; W1-B/C and G1 remain pending. No Stage 2 production feature is implemented.**
 See `docs/stage-1/g1-review.md` for frozen contract revision g1-r1, verified
 acquisitions, the bounded Potomac comparison and selected esbuild IIFE approach.
 Sessions 16–17 repaired reader-reported legacy demo issues, including an explicit
@@ -63,9 +63,9 @@ independent regression checks. See `docs/stage-1/browser-checks.md` for the
 Session 32 direct-file reader screenshot/report and Session 34 corrected-page
 retest. The `docs/stage-1/g4-review.md` closes the bounded publication gate with
 explicit browser limits. The real example has credited local context layers;
-generic basemap support remains outside the frozen Stage 1 contract. The next
-stage is detailed in `docs/stage-2-plan.md`; no Stage 2 finding/evidence engine
-is implemented. Do not resume old M5.
+generic basemap support remains outside the frozen Stage 1 contract. The active
+stage is detailed in `docs/stage-2-plan.md`, with kickoff inputs in
+`docs/stage-2/kickoff.md`; no Stage 2 finding/evidence engine is implemented. Do not resume old M5.
 
 Historical M0–M4 are recorded done. M5–M7 were not started and their execution
 sequence is superseded, not completed. The existing code remains the baseline.

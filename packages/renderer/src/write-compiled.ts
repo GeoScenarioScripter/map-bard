@@ -24,7 +24,8 @@ import {
 const require = createRequire(import.meta.url);
 const runtimeDir = fileURLToPath(new URL('../runtime/', import.meta.url));
 const vendor = [
-  ['maplibre-gl/dist/maplibre-gl.js', 'vendor/maplibre-gl.js'],
+  ['@mapbard/renderer/vendor/maplibre-gl.js', 'vendor/maplibre-gl.js'],
+  ['@mapbard/renderer/vendor/maplibre-gl-worker.js', 'vendor/maplibre-gl-worker.js'],
   ['maplibre-gl/dist/maplibre-gl.css', 'vendor/maplibre-gl.css'],
 ] as const;
 const builtPlayer = '@mapbard/renderer/player.js';

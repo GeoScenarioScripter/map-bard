@@ -5,6 +5,12 @@ import {
   type DataResource,
   type LayerBinding,
 } from '@mapbard/schema';
+export {
+  BASEMAP_PROVIDERS,
+  TERRAIN_PROVIDERS,
+  resolveBasemap,
+  type ResolvedBasemap,
+} from './basemaps.js';
 
 export const STAGE1_CAPABILITIES: CapabilityCatalog = CapabilityCatalogSchema.parse({
   version: '0.1.0',

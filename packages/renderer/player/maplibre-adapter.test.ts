@@ -155,6 +155,7 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
         events.push(`remove-source:${id}`);
       },
       getLayer: (id: string) => layers.has(id),
+      getStyle: () => ({ layers: [{ id: 'place-label', type: 'symbol' }] }),
       addLayer: (layer: { id: string; source: string; paint: Record<string, unknown> }) => {
         layers.add(layer.id);
         events.push(`layer:${layer.id}:${layer.source}`);

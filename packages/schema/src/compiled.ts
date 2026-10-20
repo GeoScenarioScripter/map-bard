@@ -121,7 +121,36 @@ export const CompiledSchema = z
     title: z.string(),
     intent: z.string(),
     theme: ThemeTokensSchema.strict().optional(),
-    basemap: z.union([z.literal('neutral'), z.object({ provider: z.literal('none') }).strict()]),
+    basemap: z.union([
+      z.literal('neutral'),
+      z.object({ provider: z.literal('none') }).strict(),
+      z
+        .object({
+          provider: z.enum(['openfreemap', 'versatiles', 'custom']),
+          labels: z.enum(['full', 'minimal', 'off']),
+          styles: z
+            .array(
+              z
+                .object({
+                  provider: z.enum(['openfreemap', 'versatiles', 'custom']),
+                  url: z.string().url(),
+                  attribution: z.string().min(1),
+                })
+                .strict(),
+            )
+            .min(1),
+          terrain: z
+            .object({
+              tiles: z.string().url(),
+              attribution: z.string().min(1),
+              exaggeration: z.number().positive(),
+              tileSize: z.union([z.literal(256), z.literal(512)]),
+            })
+            .strict()
+            .optional(),
+        })
+        .strict(),
+    ]),
     scenes: z.array(
       z
         .object({

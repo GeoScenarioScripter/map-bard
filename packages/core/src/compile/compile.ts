@@ -16,6 +16,7 @@ import {
   graduatedSizePrerequisite,
   hasCapability,
   numericColorPrerequisite,
+  resolveBasemap,
   techniqueGeometry,
   type CapabilityId,
 } from '@mapbard/knowledge';
@@ -372,6 +373,7 @@ function checkBytes(project: ValidatedProject, diagnostics: Diagnostic[]): void 
 export function compileProject(
   project: ValidatedProject,
   capabilities: CapabilityCatalog,
+  options: { offline?: boolean } = {},
 ): Result<Compiled> {
   const diagnostics: Diagnostic[] = [];
   const parsedCatalog = CapabilityCatalogSchema.safeParse(capabilities);
@@ -396,16 +398,19 @@ export function compileProject(
   if (!validated.ok) return validated;
   checkBytes(project, diagnostics);
   const { narrative, design } = project;
-  if (project.authoredFormat === '0.2.0' && project.authoredBasemap?.provider !== 'none')
-    diagnostics.push(
-      issue(
-        'CAPABILITY_UNSUPPORTED',
-        'project',
-        ['basemap'],
-        'This basemap provider is not available until M1-D.',
-        'Use provider none or wait for the basemap implementation.',
-      ),
-    );
+  if (options.offline)
+    for (const resource of project.project.resources.media)
+      if (resource.location.type === 'url')
+        diagnostics.push(
+          issue(
+            'CAPABILITY_UNSUPPORTED',
+            'media',
+            ['resources', 'media', resource.id],
+            'Offline publication cannot include remote media.',
+            'Download and register the media locally before building offline.',
+            { assetId: resource.id },
+          ),
+        );
   if (narrative.basemap.style !== 'neutral' || narrative.basemap.pmtilesUrl)
     diagnostics.push(
       issue(
@@ -1025,6 +1030,38 @@ export function compileProject(
 
   const resources: Compiled['resources'] = [];
   const requiredNetwork = new Set<string>();
+  let basemap: Compiled['basemap'] =
+    project.authoredFormat === '0.2.0' ? { provider: 'none' } : 'neutral';
+  if (project.authoredFormat === '0.2.0' && project.authoredBasemap) {
+    try {
+      basemap = resolveBasemap(project.authoredBasemap, options.offline);
+      if (options.offline && project.authoredBasemap.provider !== 'none')
+        diagnostics.push({
+          ...issue(
+            'CAPABILITY_UNSUPPORTED',
+            'project',
+            ['basemap'],
+            'Online basemap and terrain were removed for this offline build.',
+            'Keep local context layers to show geographic context offline.',
+          ),
+          severity: 'warning',
+        });
+      if (typeof basemap !== 'string' && basemap.provider !== 'none') {
+        basemap.styles.forEach((entry) => requiredNetwork.add(entry.url));
+        if (basemap.terrain) requiredNetwork.add(basemap.terrain.tiles);
+      }
+    } catch (error) {
+      diagnostics.push(
+        issue(
+          'VALUE_INVALID',
+          'project',
+          ['basemap', 'style'],
+          String(error),
+          'Choose a style listed by mapbard capabilities.',
+        ),
+      );
+    }
+  }
   for (const resource of project.project.resources.data)
     resources.push({
       id: resource.id,
@@ -1101,7 +1138,7 @@ export function compileProject(
     title: narrative.title,
     intent: narrative.intent,
     ...(narrative.theme ? { theme: narrative.theme } : {}),
-    basemap: project.authoredFormat === '0.2.0' ? { provider: 'none' } : 'neutral',
+    basemap,
     scenes: compiledScenes,
     scales,
     resources,

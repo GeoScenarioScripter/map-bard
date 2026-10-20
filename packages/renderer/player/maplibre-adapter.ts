@@ -90,7 +90,10 @@ export function createMapLibreAdapter(
       }
       const specification = layerStyle(layer, scale, accent);
       try {
-        map.addLayer(specification as LayerSpecification);
+        const label = map
+          .getStyle()
+          .layers?.find((item) => item.type === 'symbol' && /label|place/i.test(item.id));
+        map.addLayer(specification as LayerSpecification, label?.id);
       } catch (error) {
         if (isNewSource && map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
         throw error;
@@ -128,7 +131,11 @@ export function createMapLibreAdapter(
         map.setLayoutProperty(runtimeLayerId, 'visibility', value ? 'visible' : 'none');
       } else {
         const paintName = `${binding.type}-${property}`;
-        map.setPaintProperty(runtimeLayerId, paintName, value);
+        map.setPaintProperty(
+          runtimeLayerId,
+          paintName as Parameters<MapLibreMap['setPaintProperty']>[1],
+          value,
+        );
       }
     },
   };

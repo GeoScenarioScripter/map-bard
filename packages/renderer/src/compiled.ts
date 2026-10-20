@@ -100,22 +100,67 @@ const app = `(() => {
   try {
     if (!payload || !api || !window.maplibregl || !scenes.length) throw new Error('Required player or story data is missing');
     const first = payload.story.scenes[0];
+    const base = payload.story.basemap;
+    const styles = typeof base === 'object' && base.provider !== 'none' ? base.styles : [];
+    let styleIndex = 0;
+    let ready = false;
+    let switching = false;
+    let cleanup;
+    let attribution;
+    let timer;
+    const notice = (message) => {
+      let panel = document.querySelector('#mb-basemap-notice');
+      if (!panel) { panel = document.createElement('p'); panel.id = 'mb-basemap-notice'; panel.setAttribute('role', 'status'); document.body.append(panel); }
+      panel.textContent = message;
+    };
+    maplibregl.setWorkerUrl('vendor/maplibre-gl-worker.js');
     const map = new maplibregl.Map({
-      container: 'map', style: { version: 8, sources: {}, layers: [] },
+      container: 'map', style: styles[0] ? styles[0].url : { version: 8, sources: {}, layers: [] },
       center: first.camera.center, zoom: first.camera.zoom, attributionControl: false,
     });
     map.scrollZoom.disable();
-    map.on('load', () => {
+    const failStyle = () => {
+      if (switching || styleIndex >= styles.length) return;
+      switching = true;
+      clearTimeout(timer);
+      if (cleanup) { cleanup(); cleanup = undefined; }
+      if (attribution) { map.removeControl(attribution); attribution = undefined; }
+      ready = false;
+      styleIndex++;
+      if (styles[styleIndex]) { map.setStyle(styles[styleIndex].url); timer = setTimeout(failStyle, 12000); }
+      else { notice('Online basemap unavailable; showing local story layers.'); map.setStyle({ version: 8, sources: {}, layers: [] }); }
+    };
+    if (styles.length) timer = setTimeout(failStyle, 12000);
+    map.on('style.load', () => {
       try {
+        clearTimeout(timer);
+        ready = true;
+        const chosen = styles[styleIndex];
+        const credit = document.createElement('span');
+        credit.textContent = chosen ? chosen.attribution : '';
+        attribution = new maplibregl.AttributionControl({ customAttribution: credit.innerHTML });
+        map.addControl(attribution);
+        if (chosen && base.labels !== 'full') {
+          for (const layer of map.getStyle().layers || []) {
+            if (layer.type === 'symbol' && (base.labels === 'off' || /poi|place|label/i.test(layer.id)))
+              map.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+        }
+        if (chosen && base.terrain) {
+          map.addSource('mb-terrain', { type: 'raster-dem', tiles: [base.terrain.tiles], tileSize: base.terrain.tileSize, encoding: 'terrarium', attribution: base.terrain.attribution });
+          map.setTerrain({ source: 'mb-terrain', exaggeration: base.terrain.exaggeration });
+        }
         const adapter = api.createMapLibreAdapter(payload.story, payload.data, map, maplibregl);
         const view = api.createDomView({ scenes, media: document.querySelector('#media'), controls: document.querySelector('#controls'), legends: document.querySelector('#legends') });
         const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches });
         player.enter(first.id);
         const disconnect = api.observeScenes(player, scenes);
-        addEventListener('pagehide', () => { disconnect(); player.dispose(); map.remove(); }, { once: true });
+        cleanup = () => { disconnect(); player.dispose(); };
+        switching = false;
       } catch (error) { showError(error); map.remove(); }
     });
-    map.on('error', (event) => showError(event.error || 'Map error'));
+    map.on('error', (event) => { if (styles.length && styleIndex < styles.length) failStyle(); else if (ready) console.error(event.error || 'Map error'); });
+    addEventListener('pagehide', () => { clearTimeout(timer); if (cleanup) cleanup(); map.remove(); }, { once: true });
   } catch (error) { showError(error); }
 })();\n`;
 
@@ -273,10 +318,18 @@ export function renderCompiled(
         ),
       );
   }
+  const basemapNetwork =
+    typeof compiled.basemap === 'object' && compiled.basemap.provider !== 'none'
+      ? [
+          ...compiled.basemap.styles.map((style) => style.url),
+          ...(compiled.basemap.terrain ? [compiled.basemap.terrain.tiles] : []),
+        ]
+      : [];
   const expectedNetwork = [
-    ...new Set(
-      compiled.resources.flatMap((resource) => (resource.remoteUrl ? [resource.remoteUrl] : [])),
-    ),
+    ...new Set([
+      ...compiled.resources.flatMap((resource) => (resource.remoteUrl ? [resource.remoteUrl] : [])),
+      ...basemapNetwork,
+    ]),
   ].sort();
   if (
     JSON.stringify(expectedNetwork) !== JSON.stringify(compiled.requiredNetwork) ||

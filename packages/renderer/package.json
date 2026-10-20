@@ -14,17 +14,18 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./player.js": "./dist/player/player.js"
+    "./player.js": "./dist/player/player.js",
+    "./vendor/maplibre-gl.js": "./dist/vendor/maplibre-gl.js",
+    "./vendor/maplibre-gl-worker.js": "./dist/vendor/maplibre-gl-worker.js"
   },
   "scripts": {
-    "build": "node ../../scripts/clean-package-dist.mjs renderer && tsc -p tsconfig.json && tsc -p player/tsconfig.json && node scripts/build-player.mjs",
+    "build": "node ../../scripts/clean-package-dist.mjs renderer && tsc -p tsconfig.json && tsc -p player/tsconfig.json && node scripts/build-player.mjs && node scripts/build-maplibre.mjs",
     "build:player": "tsc -p player/tsconfig.json && node scripts/build-player.mjs",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@mapbard/schema": "workspace:*",
-    "maplibre-gl": "^4.7.1",
-    "scrollama": "^3.2.0"
+    "maplibre-gl": "6.1.0"
   },
   "devDependencies": {
     "@mapbard/core": "workspace:*",

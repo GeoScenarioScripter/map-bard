@@ -86,6 +86,12 @@ export const BasemapV2Schema = z
         path: ['styleUrl'],
         message: 'Custom basemaps need styleUrl and attribution.',
       });
+    if (value.provider === 'custom' && value.styleUrl && !/^https?:\/\//i.test(value.styleUrl))
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['styleUrl'],
+        message: 'Custom styleUrl must use HTTP(S).',
+      });
     if (
       value.provider === 'none' &&
       (value.style || value.styleUrl || value.terrain || value.fallback?.length)

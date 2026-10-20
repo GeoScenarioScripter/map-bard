@@ -1,6 +1,6 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-20. Status: **in progress; A and B complete**. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-20. Status: **in progress; A–D implemented**. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -116,6 +116,10 @@ init` or `npm i -g mapbard` (see item G).
   requests.
 - Provider terms are recorded in `knowledge`: attribution text, a no-uptime
   notice, and Terrarium/Mapterhorn attribution requirements.
+- Provider URLs and attribution references are recorded in
+  [basemap provider notes](basemap-providers.md). A local HTTP custom style was
+  checked in headless Chrome; public tile loading still needs a browser run
+  with access to those hosts.
 - Theming and tinting of provider styles belong to M2.
 
 ### E. Agent skill pack

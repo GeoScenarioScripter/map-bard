@@ -1,10 +1,11 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-20, Session 31 S1-W4-B verification.
+Updated 2026-10-20, Session 32 S1-W4-C browser findings.
 **Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
 handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
 Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 A/B closed
-in Sessions 30–31; W4-C and G4 remain.
+in Sessions 30–31; W4-C's Session 32 reader review found defects. G4 correction
+and retest remain.
 No complete Stage 1 publication capability is delivered yet.**
 The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
 records source acquisitions and accepted bounded Potomac comparability, and
@@ -19,6 +20,9 @@ S1-W3-A is recorded in [the compiler handoff](stage-1/w3-a-handoff.md)
 and S1-W3-B in [the playback handoff](stage-1/w3-b-handoff.md). S1-W3-C is in
 [the publication handoff](stage-1/w3-c-handoff.md). The
 [G3 review](stage-1/g3-review.md) records public composition and releases Wave 4.
+The [W4-C browser record](stage-1/browser-checks.md) reports wheel-navigation,
+geographic-context and presentation defects from the compiled direct-file page;
+the user selected a credited local offline context map for G4 correction.
 
 Read this alongside the [product direction](mapbard-plan.md),
 [architecture](mapbard-build-guide.md), [refinement inputs](refinement-roadmap.md),

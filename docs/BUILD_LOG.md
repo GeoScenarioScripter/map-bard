@@ -16,10 +16,10 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** Stage 1 opened in Session 11 after Session 10's R01–R40 planning review. The original Phase A execution plan is superseded, not completed.
-- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 S1-W3-A/B/C closed in Sessions 26–28; [G3 CLOSED](stage-1/g3-review.md) in Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; W4-C and G4 remain. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
+- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 S1-W3-A/B/C closed in Sessions 26–28; [G3 CLOSED](stage-1/g3-review.md) in Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; W4-C's [reader screenshot/report](stage-1/browser-checks.md) in Session 32 found wheel navigation and geographic context defects. G4 correction and browser retest remain open. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
 - **Historical milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ recorded done; M5–M7 were not started and their old sequence is superseded. See `phase-a-plan.md` and archived checklists.
 - **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench, followed by MapBard's own hosted community / market center for uploading, serving, and visualizing user-written story pages. Geographic data, text, and supplied images/video remain central. Complete the local pipeline first; pricing, payment, and commercialization details remain deferred.
-- **Next action:** run S1-W4-C browser/accessibility review against the public compiled pipeline and real-source [author example](../examples/projects/first-slice/README.md), then integrate S1-W4-A/B/C at G4. New-player browser behavior and full Stage 1 acceptance remain unverified. Do not resume old M5 automatically.
+- **Next action:** at G4, repair compiled-player wheel navigation, add a credited local offline Potomac context map and correct the screenshot's legend/media layout; regenerate the [author example](../examples/projects/first-slice/README.md) for direct-file reader retest. Console/Network, offline, relocation and accessibility observations remain unverified. Do not resume old M5 automatically.
 - **Actual code:** GeoNarrative v0.1.0, Stage 0, DashScope Plan and the legacy example renderer remain available. G2 integrates public project/design/compiled schemas and strict load/import/validation. W3-A adds a pure compiler and bounded knowledge rules with an actual compiled fixture matching g1-r1 semantic output. W3-B adds a MapLibre adapter, compiled styling/legends/annotations, scene observation and keyboard controls. W3-C adds compiled HTML/data/bootstrap generation and staged, checked asset publication. G3 exports compiler/publication APIs and composes a fresh-input synthetic project build through the public packages and built IIFE. W4-A adds the bounded Potomac project and a public-package build script with input/output verification records. The legacy renderer accepts an explicit, inlined local context map for the example; authored PMTiles remain unimplemented. No complete Stage 1 publication/workbench/toolkit capability is delivered.
 - **Repo:** `main` tracks GitHub `origin/main` → `https://github.com/GeoScenarioScripter/map-bard.git`. Session 25 collected work through G2 into separate commits and established the standing per-session local commit rule. Later sessions use local commits; no push is authorized by this work.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
@@ -906,6 +906,42 @@ a new numbered session. Commit that session's own verified work before handoff.
 **Verification:** Five package builds, 130 root tests (schema 22, core 73, renderer 32, root integration 3), lint, strict typecheck of both new test files, G1 source/specimen verifier, nine-file legacy generation, eight-file real-example generation with empty diagnostics/network requirements, three JavaScript syntax checks, changed-file formatting and diff whitespace review pass. An initial lockfile check caused pnpm to recreate `node_modules`; a pinned install restored it before these final checks. No browser check was run.
 
 **Next:** Run S1-W4-C browser and accessibility review, then integrate all Wave 4 evidence at G4.
+
+---
+
+## Session 32 — 2026-10-20 — 🔴 CLOSED
+
+**Plan ID:** S1-W4-C — Browser and accessibility checks.
+
+**Goal:** Exercise the compiled public story in a real browser, including direct-file playback, interaction, accessibility, offline behavior and relocation; record observed evidence and defects for G4.
+
+**Did:** Opened after confirming a clean `main` checkout and reading the Wave 4 handoffs. Built the public Potomac example with empty diagnostics and network requirements. Copied all ten output files to a temporary directory outside the checkout and verified matching relative paths and SHA-256 hashes. Inspected generated markup plus player, media and CSS accessibility paths. Recorded the blocked browser matrix, source findings and direct-file review procedure in the [W4-C record](stage-1/browser-checks.md).
+
+**Decisions:** Browser observations remain distinct from build, copy and source checks. The browser-use tool denied the local `file:` URL and explicitly prohibited alternate automated routes. The reader then supplied a direct-file screenshot/report: wheel input zooms the map, the neutral background lacks geographic context, legend bounds show raw decimals and the photo caption/credit is cramped. These are G4 defects, not a browser pass. The user selected a credited local offline context map. The real example has no controls, posters or anchored media, so those cannot be certified from its page.
+
+**Files touched:** `docs/BUILD_LOG.md`, `docs/stage-1/browser-checks.md`, `docs/stage-1-plan.md`, `docs/implementation-stages.md`, `AGENTS.md`.
+
+**Verification:** Fresh public example build writes eight published files plus two verification records, with no diagnostics or required network URLs. Original and relocated ten-file trees have matching SHA-256 hashes. The reader screenshots show the local intro, comparison and limits pages with markers and a legend; their report says wheel input zooms the map instead of scrolling the story. Browser/version, Console/Network, offline reload, relocated playback and accessibility remain unreported. Changed-file formatting, local link target and diff whitespace checks pass; this review-only session did not rerun code tests.
+
+**Next:** Open G4 correction work, rebuild the real page and obtain a direct-file retest for the real page and G3 control specimen, including offline/relocation and accessibility observations. No Stage 1 closure until those checks pass.
+
+---
+
+## Session 33 — 2026-10-20 — 🟢 OPEN
+
+**Plan ID:** S1-SERVE planning — local live serving foundation.
+
+**Goal:** Plan a reusable story-serving system before the remaining Stage 1 browser review, while preserving portable export and the later community direction.
+
+**Did:** Reviewed the current plans, publication APIs and Session 32 browser blocker. Planning only; no server implementation or browser acceptance is claimed.
+
+**Decisions:** Preserve the pre-existing Session 32 journal/browser notes and untracked source GeoJSON. Commit only this session's planning changes.
+
+**Files touched:** Pending planning edits.
+
+**Verification:** Pending documentation review.
+
+**Next:** Write the serving plan and reconcile active roadmap scope.
 
 ---
 

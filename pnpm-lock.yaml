@@ -74,6 +74,12 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
     devDependencies:
+      '@mapbard/core':
+        specifier: workspace:*
+        version: link:../core
+      '@mapbard/knowledge':
+        specifier: workspace:*
+        version: link:../knowledge
       esbuild:
         specifier: 0.21.5
         version: 0.21.5

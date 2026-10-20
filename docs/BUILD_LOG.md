@@ -16,10 +16,10 @@ The single session/phase journal. Each work session is one chapter. This is how 
 ## Current state banner
 
 - **Phase:** Stage 1 opened in Session 11 after Session 10's R01–R40 planning review. The original Phase A execution plan is superseded, not completed.
-- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 S1-W3-A/B/C closed in Sessions 26–28; [G3 CLOSED](stage-1/g3-review.md) in Session 29. Wave 4 started with S1-W4-A in Session 30; W4-B/C and G4 remain. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
+- **Active implementation stage:** **Stage 1 — Trustworthy Project and Publication**, Wave 1 handoffs complete; G1 **CLOSED** in Session 19 after the reader's direct-file report. Contract revision g1-r1, bounded Potomac source acceptance and the esbuild IIFE build choice are recorded in the [G1 review](stage-1/g1-review.md). Wave 2 handoffs S1-W2-A/B/C closed in Sessions 21–23; [G2 CLOSED](stage-1/g2-review.md) in Session 24. Wave 3 S1-W3-A/B/C closed in Sessions 26–28; [G3 CLOSED](stage-1/g3-review.md) in Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; W4-C and G4 remain. See [stage roadmap](implementation-stages.md) and [detailed Stage 1 waves/sessions](stage-1-plan.md).
 - **Historical milestones:** M0 ✅ · M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ recorded done; M5–M7 were not started and their old sequence is superseded. See `phase-a-plan.md` and archived checklists.
 - **Target product:** portable editable project + model-independent engine + first-class coding-agent toolkit + local visual workbench, followed by MapBard's own hosted community / market center for uploading, serving, and visualizing user-written story pages. Geographic data, text, and supplied images/video remain central. Complete the local pipeline first; pricing, payment, and commercialization details remain deferred.
-- **Next action:** run S1-W4-B independent regression and S1-W4-C browser/accessibility review against the public compiled pipeline and real-source [author example](../examples/projects/first-slice/README.md), then integrate at G4. New-player browser behavior and full Stage 1 acceptance remain unverified. Do not resume old M5 automatically.
+- **Next action:** run S1-W4-C browser/accessibility review against the public compiled pipeline and real-source [author example](../examples/projects/first-slice/README.md), then integrate S1-W4-A/B/C at G4. New-player browser behavior and full Stage 1 acceptance remain unverified. Do not resume old M5 automatically.
 - **Actual code:** GeoNarrative v0.1.0, Stage 0, DashScope Plan and the legacy example renderer remain available. G2 integrates public project/design/compiled schemas and strict load/import/validation. W3-A adds a pure compiler and bounded knowledge rules with an actual compiled fixture matching g1-r1 semantic output. W3-B adds a MapLibre adapter, compiled styling/legends/annotations, scene observation and keyboard controls. W3-C adds compiled HTML/data/bootstrap generation and staged, checked asset publication. G3 exports compiler/publication APIs and composes a fresh-input synthetic project build through the public packages and built IIFE. W4-A adds the bounded Potomac project and a public-package build script with input/output verification records. The legacy renderer accepts an explicit, inlined local context map for the example; authored PMTiles remain unimplemented. No complete Stage 1 publication/workbench/toolkit capability is delivered.
 - **Repo:** `main` tracks GitHub `origin/main` → `https://github.com/GeoScenarioScripter/map-bard.git`. Session 25 collected work through G2 into separate commits and established the standing per-session local commit rule. Later sessions use local commits; no push is authorized by this work.
 - **Toolchain:** pnpm 9.15.0 (via corepack), Node 22.19, TypeScript 5.9, vitest 2.1, eslint 9.39. MapBard has **its own git repo** on `main` (not the `D:/code` parent).
@@ -888,6 +888,24 @@ a new numbered session. Commit that session's own verified work before handoff.
 **Verification:** Five-package build and root test suite pass (120 tests: schema 22, core 66, renderer 29, public integration 3); lint, frozen G1/source verifier and legacy nine-file generation pass. Two fresh real-example builds produce eight files each, empty diagnostics and `requiredNetwork`, and byte-identical `verification.json` records (SHA-256 `2ff64bed0fcdb3bcc4a90aa6f717bbfcd2f363f29525c097f6c439b0fc6c0178`). Inspected compiled scenes (3), bound annotations (5), local photo and shared full-data domain `[580,23600]` `ft^3/s` across three members. Source and generated JavaScript syntax checks pass. Browser, accessibility and relocated-file execution have not run. A frozen offline install command encountered an interactive reinstall prompt and made no change; existing dependencies sufficed for build/tests.
 
 **Next:** Complete S1-W4-A, then hand off independent regression and browser reviews to S1-W4-B/C.
+
+---
+
+## Session 31 — 2026-10-20 — 🔴 CLOSED
+
+**Plan ID:** S1-W4-B — Independent regression checks.
+
+**Goal:** Challenge the public project and publication pipeline with independent regression cases, document actual pass/fail coverage and legacy content preservation, and hand any defects to G4.
+
+**Did:** Added real-source public-API integration checks for relocated deterministic compilation, three unsupported versions, duplicate source IDs, missing data, unsupported basemap intent, full legacy narrative preservation, publication separation, stale narration/data, and unsafe or missing media. Added direct test-only renderer workspace dependencies and the [W4-B verification record](stage-1/verification.md).
+
+**Decisions:** Keep author-project load distinct from semantic validation: duplicate IDs diagnose at validation, while missing bytes diagnose at load. Treat generated media names as loader-resolved paths. Keep browser, relocation of published output, accessibility and visual judgment for W4-C; no production correction was indicated by these regressions.
+
+**Files touched:** `packages/core/src/project/pipeline.integration.test.ts`, `packages/renderer/src/publication.integration.test.ts`, `packages/renderer/package.json`, `pnpm-lock.yaml`, `docs/stage-1/verification.md`, `docs/BUILD_LOG.md`, `docs/stage-1-plan.md`, `docs/implementation-stages.md`, `AGENTS.md`.
+
+**Verification:** Five package builds, 130 root tests (schema 22, core 73, renderer 32, root integration 3), lint, strict typecheck of both new test files, G1 source/specimen verifier, nine-file legacy generation, eight-file real-example generation with empty diagnostics/network requirements, three JavaScript syntax checks, changed-file formatting and diff whitespace review pass. An initial lockfile check caused pnpm to recreate `node_modules`; a pinned install restored it before these final checks. No browser check was run.
+
+**Next:** Run S1-W4-C browser and accessibility review, then integrate all Wave 4 evidence at G4.
 
 ---
 

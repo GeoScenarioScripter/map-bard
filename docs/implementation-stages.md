@@ -1,9 +1,10 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-20, Session 29 G3 public composition.
+Updated 2026-10-20, Session 31 S1-W4-B verification.
 **Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
 handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
-Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 is next.
+Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 A/B closed
+in Sessions 30–31; W4-C and G4 remain.
 No complete Stage 1 publication capability is delivered yet.**
 The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
 records source acquisitions and accepted bounded Potomac comparability, and

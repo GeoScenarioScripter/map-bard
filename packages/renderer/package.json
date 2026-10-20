@@ -27,6 +27,8 @@
     "scrollama": "^3.2.0"
   },
   "devDependencies": {
+    "@mapbard/core": "workspace:*",
+    "@mapbard/knowledge": "workspace:*",
     "esbuild": "0.21.5"
   }
 }

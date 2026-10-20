@@ -39,7 +39,7 @@ Check source/tests before treating a target capability as implemented.
 **Stage 1 — Trustworthy Project and Publication is active; Wave 1 handoffs are
 complete (Sessions 11–13), G1 closed in Session 19, and G2 closed in Session 24.
 Wave 2 is integrated; Wave 3A/B/C closed in Sessions 26–28 and G3 closed in
-Session 29. Wave 4 started with S1-W4-A in Session 30; W4-B/C and G4 remain.**
+Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; W4-C and G4 remain.**
 See `docs/stage-1/g1-review.md` for frozen contract revision g1-r1, verified
 acquisitions, the bounded Potomac comparison and selected esbuild IIFE approach.
 Sessions 16–17 repaired reader-reported legacy demo issues, including an explicit
@@ -53,8 +53,8 @@ contracts, 89 passing tests and the bounded Node VM check. See
 `docs/stage-1/w3-c-handoff.md` for the compiler, playback and publication
 handoffs. The `docs/stage-1/g3-review.md` records public composition, the
 synthetic compiled fixture and the bounded capability gate. Session 30 adds the
-real-source author example and reproducible build record. Independent regression
-and browser review are next.
+real-source author example and reproducible build record. Session 31 adds
+independent regression checks; browser review is next.
 No complete Stage 1 publication capability is delivered. Do not resume old M5. Only Stage 1
 has detailed waves/sessions; detail each later stage after its predecessor closes.
 

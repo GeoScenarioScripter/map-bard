@@ -1,0 +1,97 @@
+{
+  "projectVersion": "0.1.0",
+  "id": "potomac-daily-discharge",
+  "revision": 1,
+  "artifacts": {
+    "narrative": "narrative.geonarrative.json",
+    "design": "design.json"
+  },
+  "resources": {
+    "data": [
+      {
+        "id": "potomac-2024",
+        "kind": "geojson",
+        "path": "data/potomac-2024-10-01.geojson",
+        "sha256": "sha256:517eb654caa03bc030882b50053afdf1644d1eb1166b072e92aa91c5a3daf30e",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "station_id",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2024-10-01 (Eastern time). Three distinct catchments; regulation, hydroelectric effects and diversion limit interpretation."
+        },
+        "observationLabel": "2024-10-01"
+      },
+      {
+        "id": "potomac-2025",
+        "kind": "geojson",
+        "path": "data/potomac-2025-10-01.geojson",
+        "sha256": "sha256:92ddb1b06bd1920bae501c5fc14a8f3cf625828766a469232719d832e036fd51",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "station_id",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2025-10-01 (Eastern time). These are separate published station-day summaries, not a trend or reach water balance."
+        },
+        "observationLabel": "2025-10-01"
+      }
+    ],
+    "media": [
+      {
+        "id": "potomac-context",
+        "kind": "image",
+        "location": {
+          "type": "local",
+          "path": "media/potomac-context.jpg",
+          "sha256": "sha256:25b420ffa5e22ab882cbfc42c7145b2697da9e9352b70afcaa0cc75e59f36ba7"
+        },
+        "attribution": {
+          "label": "Potomac River at Whites Ferry",
+          "url": "https://www.usgs.gov/media/images/potomac-river",
+          "creator": "Cynthia L. Cunningham, U.S. Geological Survey",
+          "license": "Public Domain",
+          "qualification": "Context photograph; it does not depict a gauge observation on either comparison date."
+        }
+      }
+    ]
+  }
+}

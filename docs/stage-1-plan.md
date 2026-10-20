@@ -1,10 +1,10 @@
 # Stage 1 — Trustworthy Project and Publication
 
-Updated 2026-10-20, Session 29 G3 public composition.
+Updated 2026-10-20, Session 30 Wave 4 kickoff and S1-W4-A.
 **IN PROGRESS — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
 real-case gate in BUILD_LOG Session 11, S1-W1-B contract proposal closed in
 Session 12, and S1-W1-C baseline/runtime spike closed in Session 13, with its
-final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 is next.**
+final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 has started: S1-W4-A closed in Session 30; S1-W4-B/C and G4 remain open.**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
 The prior planning/review sessions implemented no features. The
@@ -418,6 +418,8 @@ final demonstration project lands, the coordinator repeats its acceptance path.
 | **S1-W4-A — Author-facing example**            | Own final `examples/projects/first-slice/{mapbard.project.json,narrative.geonarrative.json,design.json,README.md}` and `examples/scripts/build-first-slice.mjs`. Compose public APIs for context/comparison/synthesis scenes with supplied media and explicit qualifications.                                                                    | Rebuild from documented steps without credentials, private imports or manual dist edits. Include import/build/diagnostic examples and network requirements. Hand off reproducible author path to G4.                                         |
 | **S1-W4-B — Independent regression checks**    | Own new `packages/core/src/project/pipeline.integration.test.ts`, `packages/renderer/src/publication.integration.test.ts` and `docs/stage-1/verification.md`. Challenge migration/versions, determinism, source identity, asset safety, missing data and unsupported intent using public APIs. No production edits during parallel verification. | Record actual pass/fail coverage and legacy content comparison. Prove publication is separate from editable state and invalid input does not publish a misleading result. Hand off failures to owners through G4.                            |
 | **S1-W4-C — Browser and accessibility checks** | Own `docs/stage-1/browser-checks.md` and review artifacts only. Exercise G3 story from local files, scene transitions/revisits, media/posters/popups, comparison, legends and presentation controls. Check keyboard, narrow viewport and reduced motion.                                                                                         | Capture browser/version/OS, file URL vs localhost, network-disabled results, console failures, viewport and interaction steps. Verify relocation. Mark unavailable checks blocked/skipped, never passed. Hand off issues and evidence to G4. |
+
+**S1-W4-A disposition — Session 30: CLOSED.** The [portable Potomac example](../examples/projects/first-slice/README.md) now has three bounded scenes, pinned data/media declarations, a shared discharge scale and public-package build script. Two fresh builds produced identical shareable verification records, eight local output files each, and no required network URL or diagnostics. The generated semantic scale uses full-data domain 580–23,600 `ft^3/s` with the same edges in all three scenes. This is generation and semantic inspection, not browser acceptance. S1-W4-B/C and G4 remain open.
 
 **G4 — coordinator:** merge example and independent checks, route defects back to
 the owning session, then rerun affected checks and the final example browser path.

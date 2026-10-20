@@ -1,0 +1,102 @@
+{
+  "designVersion": "0.1.0",
+  "scenes": [
+    {
+      "sceneId": "context-2024",
+      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "annotations": [
+        {
+          "id": "hancock-2024",
+          "text": "Hancock: 5,580 ft^3/s on 2024-10-01",
+          "at": [-78.17788888888889, 39.69755555555555],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01613000"]
+          }
+        },
+        {
+          "id": "point-of-rocks-2024",
+          "text": "Point of Rocks: 23,600 ft^3/s on 2024-10-01",
+          "at": [-77.5431111111111, 39.273583333333335],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01638500"]
+          }
+        },
+        {
+          "id": "little-falls-2024",
+          "text": "Little Falls: 17,300 ft^3/s on 2024-10-01",
+          "at": [-77.12763888888888, 38.949777777777776],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01646500"]
+          }
+        }
+      ]
+    },
+    {
+      "sceneId": "compare-2025",
+      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "annotations": [
+        {
+          "id": "point-of-rocks-2025",
+          "text": "Point of Rocks: 2,020 ft^3/s on 2025-10-01",
+          "at": [-77.5431111111111, 39.273583333333335],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2025",
+            "featureIds": ["USGS-01638500"]
+          }
+        }
+      ]
+    },
+    {
+      "sceneId": "limits",
+      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "annotations": [
+        {
+          "id": "little-falls-limits",
+          "text": "Little Falls: diversions and reservoir effects affect interpretation",
+          "at": [-77.12763888888888, 38.949777777777776],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2025",
+            "featureIds": ["USGS-01646500"]
+          }
+        }
+      ]
+    }
+  ],
+  "sharedScales": [
+    {
+      "id": "daily-discharge",
+      "members": [
+        {
+          "sceneId": "context-2024",
+          "layerId": "gauges",
+          "sourceId": "potomac-2024",
+          "observationLabel": "2024-10-01"
+        },
+        {
+          "sceneId": "compare-2025",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01"
+        },
+        {
+          "sceneId": "limits",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01 (limits)"
+        }
+      ],
+      "visualVariable": "color",
+      "method": "equal-interval",
+      "classes": 3,
+      "palette": ["#d9f0f0", "#65a9bd", "#174b75"]
+    }
+  ]
+}

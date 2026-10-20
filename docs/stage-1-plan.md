@@ -1,10 +1,10 @@
 # Stage 1 — Trustworthy Project and Publication
 
-Updated 2026-10-20, Session 28 W3-C publication handoff.
+Updated 2026-10-20, Session 29 G3 public composition.
 **IN PROGRESS — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
 real-case gate in BUILD_LOG Session 11, S1-W1-B contract proposal closed in
 Session 12, and S1-W1-C baseline/runtime spike closed in Session 13, with its
-final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28, with G3 pending.**
+final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 is next.**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
 The prior planning/review sessions implemented no features. The
@@ -153,10 +153,10 @@ renderer → schema; the example script composes core + renderer. Add only direc
 `workspace:*` edges actually used. No new engine package is necessary in Stage 1.
 The built-in planner stays optional and unchanged; compilation never invokes it.
 
-G2 exports `loadProject`, `importLegacyNarrative` and `validateProject` through
-`@mapbard/core`; validation currently composes schema/reference checks.
-`compileProject` and `renderCompiled` remain reserved Wave 3 targets, not current
-exports. G1 fixes signatures and input/output specimens.
+G2 exported `loadProject`, `importLegacyNarrative` and `validateProject` through
+`@mapbard/core`; validation composes schema/reference checks. G3 now exports
+`compileProject` and `renderCompiled` through their public package barrels.
+G1 fixed signatures and input/output specimens.
 Keep existing `render(narrative, dataMap, options)` usable for the legacy example.
 Avoid a renderer→core cycle: the new example explicitly calls compilation, then
 `renderCompiled`. Legacy generation is a compatibility path; it does not acquire
@@ -398,7 +398,14 @@ off in [the W3-B record](stage-1/w3-b-handoff.md). W3-C and G3 composition were
 pending at that handoff; no compiled browser story was claimed.
 **S1-W3-C disposition — Session 28: CLOSED.** Compiled HTML/data/bootstrap and
 strict staged asset publication are handed off in [the W3-C record](stage-1/w3-c-handoff.md).
-G3 public composition remains pending; no compiled browser acceptance is claimed.
+G3 public composition followed this handoff; no compiled browser acceptance was
+claimed by W3-C.
+
+**G3 disposition — Session 29: CLOSED / PASS.** Public compiler/renderer exports,
+fresh-input example composition, built-player publication and the bounded
+capability matrix are recorded in the [G3 review](stage-1/g3-review.md). Wave 4
+is released for case, adversarial and browser review; compiled browser acceptance
+has not yet been claimed.
 
 ### Wave 4 — Demonstrate, challenge and close
 

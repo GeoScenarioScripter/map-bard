@@ -10,6 +10,8 @@ export { render } from './render.js';
 export { writeBundle } from './write.js';
 export { buildIndexHtml } from './index-html.js';
 export { buildBundleData } from './bundle-data.js';
+export { renderCompiled } from './compiled.js';
+export { writeCompiledBundle } from './write-compiled.js';
 export type {
   DataMap,
   LocalContextMap,

@@ -11,6 +11,15 @@ importers:
       '@eslint/js':
         specifier: ^9.17.0
         version: 9.39.4
+      '@mapbard/core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@mapbard/knowledge':
+        specifier: workspace:*
+        version: link:packages/knowledge
+      '@mapbard/renderer':
+        specifier: workspace:*
+        version: link:packages/renderer
       '@types/node':
         specifier: ^22.10.2
         version: 22.19.21

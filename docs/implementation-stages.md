@@ -1,9 +1,10 @@
 # MapBard — Implementation Stages
 
-Updated 2026-10-20, Session 28 W3-C publication handoff.
+Updated 2026-10-20, Session 29 G3 public composition.
 **Stage 1 Wave 1 handoffs complete (Sessions 11–13); G1 CLOSED and Wave 2
 handoffs complete (S1-W2-A/B/C in Sessions 21–23). G2 CLOSED in Session 24;
-Wave 3A/B/C closed in Sessions 26–28; G3 remains. No complete Stage 1 publication capability is delivered yet.**
+Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 is next.
+No complete Stage 1 publication capability is delivered yet.**
 The [G1 record](stage-1/g1-review.md) freezes the g1-r1 contract decisions,
 records source acquisitions and accepted bounded Potomac comparability, and
 selects the runtime build approach after the direct-file browser report.
@@ -12,10 +13,11 @@ old M5.
 
 The [G2 record](stage-1/g2-review.md) integrates public project contracts,
 load/import/validation and the dedicated player asset build. All 89 tests pass;
-the compiled player's browser acceptance still waits for Wave 3 wiring and
-Wave 4 review. S1-W3-A is recorded in [the compiler handoff](stage-1/w3-a-handoff.md)
+the compiled player's browser acceptance still waits for Wave 4 review.
+S1-W3-A is recorded in [the compiler handoff](stage-1/w3-a-handoff.md)
 and S1-W3-B in [the playback handoff](stage-1/w3-b-handoff.md). S1-W3-C is in
-[the publication handoff](stage-1/w3-c-handoff.md); next is G3 composition.
+[the publication handoff](stage-1/w3-c-handoff.md). The
+[G3 review](stage-1/g3-review.md) records public composition and releases Wave 4.
 
 Read this alongside the [product direction](mapbard-plan.md),
 [architecture](mapbard-build-guide.md), [refinement inputs](refinement-roadmap.md),

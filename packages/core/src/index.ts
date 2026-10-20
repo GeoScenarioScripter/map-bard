@@ -2,7 +2,7 @@
  * @mapbard/core — the MapBard pipeline.
  *
  * Project I/O and validation are model-free. Legacy ingestion and optional
- * provider-backed planning remain available; compilation is a later boundary.
+ * provider-backed planning remain available; compilation is model-free.
  */
 import { parseGeoNarrative, type GeoNarrative } from '@mapbard/schema';
 
@@ -12,6 +12,7 @@ export * from './stage1/index.js';
 export { loadProject } from './project/load.js';
 export { importLegacyNarrative } from './project/import-legacy.js';
 export { validateProject } from '@mapbard/schema';
+export { compileProject, COMPILER_VERSION } from './compile/compile.js';
 
 /** Parse + validate an external object into a `GeoNarrative`. */
 export function loadNarrative(input: unknown): GeoNarrative {

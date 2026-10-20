@@ -25,6 +25,46 @@ function replaceData(project: ValidatedProject, id: string, data: unknown): void
 }
 
 describe('compileProject', () => {
+  it('compiles constant point visibility and radius controls with authored camera modes', async () => {
+    const project = await fixture();
+    project.narrative.scenes[1]!.transitionIn = 'fly';
+    project.narrative.scenes[0]!.layers.push({
+      id: 'constant-sites',
+      dataSourceId: 'period-a',
+      technique: 'point',
+    });
+    project.design.scenes[0]!.layers.push({
+      layerId: 'constant-sites',
+      constant: { radius: 6 },
+    });
+    project.narrative.scenes[0]!.controls!.push(
+      {
+        id: 'show-constant',
+        kind: 'toggle',
+        label: 'Show constant sites',
+        bindsTo: { layerId: 'constant-sites', property: 'visibility' },
+        default: true,
+      },
+      {
+        id: 'constant-radius',
+        kind: 'slider',
+        label: 'Constant radius',
+        bindsTo: { layerId: 'constant-sites', property: 'circle-radius' },
+        range: [2, 10],
+        default: 6,
+      },
+    );
+    const result = compileProject(project, STAGE1_CAPABILITIES);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(result.value.scenes[1]!.transitionIn).toBe('fly');
+    expect(result.value.scenes[0]!.layers[1]!.constant?.radius).toBe(6);
+    expect(result.value.scenes[0]!.controls.slice(1)).toEqual([
+      expect.objectContaining({ property: 'visibility', default: true }),
+      expect.objectContaining({ property: 'radius', default: 6, range: [2, 10] }),
+    ]);
+  });
+
   it('matches the frozen shared-scale semantic oracle and is deterministic and pure', async () => {
     const project = await fixture();
     const before = JSON.stringify(project);

@@ -70,6 +70,51 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
 }
 
 describe('compiled player foundation', () => {
+  it('applies visibility and radius defaults and routes authored camera transitions', () => {
+    const story = structuredClone(specimen);
+    const layerId = story.scenes[0]!.layers[0]!.runtimeId;
+    story.scenes[0]!.transitionIn = 'ease';
+    story.scenes[1]!.transitionIn = 'fly';
+    story.scenes[0]!.controls.push(
+      {
+        sceneId: 'a',
+        id: 'visible',
+        kind: 'toggle',
+        label: 'Visible',
+        runtimeLayerId: layerId,
+        property: 'visibility',
+        default: true,
+      },
+      {
+        sceneId: 'a',
+        id: 'radius',
+        kind: 'slider',
+        label: 'Radius',
+        runtimeLayerId: layerId,
+        property: 'radius',
+        default: 6,
+        range: [2, 10],
+      },
+    );
+    const { player, events } = harness(story);
+    player.enter('a');
+    player.setControl('visible', false);
+    player.setControl('radius', 8);
+    player.enter('b');
+    player.enter('a');
+    expect(events.filter((event) => event.startsWith('camera:'))).toEqual([
+      'camera:cut',
+      'camera:fly',
+      'camera:ease',
+    ]);
+    expect(events.filter((event) => event === `control:${layerId}:visibility:true`)).toHaveLength(
+      2,
+    );
+    expect(events.filter((event) => event === `control:${layerId}:radius:6`)).toHaveLength(2);
+    expect(events).toContain(`control:${layerId}:visibility:false`);
+    expect(events).toContain(`control:${layerId}:radius:8`);
+  });
+
   it('consumes the frozen specimen and isolates same-authored-ID bindings by runtime ID', () => {
     const { player, events } = harness();
     player.enter('a');
@@ -169,7 +214,8 @@ describe('compiled player foundation', () => {
   });
 
   it('rejects unknown compiled versions and scene IDs', () => {
-    expect(() => harness({ ...specimen, compiledVersion: '9.0.0' })).toThrow(/Unsupported/);
+    const badVersion = { ...specimen, compiledVersion: '9.0.0' } as unknown as CompiledStory;
+    expect(() => harness(badVersion)).toThrow(/Unsupported/);
     expect(() => harness().player.enter('missing')).toThrow(/Unknown scene/);
   });
 

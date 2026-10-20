@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BasemapV2Schema } from './format-v2.js';
 import { GeoNarrativeSchema, SCHEMA_VERSION, type GeoNarrative } from './geo-narrative.js';
 import { CompiledSchema, ResolvedAssetsSchema, type Compiled } from './compiled.js';
 import { DesignSchema, type Design } from './design.js';
@@ -34,6 +35,8 @@ export const LoadedProjectSchema = z
     input: InputSnapshotSchema,
     dataBytes: DataBytesSchema,
     resolvedAssets: ResolvedAssetsSchema,
+    authoredFormat: z.literal('0.2.0').optional(),
+    authoredBasemap: BasemapV2Schema.optional(),
   })
   .strict();
 export const ValidatedProjectSchema = LoadedProjectSchema;
@@ -181,7 +184,14 @@ export function parseProjectArtifacts(input: {
 }
 
 export function parseCompiled(input: unknown): Result<Compiled> {
-  const diagnostics = version(input, 'compiledVersion', COMPILED_VERSION, 'compiled');
+  const rawVersion =
+    input && typeof input === 'object' && 'compiledVersion' in input
+      ? input.compiledVersion
+      : undefined;
+  const diagnostics =
+    rawVersion === COMPILED_VERSION || rawVersion === '0.2.0'
+      ? []
+      : version(input, 'compiledVersion', COMPILED_VERSION, 'compiled');
   if (diagnostics.length) return { ok: false, diagnostics };
   const parsed = parseShape(input, CompiledSchema, 'compiled');
   if (!parsed.ok) return parsed;

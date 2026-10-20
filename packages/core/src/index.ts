@@ -7,6 +7,12 @@ import { parseGeoNarrative, type GeoNarrative } from '@mapbard/schema';
 
 export * from './inspect/index.js';
 export { loadProject } from './project/load.js';
+export {
+  loadProjectV2,
+  refreshProjectLock,
+  recordProjectCompilation,
+} from './project/format-v2.js';
+export { migrateProject } from './project/migrate.js';
 export { validateProject } from '@mapbard/schema';
 export { compileProject, COMPILER_VERSION } from './compile/compile.js';
 

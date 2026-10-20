@@ -107,12 +107,12 @@ const ResolvedControlSchema = z
 
 export const CompiledSchema = z
   .object({
-    compiledVersion: z.literal(COMPILED_VERSION),
+    compiledVersion: z.enum([COMPILED_VERSION, '0.2.0']),
     contractVersions: z
       .object({
-        project: z.literal(PROJECT_VERSION),
-        narrative: z.literal('0.1.0'),
-        design: z.literal(DESIGN_VERSION),
+        project: z.enum([PROJECT_VERSION, '0.2.0']),
+        narrative: z.enum(['0.1.0', '0.2.0']),
+        design: z.enum([DESIGN_VERSION, '0.2.0']),
       })
       .strict(),
     compilerVersion: z.string().min(1),
@@ -121,7 +121,7 @@ export const CompiledSchema = z
     title: z.string(),
     intent: z.string(),
     theme: ThemeTokensSchema.strict().optional(),
-    basemap: z.literal('neutral'),
+    basemap: z.union([z.literal('neutral'), z.object({ provider: z.literal('none') }).strict()]),
     scenes: z.array(
       z
         .object({
@@ -170,7 +170,21 @@ export const CompiledSchema = z
     ),
     requiredNetwork: z.array(z.string().url()),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    const v2 = value.compiledVersion === '0.2.0';
+    if (
+      value.contractVersions.project !== value.compiledVersion ||
+      value.contractVersions.narrative !== value.compiledVersion ||
+      value.contractVersions.design !== value.compiledVersion ||
+      (v2 ? typeof value.basemap === 'string' : typeof value.basemap !== 'string')
+    )
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['contractVersions'],
+        message: 'Compiled versions and basemap must agree.',
+      });
+  });
 
 export const ResolvedAssetsSchema = z.array(
   z

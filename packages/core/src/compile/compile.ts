@@ -396,6 +396,16 @@ export function compileProject(
   if (!validated.ok) return validated;
   checkBytes(project, diagnostics);
   const { narrative, design } = project;
+  if (project.authoredFormat === '0.2.0' && project.authoredBasemap?.provider !== 'none')
+    diagnostics.push(
+      issue(
+        'CAPABILITY_UNSUPPORTED',
+        'project',
+        ['basemap'],
+        'This basemap provider is not available until M1-D.',
+        'Use provider none or wait for the basemap implementation.',
+      ),
+    );
   if (narrative.basemap.style !== 'neutral' || narrative.basemap.pmtilesUrl)
     diagnostics.push(
       issue(
@@ -1079,15 +1089,19 @@ export function compileProject(
   }
   if (diagnostics.some((entry) => entry.severity === 'error')) return { ok: false, diagnostics };
   const candidate: Compiled = {
-    compiledVersion: '0.1.0',
-    contractVersions: { project: '0.1.0', narrative: '0.1.0', design: '0.1.0' },
+    compiledVersion: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
+    contractVersions: {
+      project: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
+      narrative: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
+      design: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
+    },
     compilerVersion: COMPILER_VERSION,
     input: project.input,
     id: narrative.id,
     title: narrative.title,
     intent: narrative.intent,
     ...(narrative.theme ? { theme: narrative.theme } : {}),
-    basemap: 'neutral',
+    basemap: project.authoredFormat === '0.2.0' ? { provider: 'none' } : 'neutral',
     scenes: compiledScenes,
     scales,
     resources,

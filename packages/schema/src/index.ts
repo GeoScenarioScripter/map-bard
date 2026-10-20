@@ -8,3 +8,5 @@ export * from './design.js';
 export * from './compiled.js';
 export * from './diagnostics.js';
 export * from './project-validation.js';
+export * from './format-v2.js';
+export * from './json-schema.js';

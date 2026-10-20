@@ -19,7 +19,7 @@ export function createPlayer(
   view: SceneView,
   options: PlayerOptions = {},
 ) {
-  if (story.compiledVersion !== '0.1.0')
+  if (story.compiledVersion !== '0.1.0' && story.compiledVersion !== '0.2.0')
     throw new Error(`Unsupported compiled version ${story.compiledVersion}`);
   const sceneById = new Map(story.scenes.map((scene) => [scene.id, scene]));
   let active: CompiledScene | undefined;

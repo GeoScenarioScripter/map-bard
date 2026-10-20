@@ -1,6 +1,6 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-20. Status: **in progress; A complete**. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-20. Status: **in progress; A and B complete**. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -45,6 +45,10 @@ scales). Format 0.2:
 - Validation still uses strict Zod schemas. `mapbard schema` exports JSON
   Schema (via `zod-to-json-schema`, MIT, or Zod 4's built-in export if we
   upgrade). Editors and agents then get completion and inline errors.
+
+  Format 0.2 schemas and JSON Schema exporters are implemented in
+  `@mapbard/schema`; the CLI command exposing them belongs to C.
+
 - **Staleness:** `check` compares lockfile hashes with the files on disk and
   reports drift. Every writing command (`add`, `lock`, `build`) refreshes the
   lock. `build` refuses stale inputs unless the lock was refreshed in the same run.

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { extname } from 'node:path';
 import { parseProject, parseProjectArtifacts } from '@mapbard/schema';
 import { inputSnapshot, sha256 } from './fingerprint.js';
+import { loadProjectV2 } from './format-v2.js';
 import {
   assertUniquePaths,
   existingProjectFile,
@@ -23,6 +24,12 @@ function decode(bytes: Uint8Array): unknown {
 }
 
 export async function loadProject(root: string): Promise<Result<LoadedProject>> {
+  try {
+    await readFile(await existingProjectFile(await realpath(root), 'mapbard.json'));
+    return loadProjectV2(root);
+  } catch {
+    /* Legacy 0.1 projects remain readable for migration. */
+  }
   const diagnostics: Diagnostic[] = [];
   let projectRoot: string;
   try {

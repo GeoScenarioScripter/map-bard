@@ -64,4 +64,6 @@ corepack pnpm test
 corepack pnpm lint
 ```
 
+The test suite includes a headless Chrome smoke test. Set `MAPBARD_CHROME_PATH` if Chrome is not discoverable through Playwright's `chrome` channel. The test stubs the online basemap style, so it checks the host request and player behavior without depending on public tile availability. `playwright-core` 1.64.1 is an Apache-2.0 development dependency.
+
 Current work and known limitations are in [STATUS.md](docs/STATUS.md); the [roadmap](docs/ROADMAP.md) and [M1 plan](docs/m1-cli.md) describe the next steps.

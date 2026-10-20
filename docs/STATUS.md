@@ -1,9 +1,9 @@
 # MapBard — Status
 
 **Updated 2026-10-20. Active milestone: [M1 — CLI and foundation](m1-cli.md),
-in progress. M1-A through M1-D implemented; M1-E pack expanded, agent trial
-pending; M1-F example and quickstart implemented, browser smoke pending.** See
-the [roadmap](ROADMAP.md).
+in progress. M1-A through M1-D and M1-F implemented; M1-E pack expanded with
+the fresh-agent trial pending. Next: finish M1-E and M1-G.** See the
+[roadmap](ROADMAP.md).
 
 ## What works today
 
@@ -29,8 +29,8 @@ the [roadmap](ROADMAP.md).
   built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Checks: 107 tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
-  root integration 3) and lint pass.
+- Checks: 108 tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
+  root integration 3, browser smoke 1) and lint pass.
 
 ## Known issues
 
@@ -42,10 +42,9 @@ the [roadmap](ROADMAP.md).
   actual OpenFreeMap/VersaTiles tile load has not been visually verified. A
   custom HTTP style loaded and displayed in headless Chrome; the offline
   publication also loaded from `file://`.
-- M1-F still needs an automated Playwright browser smoke test. M1-G covers npm
-  release packaging and CI. The new 0.2 example has not yet had a browser
-  playback check; its online tile hosts were unreachable in the earlier
-  headless browser environment.
+- M1-F's headless Chrome smoke test uses a stubbed online style, so a real
+  OpenFreeMap/VersaTiles tile load is still unverified in this environment.
+  M1-G covers npm release packaging and CI.
 - A fresh Claude Code agent trial for M1-E could not start in this environment:
   its API connection was refused before any tokens or tool calls. The direct
   CLI trial passed, but it does not satisfy the agent-trial acceptance item.
@@ -62,7 +61,9 @@ next step. Details belong in commit messages.
   Fresh Claude Code trial was blocked by API `ECONNREFUSED` before any tokens
   or tool calls. M1-F added the migrated format 0.2 Potomac example, online and
   offline CLI builds, a quickstart, and a CLI test that authors a real layer.
-  Build, 107 tests and lint pass. Next: fresh-agent retry and Playwright smoke.
+  Added a Playwright smoke test for `file://` playback, scroll navigation,
+  console errors, online host requests and zero offline requests. Build, 108
+  tests and lint pass. Next: fresh-agent retry and M1-G release packaging.
 - 2026-10-20: M1-C/D added the CLI binary and commands, JSON diagnostics,
   preview server, initial skill pack, MapLibre 6 IIFE/worker, provider catalog,
   fallback, terrain, attribution and offline mode. Build, 107 tests and lint

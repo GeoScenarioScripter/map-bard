@@ -13,4 +13,4 @@ node packages/cli/dist/bin.js --project examples/projects/potomac build
 node packages/cli/dist/bin.js --project examples/projects/potomac build --offline --out offline
 ```
 
-Stop `preview` with Ctrl+C before building. Open `examples/projects/potomac/out/index.html` for the online story or `examples/projects/potomac/offline/index.html` for the self-contained version. The online build declares `tiles.openfreemap.org` and `tiles.versatiles.org` in `verification.json`; the offline build declares no network URLs. Public tile availability and visual playback still need a browser check.
+Stop `preview` with Ctrl+C before building. Open `examples/projects/potomac/out/index.html` for the online story or `examples/projects/potomac/offline/index.html` for the self-contained version. The online build declares `tiles.openfreemap.org` and `tiles.versatiles.org` in `verification.json`; the offline build declares no network URLs. The automated headless Chrome smoke test checks browser playback and scroll navigation with a stubbed online style. Public tile availability still needs a browser check with network access.

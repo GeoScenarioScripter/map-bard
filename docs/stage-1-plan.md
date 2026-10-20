@@ -1,10 +1,10 @@
 # Stage 1 — Trustworthy Project and Publication
 
-Updated 2026-10-20, Session 32 S1-W4-C browser findings.
-**IN PROGRESS — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
+Updated 2026-10-20, Session 34 G4 correction and reader retest.
+**CLOSED — Wave 1 handoffs complete and G1 CLOSED; S1-W1-A closed with a no-go
 real-case gate in BUILD_LOG Session 11, S1-W1-B contract proposal closed in
 Session 12, and S1-W1-C baseline/runtime spike closed in Session 13, with its
-final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; S1-W4-C's Session 32 reader review found defects. G4 correction and retest remain open.**
+final lint fix verified in Session 14. Wave 2 handoffs are complete: S1-W2-A in Session 21, S1-W2-B in Session 22, and S1-W2-C in Session 23. G2 CLOSED in Session 24; Wave 3A/B/C closed in Sessions 26–28; G3 CLOSED in Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; S1-W4-C's Session 32 reader review found defects. Session 34 corrected those defects, received positive Edge retests for the real page and synthetic control, and [closed G4](stage-1/g4-review.md).**
 Parent: [implementation stages](implementation-stages.md). Stage 1 here is a new
 delivery stage, unrelated to the existing `core/src/stage1/plan.ts` LLM operation.
 The prior planning/review sessions implemented no features. The
@@ -425,6 +425,17 @@ final demonstration project lands, the coordinator repeats its acceptance path.
 
 **S1-W4-C disposition — Session 32: CLOSED / DEFECTS.** The [browser record](stage-1/browser-checks.md) contains a direct-file reader screenshot/report: wheel input zooms the compiled map rather than scrolling the story; the explicitly neutral Potomac background does not give acceptable geographic context; legend labels expose long decimal bounds and the photo caption/credit is cramped. The user selected a credited local offline context map. Static source and hash-preserved copy checks are separate from browser acceptance. G4 owns correction and retest; browser version, Console/Network, offline, relocated playback and accessibility evidence are still missing.
 
+**G4 correction — Session 34: CLOSED / PASS.** The
+compiled page now leaves wheel input to page scrolling; the example includes
+credited local state and Potomac River vectors, readable integer-range legend
+labels and a stacked photo credit. The [reader retest](stage-1/browser-checks.md#session-34-corrected-page-reader-retest)
+reports Edge 155.0.4283.45, working direct-file/offline/relocated playback,
+no Console or Network errors, and successful Tab annotation, narrow-window and
+reduced-motion checks. The reader also passed the separate synthetic control's
+offline keyboard, visual-update and revisit-reset check. The
+[G4 review](stage-1/g4-review.md) records integrated evidence and limits. The
+earlier Session 32 disposition remains a historical record of the failed candidate.
+
 **G4 — coordinator:** merge example and independent checks, route defects back to
 the owning session, then rerun affected checks and the final example browser path.
 Run required root build/tests/lint and smoke on the integrated result. Close the
@@ -477,36 +488,36 @@ commands at G1; the old smoke is retained for compatibility, not used to claim t
 new path was verified. Routine tests require no model/provider credentials. Browser
 testing is a separate gate from generation and map-adapter tests.
 
-- [ ] Real-case dossier verifies origins, reuse, media, CRS and comparability;
+- [x] Real-case dossier verifies origins, reuse, media, CRS and comparability;
       no fabricated findings or mislabeled placeholders.
-- [ ] Case brief names the author task, audience and geographic question; scene
+- [x] Case brief names the author task, audience and geographic question; scene
       purposes, attention and media receive a documented review against that brief.
-- [ ] Feature-bound annotations and comparison memberships resolve through load,
+- [x] Feature-bound annotations and comparison memberships resolve through load,
       compilation and playback; missing/ambiguous targets return diagnostics.
-- [ ] Declared measurement and author overrides remain distinct from inferred
+- [x] Declared measurement and author overrides remain distinct from inferred
       profiles; invalid units/identifier encodings/prerequisites diagnose; edits to
       inputs/declarations/design prevent reuse of stale compiled output.
-- [ ] Explicit versioned load/import validates references/IDs and preserves the
+- [x] Explicit versioned load/import validates references/IDs and preserves the
       handwritten example's content and supported behavior; unsupported versions
       and unknown required extensions fail without silent data loss.
-- [ ] Full data drives resolved categories/domains/classes, shared scales,
+- [x] Full data drives resolved categories/domains/classes, shared scales,
       legends and annotations; each supported capability has executable evidence.
-- [ ] Unsupported design/filter/basemap/control requests give a stable diagnostic
+- [x] Unsupported design/filter/basemap/control requests give a stable diagnostic
       and remedy rather than a silent visual fallback.
-- [ ] Scene bindings and controls reset correctly across forward/back/repeated
+- [x] Scene bindings and controls reset correctly across forward/back/repeated
       navigation; media, captions, credits and posters resolve.
-- [ ] Compilation is deterministic and model-independent; pure generation and
+- [x] Compilation is deterministic and model-independent; pure generation and
       I/O remain separate, and cross-package imports use public barrels.
-- [ ] Asset preflight prevents output escape/collisions and catches missing
+- [x] Asset preflight prevents output escape/collisions and catches missing
       required resources; URL dependencies are reported explicitly.
-- [ ] Both legacy and real examples build; real local export works after
+- [x] Both legacy and real examples build; real local export works after
       relocation from `file://` with network disabled, with actual browser evidence.
-- [ ] Basic keyboard, text-alternative, narrow-screen, contrast and reduced-motion
+- [x] Basic keyboard, text-alternative, narrow-screen, contrast and reduced-motion
       review recorded; known limitations are explicit and no blocking issue hidden.
-- [ ] Integrated build/test/lint passes; record counts and intentional legacy-test
+- [x] Integrated build/test/lint passes; record counts and intentional legacy-test
       changes. No blanket claim that 53 old tests establish new functionality.
-- [ ] Stage closure lists remaining exclusions and provides Stage 2 planning inputs.
-- [ ] Reproducible records link inputs/versions, diagnostics and output artifacts;
+- [x] Stage closure lists remaining exclusions and provides Stage 2 planning inputs.
+- [x] Reproducible records link inputs/versions, diagnostics and output artifacts;
       browser/manual/not-run results stay distinct. Closure updates R-ID coverage
       with evidence or deferral and hands off unsupported narrative requests.
 

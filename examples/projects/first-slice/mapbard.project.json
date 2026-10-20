@@ -1,13 +1,60 @@
 {
   "projectVersion": "0.1.0",
   "id": "potomac-daily-discharge",
-  "revision": 1,
+  "revision": 2,
   "artifacts": {
     "narrative": "narrative.geonarrative.json",
     "design": "design.json"
   },
   "resources": {
     "data": [
+      {
+        "id": "potomac-states-context",
+        "kind": "geojson",
+        "path": "data/potomac-states-context.geojson",
+        "sha256": "sha256:852616c38611ac39ac9f3cf38adb4ba77497a8b5f9a1203df94ee63f72ffc392",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "state",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau 2024 generalized state boundaries",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2024/State_County/MapServer/8",
+          "license": "U.S. public domain",
+          "qualification": "Local geographic context only; generalized state outlines do not represent discharge observations."
+        }
+      },
+      {
+        "id": "potomac-river-context",
+        "kind": "geojson",
+        "path": "data/potomac-river-context.geojson",
+        "sha256": "sha256:1ead5d0e2b5307d19f248ae1e6c196b0298085de6cc54260f122d329a28db250",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "Maryland iMAP Rivers and Streams — Generalized",
+          "url": "https://mdgeodata.md.gov/imap/rest/services/Hydrology/MD_Waterbodies/FeatureServer/0",
+          "qualification": "Named Potomac River segments are local geographic context, not a flow model or gauge measurement."
+        }
+      },
       {
         "id": "potomac-2024",
         "kind": "geojson",

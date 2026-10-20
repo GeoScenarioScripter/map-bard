@@ -1,6 +1,7 @@
 # S1-W4-C — compiled browser and accessibility review
 
-Session 32, 2026-10-20. **Browser acceptance failed.** A reader opened the
+Session 32, 2026-10-20. **The original candidate failed browser acceptance; a
+corrected page passed reader retest in Session 34.** A reader opened the
 direct-file Potomac page and supplied a screenshot and brief interaction report.
 The report exposes a wheel-navigation defect and an unacceptable blank geographic
 background. Other checks remain unreported. This is a defect handoff to G4, not a
@@ -69,7 +70,7 @@ actual contrast, zoom, touch, wheel scrolling and reduced-motion playback still
 need observation. The fixed map and multiple overlay hosts make the narrow-screen
 check especially important.
 
-## Direct-file review still required for G4
+## Session 32 direct-file review request
 
 Use a normal browser's Open File action on `out/w4c-session32/index.html` and
 record browser/version, OS, time and the `file:` address. Reload with DevTools
@@ -87,3 +88,31 @@ reviewed for its presentation control; the Potomac example cannot establish that
 capability. Neither page covers video posters or anchored media in a browser.
 Record any failure as a defect for the owning player or publication session. G4
 may close only after actual browser evidence and any needed correction/retest.
+
+## Session 34 corrected-page reader retest
+
+The corrected example is `out/w4c-session33-review/index.html`. It includes
+local Census state outlines and Maryland iMAP Potomac River segments below the
+gauge points, integer-readable legend labels, a stacked photograph caption and
+credit, and a compiled bootstrap that disables map wheel zoom. A fresh build
+produced eight publication files with no diagnostics or required network URLs;
+two fresh builds had identical `verification.json` bytes. Those are build checks,
+separate from the following browser report.
+
+The reader opened the corrected direct-file page, hard-refreshed it, and reported
+that wheel input over the map advances the story and that the outlines and river
+line provide enough geographic context. In response to the remaining G4 request,
+the reader reported **Edge 155.0.4283.45**, no errors, and that the Console/Network,
+network-disabled cache-disabled reload, relocated offline copy, Tab annotation,
+narrow-window and reduced-motion checks all worked well. This is a reader report;
+no automated browser observation or DevTools export was available. Exact OS build,
+viewport dimensions, review timestamp and individual annotation steps were not
+provided. The real Potomac page has no presentation control, poster or anchored
+media, so the report does not certify those capabilities.
+
+A separate synthetic control page was built at `out/g4-control-review/index.html`
+with the published Opacity slider and no required network URLs or diagnostics.
+The reader reported that, offline in Edge, keyboard arrows changed the slider
+and points, scrolling away and back reset the control, and the Console showed no
+errors. This is a bounded browser pass for the presentation control. The
+[G4 review](g4-review.md) combines the checks and records remaining limits.

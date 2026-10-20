@@ -6,6 +6,10 @@ Session 15 accepts source comparability for the bounded descriptive fixture;
 see the [review](../../../../docs/stage-1/case-comparability.md). G1 remains open
 for direct-file browser evidence, and Wave 2 is not released.
 
+The preceding gate status describes the original G1 acquisition. G1 has since
+closed, and the project now contains derived station data and the bounded context
+sources documented below.
+
 [acquisition.json](acquisition.json) records exact request URLs, retrieval times
 and SHA-256 hashes for six USGS responses and the original context photograph.
 Each response contains one daily point record and no next-page link. All six
@@ -58,3 +62,24 @@ reservoir regulation, diversion and local hydroelectric effects must remain
 visible. Point of Rocks' current [station remarks](https://waterdata.usgs.gov/nwis/uv?site_no=01638500)
 specifically describe reservoir and hydroelectric influences. An Approved record
 does not by itself make stations exchangeable or establish a basin-wide cause.
+
+## Session 34 offline context
+
+The reader rejected the compiled Potomac story's featureless neutral map in the
+Session 32 [browser review](../../../../docs/stage-1/browser-checks.md). The user
+selected a credited local offline context map. These two added public GIS
+responses are source geometry for **context only**, not new discharge evidence.
+Both were retrieved on 2026-10-20 and kept as original response bytes:
+
+| Source file                  | Official layer and bounded request                                                                                                                                                                                                                     | SHA-256                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `potomac-states-raw.geojson` | [U.S. Census Bureau, 2024 States 5M](https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2024/State_County/MapServer/8), `query` with `STUSAB IN ('MD','VA','WV','PA','DC')`, fields `OBJECTID,STUSAB,NAME`, `outSR=4326`, `f=geojson` | `d17ef45f9e3940ed7d757065b5900d522450645e94fc21630960630117cb59c0` |
+| `potomac-river-raw.geojson`  | [Maryland iMAP, Rivers and Streams — Generalized](https://mdgeodata.md.gov/imap/rest/services/Hydrology/MD_Waterbodies/FeatureServer/0), `query` with `PNAME LIKE '%Potomac%'`, fields `OBJECTID,PNAME,HUC,LEV`, `outSR=4326`, `f=geojson`             | `e39d981e6d0033d3c383bc2f52e557dea7930460f4d1727a76704ddd1f0f377a` |
+
+`data/derive-context.mjs` verifies both raw hashes and writes stable-ID
+FeatureCollections: five state polygons and 52 segments whose Maryland name is
+exactly `POTOMAC R`. It does not create or interpolate a river course. The five
+state outlines are generalized, and the river lines are a deliberately bounded
+subset of Maryland's named network. They are not a navigational map, do not show
+all waterways or streets, and do not assert hydraulic connections or upstream
+flow calculations. The final story lists both sources and those qualifications.

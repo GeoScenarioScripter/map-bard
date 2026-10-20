@@ -116,4 +116,22 @@ describe('resolved scale oracles', () => {
     expect(outside.scale).toBeUndefined();
     expect(outside.diagnostics[0]?.code).toBe('VALUE_INVALID');
   });
+
+  it('uses exact readable integer ranges when equal-interval edges are fractional', () => {
+    const result = numericColorScale({
+      ...common,
+      values: [580, 1800, 2020, 5580, 17300, 23600],
+      classes: 3,
+      unit: 'ft^3/s',
+    });
+    expect(result.scale?.kind).toBe('numeric-color');
+    if (result.scale?.kind !== 'numeric-color') return;
+    expect(result.scale.edges[1]).toBeCloseTo(8253.333333);
+    expect(result.scale.edges[2]).toBeCloseTo(15926.666667);
+    expect(result.scale).toEqual(
+      expect.objectContaining({
+        labels: ['580–8,253 ft^3/s', '8,254–15,926 ft^3/s', '15,927–23,600 ft^3/s'],
+      }),
+    );
+  });
 });

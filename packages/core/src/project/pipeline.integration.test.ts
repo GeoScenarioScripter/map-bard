@@ -59,7 +59,15 @@ describe('W4-B real project regression through public APIs', () => {
       'potomac-2024',
       'potomac-2025',
       'potomac-context',
+      'potomac-river-context',
+      'potomac-states-context',
     ]);
+    for (const scene of first.value.scenes)
+      expect(scene.layers.map((layer) => layer.sourceId)).toEqual([
+        'potomac-states-context',
+        'potomac-river-context',
+        scene.id === 'context-2024' ? 'potomac-2024' : 'potomac-2025',
+      ]);
     expect(await Promise.all(files.map((file) => readFile(join(path, file))))).toEqual(before);
   });
 
@@ -81,7 +89,7 @@ describe('W4-B real project regression through public APIs', () => {
     const duplicate = await copyExample();
     await editJson(join(duplicate, 'mapbard.project.json'), (value) => {
       const resources = value.resources as { data: { id: string }[] };
-      resources.data[1]!.id = resources.data[0]!.id;
+      resources.data[3]!.id = resources.data[2]!.id;
     });
     const loaded = await loadProject(duplicate);
     expect(loaded.ok).toBe(true);

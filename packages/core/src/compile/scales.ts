@@ -155,14 +155,35 @@ export function numericColorScale(input: ScaleInput): {
   const effectiveClasses = min === max ? 1 : edges.length - 1;
   const colors = lowerPaletteIndices.map((index) => input.palette[index]!);
   const suffix = input.unit === null ? '' : ` ${input.unit}`;
+  const integerRanges = edges
+    .slice(0, -1)
+    .map((edge, index): [number, number] => [
+      Math.ceil(edge),
+      index === effectiveClasses - 1
+        ? Math.floor(edges[index + 1]!)
+        : Math.ceil(edges[index + 1]!) - 1,
+    ]);
+  const useIntegerRanges =
+    numbers.every(Number.isSafeInteger) &&
+    edges.some((edge) => !Number.isInteger(edge)) &&
+    integerRanges.every(
+      ([lower, upper]) =>
+        Number.isSafeInteger(lower) && Number.isSafeInteger(upper) && lower <= upper,
+    );
+  const displayInteger = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
   const labels =
     min === max
       ? [`${min}${suffix}`]
-      : Array.from(
-          { length: effectiveClasses },
-          (_, index) =>
-            `[${edges[index]}, ${edges[index + 1]}${index === effectiveClasses - 1 ? ']' : ')'}${suffix}`,
-        );
+      : useIntegerRanges
+        ? integerRanges.map(
+            ([lower, upper]) =>
+              `${displayInteger.format(lower)}–${displayInteger.format(upper)}${suffix}`,
+          )
+        : Array.from(
+            { length: effectiveClasses },
+            (_, index) =>
+              `[${edges[index]}, ${edges[index + 1]}${index === effectiveClasses - 1 ? ']' : ')'}${suffix}`,
+          );
   return {
     scale: {
       ...base(input, resolvedCounts),

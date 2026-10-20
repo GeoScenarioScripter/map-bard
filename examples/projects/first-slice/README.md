@@ -14,6 +14,13 @@ not a trend, causal analysis, reach water balance or flood assessment. Read the
 | `compare-2025` | Compare each gauge with its value on the second date.         | Same camera, station IDs and color scale; bound Point of Rocks annotation.                                                  |
 | `limits`       | Interpret what the two snapshots permit.                      | Retains the second date's scale and points; bound Little Falls annotation and explicit regulation/diversion qualifications. |
 
+All three scenes use the same **offline geographic context**: generalized 2024
+state outlines from the U.S. Census Bureau and named Potomac River segments from
+Maryland iMAP. They are explicit local vector layers under the station points,
+with source credits in the page. They locate the gauges but do not calculate
+flow, depict a tiled street basemap or imply that every tributary is shown.
+See the [context acquisition record](source/README.md#session-34-offline-context).
+
 The `daily_mean_discharge` quantity is declared as a ratio measurement in
 `ft^3/s`. The original API values are strings; the checked derived GeoJSON
 contains numeric values and retains the original strings, observation IDs,
@@ -33,6 +40,7 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm -r build
 node docs/stage-1/scripts/verify-g1.mjs
 node examples/projects/first-slice/data/derive.mjs
+node examples/projects/first-slice/data/derive-context.mjs
 node examples/scripts/build-first-slice.mjs out/potomac-example
 ```
 
@@ -52,9 +60,13 @@ node examples/scripts/build-first-slice.mjs out/potomac-relocated path/to/copied
 runtime asset identity, diagnostic codes and affected IDs, compiled semantic
 hash, output file hashes, and required network URLs. It omits absolute source
 paths and timestamps. `verification-environment.json` keeps elapsed time and
-platform details separate. The page's MapLibre assets, data and image are local;
-the build declares **no required network URLs**. Browser offline and relocation
-behavior still require the Wave 4 browser check.
+platform details separate. The page's MapLibre assets, station data, geographic
+context and image are local; the build declares **no required network URLs**.
+In Session 34, a reader retested the corrected direct-file page in Edge
+155.0.4283.45 and reported working wheel navigation, geographic context,
+offline reload and relocated playback, with no Console or Network errors.
+The [browser record](../../../../docs/stage-1/browser-checks.md) separates that
+report from generated-output checks.
 
 ## Import and diagnostics
 

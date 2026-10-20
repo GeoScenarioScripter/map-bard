@@ -22,7 +22,8 @@ Read before implementation:
 3. `docs/mapbard-build-guide.md`: architectural constraints and target boundaries.
 4. `docs/refinement-roadmap.md`: priorities, coverage inputs, and deferred decisions.
 5. [Implementation stages](docs/implementation-stages.md), then the detailed
-   [Stage 1 plan](docs/stage-1-plan.md): waves, parallel sessions, ownership and gates.
+   [Stage 1 record](docs/stage-1-plan.md) and [Stage 2 plan](docs/stage-2-plan.md):
+   waves, parallel sessions, ownership and gates.
 
 For scope/design planning, consult [the refinement idea register](docs/refinement-ideas.md).
 Its stable R01–R40 IDs preserve recommendations, rationale, examples, and deferred
@@ -36,12 +37,14 @@ Check source/tests before treating a target capability as implemented.
 
 ## Current scope and status
 
-**Stage 1 — Trustworthy Project and Publication is active; Wave 1 handoffs are
+**Stage 1 — Trustworthy Project and Publication is closed; Wave 1 handoffs are
 complete (Sessions 11–13), G1 closed in Session 19, and G2 closed in Session 24.
 Wave 2 is integrated; Wave 3A/B/C closed in Sessions 26–28 and G3 closed in
 Session 29. Wave 4 S1-W4-A/B closed in Sessions 30–31; the S1-W4-C reader review
 in Session 32 found compiled wheel, geographic-context and presentation defects.
-G4 correction and browser retest remain.**
+Session 34 corrected them, received positive real-page and synthetic-control
+Edge retests, and closed G4. Stage 1's bounded publication target is delivered;
+Stage 2 has a detailed plan but no implementation.**
 See `docs/stage-1/g1-review.md` for frozen contract revision g1-r1, verified
 acquisitions, the bounded Potomac comparison and selected esbuild IIFE approach.
 Sessions 16–17 repaired reader-reported legacy demo issues, including an explicit
@@ -57,9 +60,12 @@ handoffs. The `docs/stage-1/g3-review.md` records public composition, the
 synthetic compiled fixture and the bounded capability gate. Session 30 adds the
 real-source author example and reproducible build record. Session 31 adds
 independent regression checks. See `docs/stage-1/browser-checks.md` for the
-Session 32 direct-file reader screenshot/report and missing browser evidence.
-No complete Stage 1 publication capability is delivered. Do not resume old M5. Only Stage 1
-has detailed waves/sessions; detail each later stage after its predecessor closes.
+Session 32 direct-file reader screenshot/report and Session 34 corrected-page
+retest. The `docs/stage-1/g4-review.md` closes the bounded publication gate with
+explicit browser limits. The real example has credited local context layers;
+generic basemap support remains outside the frozen Stage 1 contract. The next
+stage is detailed in `docs/stage-2-plan.md`; no Stage 2 finding/evidence engine
+is implemented. Do not resume old M5.
 
 Historical M0–M4 are recorded done. M5–M7 were not started and their execution
 sequence is superseded, not completed. The existing code remains the baseline.

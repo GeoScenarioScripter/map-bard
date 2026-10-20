@@ -77,7 +77,7 @@ export async function buildFirstSlice(outDir, projectRoot = defaultProject) {
     output: files,
     requiredNetwork: bundle.requiredNetwork,
     limitations: [
-      'Browser behavior, relocation, accessibility and visual judgment await S1-W4-C.',
+      'Browser, relocation, accessibility and visual acceptance are recorded separately from generation.',
       'Two station-day snapshots do not establish a trend, cause or reach water balance.',
     ],
     model: 'not applicable',

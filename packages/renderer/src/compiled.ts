@@ -104,6 +104,7 @@ const app = `(() => {
       container: 'map', style: { version: 8, sources: {}, layers: [] },
       center: first.camera.center, zoom: first.camera.zoom, attributionControl: false,
     });
+    map.scrollZoom.disable();
     map.on('load', () => {
       try {
         const adapter = api.createMapLibreAdapter(payload.story, payload.data, map, maplibregl);

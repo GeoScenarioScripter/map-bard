@@ -6,6 +6,30 @@
   "basemap": { "style": "neutral" },
   "dataSources": [
     {
+      "id": "potomac-states-context",
+      "name": "2024 generalized state outlines for Potomac context",
+      "kind": "geojson",
+      "path": "data/potomac-states-context.geojson",
+      "profile": {
+        "geometryType": "polygon",
+        "featureCount": 5,
+        "crs": "EPSG:4326",
+        "attributes": [{ "name": "state", "dataType": "string", "measurement": "nominal" }]
+      }
+    },
+    {
+      "id": "potomac-river-context",
+      "name": "Generalized Potomac River line",
+      "kind": "geojson",
+      "path": "data/potomac-river-context.geojson",
+      "profile": {
+        "geometryType": "line",
+        "featureCount": 52,
+        "crs": "EPSG:4326",
+        "attributes": [{ "name": "name", "dataType": "string", "measurement": "nominal" }]
+      }
+    },
+    {
       "id": "potomac-2024",
       "name": "USGS daily mean discharge, 2024-10-01",
       "kind": "geojson",
@@ -46,7 +70,7 @@
       "mimeType": "image/jpeg",
       "width": 1704,
       "height": 2272,
-      "caption": "A stream entering the Potomac at Whites Ferry. Context photograph, not a view of a gauge or either observation date.",
+      "caption": "A stream entering the Potomac at Whites Ferry.",
       "credit": "Cynthia L. Cunningham, U.S. Geological Survey (Public Domain)"
     }
   ],
@@ -64,6 +88,8 @@
       },
       "discourse": { "narrativeRole": "establish", "emphasis": "medium", "readerAgency": "guided" },
       "layers": [
+        { "id": "state-context", "dataSourceId": "potomac-states-context", "technique": "fill" },
+        { "id": "river-context", "dataSourceId": "potomac-river-context", "technique": "line" },
         {
           "id": "gauges",
           "dataSourceId": "potomac-2024",
@@ -86,6 +112,8 @@
       },
       "discourse": { "narrativeRole": "compare", "emphasis": "high", "readerAgency": "guided" },
       "layers": [
+        { "id": "state-context", "dataSourceId": "potomac-states-context", "technique": "fill" },
+        { "id": "river-context", "dataSourceId": "potomac-river-context", "technique": "line" },
         {
           "id": "gauges",
           "dataSourceId": "potomac-2025",
@@ -108,6 +136,8 @@
       },
       "discourse": { "narrativeRole": "resolve", "emphasis": "medium", "readerAgency": "none" },
       "layers": [
+        { "id": "state-context", "dataSourceId": "potomac-states-context", "technique": "fill" },
+        { "id": "river-context", "dataSourceId": "potomac-river-context", "technique": "line" },
         {
           "id": "gauges",
           "dataSourceId": "potomac-2025",

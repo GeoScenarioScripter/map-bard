@@ -3,7 +3,11 @@
   "scenes": [
     {
       "sceneId": "context-2024",
-      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "layers": [
+        { "layerId": "state-context", "constant": { "color": "#dce8df", "opacity": 0.96 } },
+        { "layerId": "river-context", "constant": { "color": "#3983a6", "opacity": 1 } },
+        { "layerId": "gauges", "constant": { "opacity": 0.9 } }
+      ],
       "annotations": [
         {
           "id": "hancock-2024",
@@ -39,7 +43,11 @@
     },
     {
       "sceneId": "compare-2025",
-      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "layers": [
+        { "layerId": "state-context", "constant": { "color": "#dce8df", "opacity": 0.96 } },
+        { "layerId": "river-context", "constant": { "color": "#3983a6", "opacity": 1 } },
+        { "layerId": "gauges", "constant": { "opacity": 0.9 } }
+      ],
       "annotations": [
         {
           "id": "point-of-rocks-2025",
@@ -55,7 +63,11 @@
     },
     {
       "sceneId": "limits",
-      "layers": [{ "layerId": "gauges", "constant": { "opacity": 0.9 } }],
+      "layers": [
+        { "layerId": "state-context", "constant": { "color": "#dce8df", "opacity": 0.96 } },
+        { "layerId": "river-context", "constant": { "color": "#3983a6", "opacity": 1 } },
+        { "layerId": "gauges", "constant": { "opacity": 0.9 } }
+      ],
       "annotations": [
         {
           "id": "little-falls-limits",

@@ -8,7 +8,7 @@ import { loadProject } from './load.js';
 import { sha256 } from './fingerprint.js';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-const specimen = join(root, 'docs/stage-1/specimens');
+const specimen = join(root, 'fixtures/two-period');
 const legacy = join(root, 'examples/sf-waterfront.geonarrative.json');
 const temporary: string[] = [];
 

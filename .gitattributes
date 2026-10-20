@@ -1,4 +1,8 @@
-docs/stage-1/specimens/** text eol=lf
+fixtures/** text eol=lf
+# Authored project files are hashed; keep LF on every platform.
+examples/projects/** text eol=lf
+examples/projects/**/*.jpg binary
+examples/projects/**/*.png binary
 # Original acquisition bytes are hashed; never normalize them on checkout.
 examples/projects/first-slice/source/*.json -text
 examples/projects/first-slice/source/*.geojson -text

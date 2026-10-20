@@ -7,7 +7,7 @@ import type { CapabilityCatalog, ValidatedProject } from '@mapbard/schema';
 import { loadProject } from '../project/load.js';
 import { compileProject } from './compile.js';
 
-const fixtureRoot = resolve(process.cwd(), '../../docs/stage-1/specimens');
+const fixtureRoot = resolve(process.cwd(), '../../fixtures/two-period');
 
 async function fixture(): Promise<ValidatedProject> {
   const loaded = await loadProject(fixtureRoot);

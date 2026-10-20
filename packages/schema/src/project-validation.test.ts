@@ -10,7 +10,7 @@ import type { JsonValue } from './project.js';
 
 function json(name: string): unknown {
   return JSON.parse(
-    readFileSync(new URL(`../../../docs/stage-1/specimens/${name}`, import.meta.url), 'utf8'),
+    readFileSync(new URL(`../../../fixtures/two-period/${name}`, import.meta.url), 'utf8'),
   );
 }
 function fixture() {
@@ -41,7 +41,7 @@ describe('g1-r1 project contracts', () => {
       dataBytes: ['period-a', 'period-b'].map((id) => ({
         id,
         bytes: readFileSync(
-          new URL(`../../../docs/stage-1/specimens/data/${id}.geojson`, import.meta.url),
+          new URL(`../../../fixtures/two-period/data/${id}.geojson`, import.meta.url),
         ),
       })),
       input: snapshot,

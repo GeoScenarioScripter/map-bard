@@ -13,7 +13,7 @@ import {
 } from '@mapbard/schema';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-const specimen = join(root, 'docs/stage-1/specimens');
+const specimen = join(root, 'fixtures/two-period');
 const temporary: string[] = [];
 
 async function scratch() {

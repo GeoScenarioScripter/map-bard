@@ -2,7 +2,7 @@
 
 `loadProject(root)` reads `mapbard.project.json`, narrative and design bytes, then all declared local resources. It checks real-path containment, case-insensitive path collisions and declared resource SHA-256 values before returning data parsed from those same bytes. Its input snapshot contains exact authored-file digests and sorted resource IDs; roots and paths stay process-local. `importLegacyNarrative(inputPath, destinationRoot)` stages a new directory, retains the original narrative bytes, copies local source bytes, creates an empty design, and reports path mapping, all 112 leaf fields of the handwritten example, unsupported requests and feature ID basis. An existing destination is never replaced.
 
-The G1 synthetic specimen at `docs/stage-1/specimens/` loads with project ID `synthetic-two-periods`, revision 1, data IDs `period-a` and `period-b`, and no media assets. Its snapshot digests are:
+The G1 synthetic specimen at `fixtures/two-period/` loads with project ID `synthetic-two-periods`, revision 1, data IDs `period-a` and `period-b`, and no media assets. Its snapshot digests are:
 
 | Input     | SHA-256                                                            |
 | --------- | ------------------------------------------------------------------ |

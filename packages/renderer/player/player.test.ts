@@ -7,9 +7,7 @@ import type { CompiledStory, MapAdapter, SceneView } from './types.js';
 
 const specimen = JSON.parse(
   readFileSync(
-    fileURLToPath(
-      new URL('../../../docs/stage-1/specimens/compiled.expected.json', import.meta.url),
-    ),
+    fileURLToPath(new URL('../../../fixtures/two-period/compiled.expected.json', import.meta.url)),
     'utf8',
   ),
 ) as CompiledStory;

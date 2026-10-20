@@ -21,13 +21,13 @@ const story = parsed.value;
 const sourceData = {
   'period-a': JSON.parse(
     readFileSync(
-      new URL('../../../docs/stage-1/specimens/data/period-a.geojson', import.meta.url),
+      new URL('../../../fixtures/two-period/data/period-a.geojson', import.meta.url),
       'utf8',
     ),
   ),
   'period-b': JSON.parse(
     readFileSync(
-      new URL('../../../docs/stage-1/specimens/data/period-b.geojson', import.meta.url),
+      new URL('../../../fixtures/two-period/data/period-b.geojson', import.meta.url),
       'utf8',
     ),
   ),
@@ -35,7 +35,7 @@ const sourceData = {
 
 const variants = JSON.parse(
   readFileSync(
-    new URL('../../../docs/stage-1/specimens/scale-variants.expected.json', import.meta.url),
+    new URL('../../../fixtures/two-period/scale-variants.expected.json', import.meta.url),
     'utf8',
   ),
 ) as ResolvedScale[];

@@ -8,7 +8,7 @@ import { STAGE1_CAPABILITIES } from '@mapbard/knowledge';
 import { renderCompiled } from '@mapbard/renderer';
 import { buildCompiledExample } from '../scripts/build-compiled-example.mjs';
 
-const specimen = resolve('docs/stage-1/specimens');
+const specimen = resolve('fixtures/two-period');
 const temporary = [];
 
 async function copyProject() {

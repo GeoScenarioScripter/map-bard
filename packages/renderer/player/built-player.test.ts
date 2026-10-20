@@ -9,7 +9,7 @@ import type { MapAdapter, SceneView } from './types.js';
 const parsed = parseCompiled(
   JSON.parse(
     readFileSync(
-      new URL('../../../docs/stage-1/specimens/compiled.expected.json', import.meta.url),
+      new URL('../../../fixtures/two-period/compiled.expected.json', import.meta.url),
       'utf8',
     ),
   ),

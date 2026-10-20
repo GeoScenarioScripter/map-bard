@@ -17,9 +17,7 @@ const fixture = JSON.parse(
 ) as Compiled;
 const dataBytes = ['period-a', 'period-b'].map((id) => ({
   id,
-  bytes: readFileSync(
-    new URL(`../../../docs/stage-1/specimens/data/${id}.geojson`, import.meta.url),
-  ),
+  bytes: readFileSync(new URL(`../../../fixtures/two-period/data/${id}.geojson`, import.meta.url)),
 }));
 const publication = (): PublicationInputs => ({
   currentInput: structuredClone(fixture.input),

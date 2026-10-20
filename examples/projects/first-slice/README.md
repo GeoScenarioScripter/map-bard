@@ -5,7 +5,7 @@ Hancock, Point of Rocks and Little Falls compare on 2024-10-01 and 2025-10-01?**
 It is a short story for local readers and watershed education, using six pinned
 observations and one credited context photograph. It is a descriptive comparison,
 not a trend, causal analysis, reach water balance or flood assessment. Read the
-[case comparability review](../../../../docs/stage-1/case-comparability.md) and
+[case comparability review](../../../docs/archive/2026-10-20-process-reset/stage-1/case-comparability.md) and
 [source acquisition record](source/README.md) for the measurement and reuse basis.
 
 | Scene          | Reader task                                                   | Attention and source                                                                                                        |
@@ -38,7 +38,7 @@ From the repository root with Node 20+ and pnpm 9.15.0:
 ```sh
 corepack pnpm install --frozen-lockfile
 corepack pnpm -r build
-node docs/stage-1/scripts/verify-g1.mjs
+node docs/archive/2026-10-20-process-reset/stage-1/scripts/verify-g1.mjs
 node examples/projects/first-slice/data/derive.mjs
 node examples/projects/first-slice/data/derive-context.mjs
 node examples/scripts/build-first-slice.mjs out/potomac-example
@@ -65,7 +65,7 @@ context and image are local; the build declares **no required network URLs**.
 In Session 34, a reader retested the corrected direct-file page in Edge
 155.0.4283.45 and reported working wheel navigation, geographic context,
 offline reload and relocated playback, with no Console or Network errors.
-The [browser record](../../../../docs/stage-1/browser-checks.md) separates that
+The [browser record](../../../docs/archive/2026-10-20-process-reset/stage-1/browser-checks.md) separates that
 report from generated-output checks.
 
 ## Import and diagnostics

@@ -6,18 +6,20 @@ import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runInNewContext } from 'node:vm';
 
-const root = new URL('../../../', import.meta.url);
+const root = new URL('../../../../../', import.meta.url);
 const read = (path) => readFile(new URL(path, root));
 const json = async (path) => JSON.parse((await read(path)).toString('utf8'));
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const specimen = 'docs/stage-1/specimens/';
+const specimen = 'fixtures/two-period/';
 const require = createRequire(new URL('packages/schema/package.json', root));
 const schema = await import(pathToFileURL(require.resolve('@mapbard/schema')).href);
 const { z } = require('zod');
 const ts = require('typescript');
 
 // Execute the documented shape proposal without adding public package APIs.
-const markdown = (await read('docs/stage-1/contracts.md')).toString('utf8');
+const markdown = (
+  await read('docs/archive/2026-10-20-process-reset/stage-1/contracts.md')
+).toString('utf8');
 const blocks = [...markdown.matchAll(/```ts\r?\n([\s\S]*?)```/g)];
 assert.ok(blocks.length >= 3);
 const source =

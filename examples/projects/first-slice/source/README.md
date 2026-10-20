@@ -3,7 +3,7 @@
 Retrieved 2026-10-19 Asia/Shanghai (2026-10-18 UTC), BUILD_LOG Session 14.
 These are original public source bytes, **not a ready-to-render project**.
 Session 15 accepts source comparability for the bounded descriptive fixture;
-see the [review](../../../../docs/stage-1/case-comparability.md). G1 remains open
+see the [review](../../../../docs/archive/2026-10-20-process-reset/stage-1/case-comparability.md). G1 remains open
 for direct-file browser evidence, and Wave 2 is not released.
 
 The preceding gate status describes the original G1 acquisition. G1 has since
@@ -15,7 +15,7 @@ and SHA-256 hashes for six USGS responses and the original context photograph.
 Each response contains one daily point record and no next-page link. All six
 have `parameter_code=00060`, `statistic_id=00003`, `unit_of_measure=ft^3/s`,
 `approval_status=Approved`, and `qualifier=null`; coordinates match the three
-WGS84 station locations in the [dossier](../../../../docs/stage-1/case-dossier.md).
+WGS84 station locations in the [dossier](../../../../docs/archive/2026-10-20-process-reset/stage-1/case-dossier.md).
 
 | Station                       | 2024-10-01 value | 2025-10-01 value |
 | ----------------------------- | ---------------: | ---------------: |
@@ -34,7 +34,7 @@ properties. No derived data files have been authored yet.
 Run from the repository root after building:
 
 ```sh
-node docs/stage-1/scripts/verify-g1.mjs
+node docs/archive/2026-10-20-process-reset/stage-1/scripts/verify-g1.mjs
 ```
 
 This verifies all seven byte hashes, six station/date tuples, values, status,
@@ -66,7 +66,7 @@ does not by itself make stations exchangeable or establish a basin-wide cause.
 ## Session 34 offline context
 
 The reader rejected the compiled Potomac story's featureless neutral map in the
-Session 32 [browser review](../../../../docs/stage-1/browser-checks.md). The user
+Session 32 [browser review](../../../../docs/archive/2026-10-20-process-reset/stage-1/browser-checks.md). The user
 selected a credited local offline context map. These two added public GIS
 responses are source geometry for **context only**, not new discharge evidence.
 Both were retrieved on 2026-10-20 and kept as original response bytes:

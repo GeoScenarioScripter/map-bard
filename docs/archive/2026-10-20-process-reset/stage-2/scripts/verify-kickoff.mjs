@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-const root = new URL('../../../', import.meta.url);
+const root = new URL('../../../../../', import.meta.url);
 const base = new URL('examples/projects/first-slice/', root);
 const read = async (path) => readFile(new URL(path, base));
 const json = async (path) => JSON.parse((await read(path)).toString('utf8'));
 const digest = (bytes) => 'sha256:' + createHash('sha256').update(bytes).digest('hex');
 const fixture = JSON.parse(
-  await readFile(new URL('../specimens/method-case.json', import.meta.url), 'utf8'),
+  await readFile(new URL('fixtures/potomac-change/method-case.json', root), 'utf8'),
 );
 assert.equal(fixture.specimenRevision, 's2-w1-a-r1');
 for (const file of fixture.pinnedFiles)

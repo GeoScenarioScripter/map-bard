@@ -3,7 +3,7 @@
  *
  * Implemented as Zod so the shape is validated at runtime; the TypeScript types
  * are inferred from the schemas via {@link https://zod.dev | z.infer} so there is
- * one source of truth. See `docs/mapbard-build-guide.md` §4.
+ * one source of truth. See `docs/ROADMAP.md`; historical rationale in `docs/archive/`.
  *
  * Scene content fields are intentionally optional: a scene uses only the
  * dimensions it needs (build-guide directive 5).

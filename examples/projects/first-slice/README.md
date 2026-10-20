@@ -1,4 +1,8 @@
-# Potomac daily discharge — Stage 1 author example
+# Potomac daily discharge — format 0.1 migration fixture
+
+The current [format 0.2 Potomac example](../potomac/README.md) is built with
+the MapBard CLI. This 0.1 project remains for migration and legacy regression
+tests; the build instructions below document that older path.
 
 This portable project asks: **How do published USGS daily mean discharge values at
 Hancock, Point of Rocks and Little Falls compare on 2024-10-01 and 2025-10-01?**

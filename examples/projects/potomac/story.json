@@ -1,0 +1,265 @@
+{
+  "formatVersion": "0.2.0",
+  "scenes": [
+    {
+      "id": "context-2024",
+      "title": "Three gauges, one published day",
+      "narration": "The U.S. Geological Survey reports daily mean discharge at three distinct Potomac gauges. On 2024-10-01, the published values were 5,580 ft^3/s at Hancock, 23,600 ft^3/s at Point of Rocks, and 17,300 ft^3/s at Little Falls. The three points mark stable station IDs, not equal drainage areas.\n\nThe photograph shows the river area at Whites Ferry as context. It is not a picture of a gauge measurement or of this day.",
+      "media": [
+        {
+          "assetId": "potomac-context",
+          "placement": "figure"
+        }
+      ],
+      "content": {
+        "semantics": "Published daily mean discharge at three gauges on 2024-10-01.",
+        "location": "Potomac River, Hancock to Little Falls; station-local Eastern time dates.",
+        "geometry": "Three USGS monitoring locations.",
+        "attribute": "daily_mean_discharge in ft^3/s"
+      },
+      "discourse": {
+        "narrativeRole": "establish",
+        "emphasis": "medium",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "state-context",
+          "technique": "fill",
+          "sourceId": "potomac-states-context",
+          "constant": {
+            "color": "#dce8df",
+            "opacity": 0.96
+          }
+        },
+        {
+          "id": "river-context",
+          "technique": "line",
+          "sourceId": "potomac-river-context",
+          "constant": {
+            "color": "#3983a6",
+            "opacity": 1
+          }
+        },
+        {
+          "id": "gauges",
+          "technique": "point",
+          "encode": {
+            "attribute": "daily_mean_discharge",
+            "visualVariable": "color"
+          },
+          "classification": {
+            "method": "equal-interval",
+            "classes": 3
+          },
+          "sourceId": "potomac-2024",
+          "constant": {
+            "opacity": 0.9
+          }
+        }
+      ],
+      "camera": {
+        "center": [-77.65, 39.33],
+        "zoom": 8
+      },
+      "transitionIn": "cut",
+      "annotations": [
+        {
+          "id": "hancock-2024",
+          "text": "Hancock: 5,580 ft^3/s on 2024-10-01",
+          "at": [-78.17788888888889, 39.69755555555555],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01613000"]
+          }
+        },
+        {
+          "id": "point-of-rocks-2024",
+          "text": "Point of Rocks: 23,600 ft^3/s on 2024-10-01",
+          "at": [-77.5431111111111, 39.273583333333335],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01638500"]
+          }
+        },
+        {
+          "id": "little-falls-2024",
+          "text": "Little Falls: 17,300 ft^3/s on 2024-10-01",
+          "at": [-77.12763888888888, 38.949777777777776],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01646500"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "compare-2025",
+      "title": "The same gauges, one year later",
+      "narration": "For 2025-10-01, the published daily means were 580 ft^3/s at Hancock, 2,020 ft^3/s at Point of Rocks, and 1,800 ft^3/s at Little Falls. The map keeps the same extent and color scale so each station can be compared across the two dates. These two daily snapshots do not establish a long-term trend or a cause for the differences.",
+      "content": {
+        "semantics": "Published daily mean discharge at the same stations on 2025-10-01.",
+        "attribute": "daily_mean_discharge in ft^3/s",
+        "relationship": "Compare each station with its 2024-10-01 published value using one shared scale."
+      },
+      "discourse": {
+        "narrativeRole": "compare",
+        "emphasis": "high",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "state-context",
+          "technique": "fill",
+          "sourceId": "potomac-states-context",
+          "constant": {
+            "color": "#dce8df",
+            "opacity": 0.96
+          }
+        },
+        {
+          "id": "river-context",
+          "technique": "line",
+          "sourceId": "potomac-river-context",
+          "constant": {
+            "color": "#3983a6",
+            "opacity": 1
+          }
+        },
+        {
+          "id": "gauges",
+          "technique": "point",
+          "encode": {
+            "attribute": "daily_mean_discharge",
+            "visualVariable": "color"
+          },
+          "classification": {
+            "method": "equal-interval",
+            "classes": 3
+          },
+          "sourceId": "potomac-2025",
+          "constant": {
+            "opacity": 0.9
+          }
+        }
+      ],
+      "camera": {
+        "center": [-77.65, 39.33],
+        "zoom": 8
+      },
+      "transitionIn": "cut",
+      "annotations": [
+        {
+          "id": "point-of-rocks-2025",
+          "text": "Point of Rocks: 2,020 ft^3/s on 2025-10-01",
+          "at": [-77.5431111111111, 39.273583333333335],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2025",
+            "featureIds": ["USGS-01638500"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "limits",
+      "title": "What the snapshots can tell us",
+      "narration": "These are USGS Approved daily mean discharge records for station-local dates in Eastern time. The records have no additional qualifier, but approval does not make the three catchments interchangeable. Hancock and Point of Rocks have documented regulation or hydroelectric influences; Little Falls has documented diversions and reservoir effects. Different drainage areas and travel time also limit a direct upstream-to-downstream reading.\n\nThe two dates support a descriptive station-by-station comparison. They do not measure reach gain or loss, isolate a cause, describe unregulated flow, establish a trend, or assess flood risk.",
+      "content": {
+        "semantics": "The meaning and limits of two published station-day summaries.",
+        "attribute": "daily_mean_discharge in ft^3/s",
+        "relationship": "Return to the same locations while interpreting the comparison."
+      },
+      "discourse": {
+        "narrativeRole": "resolve",
+        "emphasis": "medium",
+        "readerAgency": "none"
+      },
+      "layers": [
+        {
+          "id": "state-context",
+          "technique": "fill",
+          "sourceId": "potomac-states-context",
+          "constant": {
+            "color": "#dce8df",
+            "opacity": 0.96
+          }
+        },
+        {
+          "id": "river-context",
+          "technique": "line",
+          "sourceId": "potomac-river-context",
+          "constant": {
+            "color": "#3983a6",
+            "opacity": 1
+          }
+        },
+        {
+          "id": "gauges",
+          "technique": "point",
+          "encode": {
+            "attribute": "daily_mean_discharge",
+            "visualVariable": "color"
+          },
+          "classification": {
+            "method": "equal-interval",
+            "classes": 3
+          },
+          "sourceId": "potomac-2025",
+          "constant": {
+            "opacity": 0.9
+          }
+        }
+      ],
+      "camera": {
+        "center": [-77.65, 39.33],
+        "zoom": 8
+      },
+      "transitionIn": "cut",
+      "annotations": [
+        {
+          "id": "little-falls-limits",
+          "text": "Little Falls: diversions and reservoir effects affect interpretation",
+          "at": [-77.12763888888888, 38.949777777777776],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2025",
+            "featureIds": ["USGS-01646500"]
+          }
+        }
+      ]
+    }
+  ],
+  "sharedScales": [
+    {
+      "id": "daily-discharge",
+      "members": [
+        {
+          "sceneId": "context-2024",
+          "layerId": "gauges",
+          "sourceId": "potomac-2024",
+          "observationLabel": "2024-10-01"
+        },
+        {
+          "sceneId": "compare-2025",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01"
+        },
+        {
+          "sceneId": "limits",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01 (limits)"
+        }
+      ],
+      "visualVariable": "color",
+      "method": "equal-interval",
+      "classes": 3,
+      "palette": ["#d9f0f0", "#65a9bd", "#174b75"]
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 # M1 — CLI and Foundation
 
 Updated 2026-10-20. Status: **in progress; A–D implemented, E pack expanded
-with the fresh-agent trial pending**. Part of the [roadmap](ROADMAP.md).
+with the fresh-agent trial pending, F example and quickstart implemented with
+browser smoke pending**. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -146,6 +147,12 @@ remains open. The direct trial also led to a concise `lock` command response;
 the full profiles remain in the written lockfile.
 
 ### F. Example, tests and quickstart
+
+The format 0.2 Potomac example is now `examples/projects/potomac`, converted
+from the retained 0.1 migration fixture and built with `mapbard build` in
+online and offline modes. The root README has a human and agent quickstart, and
+the CLI binary test authors a point layer before checking and building. The
+Playwright browser smoke test remains open.
 
 - Migrate the Potomac project to 0.2 and rebuild it through the CLI only.
   Visual redesign is M2.

@@ -2,7 +2,8 @@
 
 **Updated 2026-10-20. Active milestone: [M1 — CLI and foundation](m1-cli.md),
 in progress. M1-A through M1-D implemented; M1-E pack expanded, agent trial
-pending; next: complete M1-E and M1-F.** See the [roadmap](ROADMAP.md).
+pending; M1-F example and quickstart implemented, browser smoke pending.** See
+the [roadmap](ROADMAP.md).
 
 ## What works today
 
@@ -24,8 +25,10 @@ pending; next: complete M1-E and M1-F.** See the [roadmap](ROADMAP.md).
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
-- Example: `examples/projects/first-slice` (Potomac, three scenes), built by
-  `node examples/scripts/build-first-slice.mjs <out>`.
+- Example: `examples/projects/potomac` (format 0.2, Potomac, three scenes),
+  built with `mapbard build` in online and offline modes. The format 0.1
+  `first-slice` project remains as a migration regression fixture.
+- A root README has a five-minute human and coding-agent quickstart.
 - Checks: 107 tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
   root integration 3) and lint pass.
 
@@ -33,15 +36,16 @@ pending; next: complete M1-E and M1-F.** See the [roadmap](ROADMAP.md).
 
 - Visual quality is below the bar (<60/100). The defects are listed in
   [visual-engine.md](visual-engine.md#why-the-current-output) (M2).
-- The checked-in Potomac example still uses format 0.1; M1-F moves it to 0.2
-  and builds it through the CLI. CSV can be added and inspected, but the
-  current compiler cannot yet render CSV layers.
+- The legacy Potomac fixture still uses format 0.1. CSV can be added and
+  inspected, but the current compiler cannot yet render CSV layers.
 - The sandboxed headless browser could not reach the public tile hosts, so an
   actual OpenFreeMap/VersaTiles tile load has not been visually verified. A
   custom HTTP style loaded and displayed in headless Chrome; the offline
   publication also loaded from `file://`.
-- M1-F still needs an automated browser smoke test, Potomac CLI migration and
-  quickstart. M1-G covers npm release packaging and CI.
+- M1-F still needs an automated Playwright browser smoke test. M1-G covers npm
+  release packaging and CI. The new 0.2 example has not yet had a browser
+  playback check; its online tile hosts were unreachable in the earlier
+  headless browser environment.
 - A fresh Claude Code agent trial for M1-E could not start in this environment:
   its API connection was refused before any tokens or tool calls. The direct
   CLI trial passed, but it does not satisfy the agent-trial acceptance item.
@@ -55,9 +59,10 @@ next step. Details belong in commit messages.
   format example, technique limits and diagnostic remedies. A direct CLI trial
   from raw Potomac files completed `init` → `add` → `inspect` → `lock` →
   `check` → `build`; it exposed an oversized `lock` response, now summarized.
-  Build, 107 tests and lint pass. Fresh Claude Code trial was blocked by API
-  `ECONNREFUSED` before any tokens or tool calls. Next: retry that trial when
-  reachable, then M1-F example and smoke test.
+  Fresh Claude Code trial was blocked by API `ECONNREFUSED` before any tokens
+  or tool calls. M1-F added the migrated format 0.2 Potomac example, online and
+  offline CLI builds, a quickstart, and a CLI test that authors a real layer.
+  Build, 107 tests and lint pass. Next: fresh-agent retry and Playwright smoke.
 - 2026-10-20: M1-C/D added the CLI binary and commands, JSON diagnostics,
   preview server, initial skill pack, MapLibre 6 IIFE/worker, provider catalog,
   fallback, terrain, attribution and offline mode. Build, 107 tests and lint

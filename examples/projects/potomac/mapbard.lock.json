@@ -1,0 +1,571 @@
+{
+  "lockVersion": "0.2.0",
+  "projectId": "potomac-daily-discharge",
+  "revision": 3,
+  "inputs": {
+    "manifestSha256": "sha256:0e89dc9cc3ddc17f911f21b9ec6ac3ebec3a5f390a879ac2944dfdaab1b4b01d",
+    "storySha256": "sha256:30f820a298f6d86b6ee8382b3162c71605264b86846470b5a6a7528f30c7d438",
+    "resources": [
+      {
+        "id": "potomac-2024",
+        "sha256": "sha256:517eb654caa03bc030882b50053afdf1644d1eb1166b072e92aa91c5a3daf30e"
+      },
+      {
+        "id": "potomac-2025",
+        "sha256": "sha256:92ddb1b06bd1920bae501c5fc14a8f3cf625828766a469232719d832e036fd51"
+      },
+      {
+        "id": "potomac-context",
+        "sha256": "sha256:25b420ffa5e22ab882cbfc42c7145b2697da9e9352b70afcaa0cc75e59f36ba7"
+      },
+      {
+        "id": "potomac-river-context",
+        "sha256": "sha256:1ead5d0e2b5307d19f248ae1e6c196b0298085de6cc54260f122d329a28db250"
+      },
+      {
+        "id": "potomac-states-context",
+        "sha256": "sha256:852616c38611ac39ac9f3cf38adb4ba77497a8b5f9a1203df94ee63f72ffc392"
+      }
+    ]
+  },
+  "profiles": {
+    "potomac-states-context": {
+      "geometryType": "polygon",
+      "featureCount": 5,
+      "attributes": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "District of Columbia",
+            "Maryland",
+            "Pennsylvania",
+            "Virginia",
+            "West Virginia"
+          ]
+        },
+        {
+          "name": "state",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "DC",
+            "MD",
+            "PA",
+            "VA",
+            "WV"
+          ]
+        }
+      ],
+      "extent": [
+        -83.67541300020784,
+        36.54073799988352,
+        -74.68951599985573,
+        42.26985999994247
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "name": {
+          "present": 5,
+          "missing": 0
+        },
+        "state": {
+          "present": 5,
+          "missing": 0
+        }
+      }
+    },
+    "potomac-river-context": {
+      "geometryType": "line",
+      "featureCount": 52,
+      "attributes": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Potomac River"
+          ]
+        }
+      ],
+      "extent": [
+        -78.59045164378917,
+        38.04042414606486,
+        -76.32587484772613,
+        39.69828655400445
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "name": {
+          "present": 52,
+          "missing": 0
+        }
+      }
+    },
+    "potomac-2024": {
+      "geometryType": "point",
+      "featureCount": 3,
+      "attributes": [
+        {
+          "name": "station_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "USGS-01613000",
+            "USGS-01638500",
+            "USGS-01646500"
+          ]
+        },
+        {
+          "name": "station_name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Hancock",
+            "Point of Rocks",
+            "Little Falls"
+          ]
+        },
+        {
+          "name": "station_day",
+          "dataType": "date",
+          "measurement": "interval",
+          "sample": [
+            "2024-10-01"
+          ]
+        },
+        {
+          "name": "daily_mean_discharge",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            5580,
+            23600,
+            17300
+          ]
+        },
+        {
+          "name": "reported_value",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "5580",
+            "23600",
+            "17300"
+          ]
+        },
+        {
+          "name": "unit",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "ft^3/s"
+          ]
+        },
+        {
+          "name": "approval_status",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Approved"
+          ]
+        },
+        {
+          "name": "qualifier",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": []
+        },
+        {
+          "name": "observation_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "d45c708f-0c19-49c1-807a-38cb78c7ce9c",
+            "0b77a04c-06c7-4879-a3c5-94fa0449e3b0",
+            "0827c0b2-9e90-4e68-9ca3-0897d40674bd"
+          ]
+        },
+        {
+          "name": "time_series_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "3eb78a4c874c4716a30971ce02c5f39d",
+            "6fce477b4108481d950866411cdc1c00",
+            "2cf409b0d9694c01828f5d4ff14586a5"
+          ]
+        },
+        {
+          "name": "source_last_modified",
+          "dataType": "date",
+          "measurement": "interval",
+          "sample": [
+            "2025-03-11T06:31:13.773492+00:00",
+            "2025-02-21T21:01:18.043898+00:00",
+            "2025-03-11T06:29:47.694332+00:00"
+          ]
+        },
+        {
+          "name": "source_url",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01613000&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10",
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01638500&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10",
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00060&statistic_id=00003&datetime=2024-10-01&limit=10"
+          ]
+        },
+        {
+          "name": "source_sha256",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "sha256:921c151556099983fda9faef25220c47700f03dbedcfbf056dfb21425f03242f",
+            "sha256:592ea0eff4edb977ffbfd77b8e980784747d76dbd3eecd3078f39e9160821234",
+            "sha256:d05334b4826863dae4b730f6920f19ec2ee547f737abd00c2e0d0d1fe2262f2d"
+          ]
+        },
+        {
+          "name": "source_qualification",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Upstream power-plant effects at low flow and reservoir regulation.",
+            "Reservoir and run-of-river hydroelectric effects may affect low flow.",
+            "Water diversions and reservoir effects; not unregulated natural flow."
+          ]
+        },
+        {
+          "name": "time_basis",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Published USGS station-local daily mean; Eastern time calendar date"
+          ]
+        }
+      ],
+      "extent": [
+        -78.17788888888889,
+        38.949777777777776,
+        -77.12763888888888,
+        39.69755555555555
+      ],
+      "temporalExtent": [
+        "2024-10-01",
+        "2025-03-11T06:31:13.773492+00:00"
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "station_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "station_name": {
+          "present": 3,
+          "missing": 0
+        },
+        "station_day": {
+          "present": 3,
+          "missing": 0
+        },
+        "daily_mean_discharge": {
+          "present": 3,
+          "missing": 0,
+          "min": 5580,
+          "max": 23600
+        },
+        "reported_value": {
+          "present": 3,
+          "missing": 0
+        },
+        "unit": {
+          "present": 3,
+          "missing": 0
+        },
+        "approval_status": {
+          "present": 3,
+          "missing": 0
+        },
+        "qualifier": {
+          "present": 0,
+          "missing": 3
+        },
+        "observation_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "time_series_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_last_modified": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_url": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_sha256": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_qualification": {
+          "present": 3,
+          "missing": 0
+        },
+        "time_basis": {
+          "present": 3,
+          "missing": 0
+        }
+      }
+    },
+    "potomac-2025": {
+      "geometryType": "point",
+      "featureCount": 3,
+      "attributes": [
+        {
+          "name": "station_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "USGS-01613000",
+            "USGS-01638500",
+            "USGS-01646500"
+          ]
+        },
+        {
+          "name": "station_name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Hancock",
+            "Point of Rocks",
+            "Little Falls"
+          ]
+        },
+        {
+          "name": "station_day",
+          "dataType": "date",
+          "measurement": "interval",
+          "sample": [
+            "2025-10-01"
+          ]
+        },
+        {
+          "name": "daily_mean_discharge",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            580,
+            2020,
+            1800
+          ]
+        },
+        {
+          "name": "reported_value",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "580",
+            "2020",
+            "1800"
+          ]
+        },
+        {
+          "name": "unit",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "ft^3/s"
+          ]
+        },
+        {
+          "name": "approval_status",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Approved"
+          ]
+        },
+        {
+          "name": "qualifier",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": []
+        },
+        {
+          "name": "observation_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "9806ef56-69ba-4d13-8c85-82444ba134c0",
+            "7c15554d-c037-4d46-9682-9034b7d00c0a",
+            "813daf35-25f5-4317-b8c8-e94af9ace17f"
+          ]
+        },
+        {
+          "name": "time_series_id",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "3eb78a4c874c4716a30971ce02c5f39d",
+            "6fce477b4108481d950866411cdc1c00",
+            "2cf409b0d9694c01828f5d4ff14586a5"
+          ]
+        },
+        {
+          "name": "source_last_modified",
+          "dataType": "date",
+          "measurement": "interval",
+          "sample": [
+            "2026-01-12T18:18:15.979969+00:00",
+            "2026-01-14T18:37:02.329200+00:00",
+            "2026-01-09T18:57:21.857477+00:00"
+          ]
+        },
+        {
+          "name": "source_url",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01613000&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10",
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01638500&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10",
+            "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items?f=json&monitoring_location_id=USGS-01646500&parameter_code=00060&statistic_id=00003&datetime=2025-10-01&limit=10"
+          ]
+        },
+        {
+          "name": "source_sha256",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "sha256:3af4e613dc6b99a12634328cceef4f73815e39b1d12f372fac57373188040eca",
+            "sha256:a01412d273582a73eed70ffeeaac53935d9fe667f33558979c61ddb58708a5f5",
+            "sha256:0f82fd49461495e8dcd414c5466e9813309d3106c5b63f2df818829080523a37"
+          ]
+        },
+        {
+          "name": "source_qualification",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Upstream power-plant effects at low flow and reservoir regulation.",
+            "Reservoir and run-of-river hydroelectric effects may affect low flow.",
+            "Water diversions and reservoir effects; not unregulated natural flow."
+          ]
+        },
+        {
+          "name": "time_basis",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Published USGS station-local daily mean; Eastern time calendar date"
+          ]
+        }
+      ],
+      "extent": [
+        -78.17788888888889,
+        38.949777777777776,
+        -77.12763888888888,
+        39.69755555555555
+      ],
+      "temporalExtent": [
+        "2025-10-01",
+        "2026-01-14T18:37:02.329200+00:00"
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "station_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "station_name": {
+          "present": 3,
+          "missing": 0
+        },
+        "station_day": {
+          "present": 3,
+          "missing": 0
+        },
+        "daily_mean_discharge": {
+          "present": 3,
+          "missing": 0,
+          "min": 580,
+          "max": 2020
+        },
+        "reported_value": {
+          "present": 3,
+          "missing": 0
+        },
+        "unit": {
+          "present": 3,
+          "missing": 0
+        },
+        "approval_status": {
+          "present": 3,
+          "missing": 0
+        },
+        "qualifier": {
+          "present": 0,
+          "missing": 3
+        },
+        "observation_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "time_series_id": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_last_modified": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_url": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_sha256": {
+          "present": 3,
+          "missing": 0
+        },
+        "source_qualification": {
+          "present": 3,
+          "missing": 0
+        },
+        "time_basis": {
+          "present": 3,
+          "missing": 0
+        }
+      }
+    }
+  },
+  "lastCompileInputs": {
+    "manifestSha256": "sha256:0e89dc9cc3ddc17f911f21b9ec6ac3ebec3a5f390a879ac2944dfdaab1b4b01d",
+    "storySha256": "sha256:30f820a298f6d86b6ee8382b3162c71605264b86846470b5a6a7528f30c7d438",
+    "resources": [
+      {
+        "id": "potomac-2024",
+        "sha256": "sha256:517eb654caa03bc030882b50053afdf1644d1eb1166b072e92aa91c5a3daf30e"
+      },
+      {
+        "id": "potomac-2025",
+        "sha256": "sha256:92ddb1b06bd1920bae501c5fc14a8f3cf625828766a469232719d832e036fd51"
+      },
+      {
+        "id": "potomac-context",
+        "sha256": "sha256:25b420ffa5e22ab882cbfc42c7145b2697da9e9352b70afcaa0cc75e59f36ba7"
+      },
+      {
+        "id": "potomac-river-context",
+        "sha256": "sha256:1ead5d0e2b5307d19f248ae1e6c196b0298085de6cc54260f122d329a28db250"
+      },
+      {
+        "id": "potomac-states-context",
+        "sha256": "sha256:852616c38611ac39ac9f3cf38adb4ba77497a8b5f9a1203df94ee63f72ffc392"
+      }
+    ]
+  }
+}

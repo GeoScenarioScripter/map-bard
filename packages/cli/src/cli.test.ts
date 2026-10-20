@@ -51,9 +51,21 @@ describe('CLI binary', () => {
     expect(
       (await cli('--project', root, 'inspect', 'points')).envelope.result[0].featureIdUnique,
     ).toBe(true);
+    const storyPath = join(root, 'story.json');
+    const story = JSON.parse(await readFile(storyPath, 'utf8'));
+    story.scenes[0].title = 'Survey location';
+    story.scenes[0].narration = 'A field survey recorded this location.';
+    story.scenes[0].layers = [{ id: 'locations', sourceId: 'points', technique: 'point' }];
+    await writeFile(storyPath, `${JSON.stringify(story, null, 2)}\n`);
+    const initialStale = await cli('--project', root, 'check');
+    expect(initialStale.code).toBe(1);
+    expect(initialStale.envelope.diagnostics[0].code).toBe('INPUT_STALE');
+    expect((await cli('--project', root, 'lock')).code).toBe(0);
     expect((await cli('--project', root, 'check')).envelope.ok).toBe(true);
     const online = await cli('--project', root, 'build', '--out', 'online');
     expect(online.code).toBe(0);
+    expect(online.envelope.result.verification.input.resources).toHaveLength(1);
+    expect(await readFile(join(root, 'online', 'compiled-data.js'), 'utf8')).toContain('locations');
     expect(online.envelope.result.verification.requiredHosts).toContain('tiles.openfreemap.org');
     const offline = await cli('--project', root, 'build', '--offline', '--out', 'offline');
     expect(offline.code).toBe(0);
@@ -61,14 +73,13 @@ describe('CLI binary', () => {
     expect(await readFile(join(root, 'offline', 'index.html'), 'utf8')).toContain(
       'compiled-app.js',
     );
-    const storyPath = join(root, 'story.json');
-    const story = await readFile(storyPath, 'utf8');
-    await writeFile(storyPath, story.replace('Introduction', 'Edited'));
+    const revisedStory = await readFile(storyPath, 'utf8');
+    await writeFile(storyPath, revisedStory.replace('Survey location', 'Edited'));
     const stale = await cli('--project', root, 'check');
     expect(stale.code).toBe(1);
     expect(stale.envelope.diagnostics[0].code).toBe('INPUT_STALE');
     const refreshed = await cli('--project', root, 'lock');
-    expect(refreshed.envelope.result).toEqual({ revision: 3, resources: 1, profiles: 1 });
+    expect(refreshed.envelope.result).toEqual({ revision: 4, resources: 1, profiles: 1 });
     expect((await cli('--project', root, 'check')).code).toBe(0);
     expect((await cli('--project', root, 'build', '--offline', '--out', 'offline')).code).toBe(0);
     const skill = await cli('--project', root, 'skill', 'install', '--codex');

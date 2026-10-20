@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ingestDataFile, ingestGeoJsonFile } from './index.js';
 
-const EXAMPLES = new URL('../../../../examples/', import.meta.url);
-const fixture = (rel: string): string => fileURLToPath(new URL(rel, EXAMPLES));
+const FIXTURES = new URL('../../../../fixtures/ingest/', import.meta.url);
+const fixture = (rel: string): string => fileURLToPath(new URL(rel, FIXTURES));
 
 describe('GeoJSON ingest — polygons with a date attribute', () => {
   it('profiles neighborhoods.geojson exactly', async () => {
@@ -43,7 +43,9 @@ describe('GeoJSON ingest — points', () => {
 describe('GeoJSON ingest — errors', () => {
   it('rejects non-FeatureCollection JSON', async () => {
     await expect(
-      ingestDataFile(fixture('sf-waterfront.geonarrative.json')),
+      ingestDataFile(
+        fileURLToPath(new URL('../../../../fixtures/two-period/design.json', import.meta.url)),
+      ),
     ).rejects.toThrow(/FeatureCollection/);
   });
 });

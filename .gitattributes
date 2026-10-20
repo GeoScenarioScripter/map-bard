@@ -1,4 +1,6 @@
 fixtures/** text eol=lf
+fixtures/**/*.png binary
+fixtures/**/*.jpg binary
 # Authored project files are hashed; keep LF on every platform.
 examples/projects/** text eol=lf
 examples/projects/**/*.jpg binary

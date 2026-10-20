@@ -1,15 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importLegacyNarrative } from './import-legacy.js';
 import { loadProject } from './load.js';
 import { sha256 } from './fingerprint.js';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const specimen = join(root, 'fixtures/two-period');
-const legacy = join(root, 'examples/sf-waterfront.geonarrative.json');
 const temporary: string[] = [];
 
 async function scratch(): Promise<string> {
@@ -98,75 +96,6 @@ describe('project/resource I/O', () => {
           (item) => item.code === 'ASSET_COLLISION' || item.code === 'ASSET_PATH_INVALID',
         ),
       ).toBe(true);
-  });
-
-  it('imports without changing original narrative bytes or source resource bytes', async () => {
-    const destination = join(await scratch(), 'imported');
-    const sourceBytes = await readFile(legacy);
-    const imported = await importLegacyNarrative(legacy, destination);
-    expect(imported.ok).toBe(true);
-    if (!imported.ok) return;
-    expect(await readFile(legacy)).toEqual(sourceBytes);
-    expect(await readFile(join(destination, 'narrative.geonarrative.json'))).toEqual(sourceBytes);
-    expect(imported.value.normalizedPaths).toHaveLength(3);
-    expect(imported.value.retainedFields).toContain('scenes[0].narration');
-    expect(imported.value.featureIdAssignments).toHaveLength(3);
-    expect(
-      imported.value.unsupportedRequests.some((item) => item.code === 'CAPABILITY_UNSUPPORTED'),
-    ).toBe(true);
-    const sourceData = await readFile(join(root, 'examples/data/landmarks.geojson'));
-    expect(sha256(await readFile(join(destination, 'data/landmarks.geojson')))).toBe(
-      sha256(sourceData),
-    );
-    const loaded = await loadProject(destination);
-    expect(loaded.ok).toBe(true);
-    const repeated = await importLegacyNarrative(legacy, destination);
-    expect(repeated.ok).toBe(false);
-    if (!repeated.ok) expect(repeated.diagnostics[0]?.code).toBe('ASSET_COLLISION');
-  });
-
-  it('keeps failed imports non-destructive', async () => {
-    const scratchRoot = await scratch();
-    const unsafeInput = join(scratchRoot, 'unsafe.json');
-    const authored = JSON.parse(await readFile(legacy, 'utf8'));
-    authored.dataSources[0].path = '../private.geojson';
-    await writeFile(unsafeInput, JSON.stringify(authored));
-    const before = await readFile(unsafeInput);
-    const destination = join(scratchRoot, 'result');
-    const imported = await importLegacyNarrative(unsafeInput, destination);
-    expect(imported.ok).toBe(false);
-    expect(await readFile(unsafeInput)).toEqual(before);
-    await expect(readFile(join(destination, 'mapbard.project.json'))).rejects.toThrow();
-  });
-
-  it('reports normalized legacy path mapping while retaining authored bytes', async () => {
-    const sourceRoot = await scratch();
-    await mkdir(join(sourceRoot, 'data'));
-    await mkdir(join(sourceRoot, 'media'));
-    await cp(
-      join(root, 'examples/data/landmarks.geojson'),
-      join(sourceRoot, 'data/landmarks.geojson'),
-    );
-    for (const image of ['skyline.png', 'ferry-building.png'])
-      await cp(join(root, 'examples/media', image), join(sourceRoot, 'media', image));
-    const story = JSON.parse(await readFile(legacy, 'utf8'));
-    story.dataSources[0].path = 'data\\landmarks.geojson';
-    const input = join(sourceRoot, 'legacy.json');
-    await writeFile(input, JSON.stringify(story));
-    const destination = join(sourceRoot, 'imported');
-    const result = await importLegacyNarrative(input, destination);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.value.normalizedPaths[0]).toEqual({
-      resourceId: 'landmarks',
-      from: 'data\\landmarks.geojson',
-      to: 'data/landmarks.geojson',
-    });
-    expect(
-      JSON.parse(await readFile(join(destination, 'narrative.geonarrative.json'), 'utf8'))
-        .dataSources[0].path,
-    ).toBe('data\\landmarks.geojson');
-    expect((await loadProject(destination)).ok).toBe(true);
   });
 
   it('preserves the six pinned USGS observations in the derived resources', async () => {

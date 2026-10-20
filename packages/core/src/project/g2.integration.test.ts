@@ -3,14 +3,8 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importLegacyNarrative, loadProject, validateProject } from '@mapbard/core';
-import {
-  ImportReportSchema,
-  parseCompiled,
-  type Design,
-  type GeoNarrative,
-  type Project,
-} from '@mapbard/schema';
+import { loadProject, validateProject } from '@mapbard/core';
+import { parseCompiled, type Design, type GeoNarrative, type Project } from '@mapbard/schema';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const specimen = join(root, 'fixtures/two-period');
@@ -154,21 +148,5 @@ describe('G2 public package composition (build first)', () => {
         expect.objectContaining({ code: 'VALUE_INVALID', artifact: 'project', path: ['revision'] }),
       ]),
     );
-  });
-
-  it('exports the byte-preserving legacy importer with the shared report contract', async () => {
-    const original = join(root, 'examples/sf-waterfront.geonarrative.json');
-    const destination = join(await scratch(), 'imported');
-    const imported = await importLegacyNarrative(original, destination);
-    expect(imported.ok).toBe(true);
-    if (!imported.ok) throw new Error(JSON.stringify(imported.diagnostics));
-    expect(ImportReportSchema.safeParse(imported.value).success).toBe(true);
-    expect(await readFile(join(destination, 'narrative.geonarrative.json'))).toEqual(
-      await readFile(original),
-    );
-    expect((await loadProject(destination)).ok).toBe(true);
-    expect(
-      imported.value.unsupportedRequests.some((entry) => entry.code === 'CAPABILITY_UNSUPPORTED'),
-    ).toBe(true);
   });
 });

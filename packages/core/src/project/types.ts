@@ -4,7 +4,6 @@ export type {
   DataResource,
   Design,
   Diagnostic,
-  ImportReport,
   InputSnapshot,
   JsonValue,
   LoadedProject,

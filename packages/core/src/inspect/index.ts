@@ -1,5 +1,5 @@
 /**
- * Stage 0 — Ingest & profile (no LLM). Parses vector sources into a correct
+ * Ingest and profile. Parses vector sources into a correct
  * `DataProfile` and registers media into `MediaAsset[]`. This grounds every
  * downstream stage, so it is tested thoroughly.
  */

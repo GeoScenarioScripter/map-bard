@@ -3,7 +3,7 @@ import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileProject, importLegacyNarrative, loadProject, validateProject } from '@mapbard/core';
+import { compileProject, loadProject, validateProject } from '@mapbard/core';
 import { STAGE1_CAPABILITIES } from '@mapbard/knowledge';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -113,19 +113,5 @@ describe('W4-B real project regression through public APIs', () => {
     expect(codes(compileProject(loaded.value, STAGE1_CAPABILITIES))).toContain(
       'CAPABILITY_UNSUPPORTED',
     );
-  });
-
-  it('preserves every authored legacy narrative field during import', async () => {
-    const legacy = join(root, 'examples/sf-waterfront.geonarrative.json');
-    const destination = join(await scratch(), 'imported');
-    const source = await readFile(legacy);
-    const result = await importLegacyNarrative(legacy, destination);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const imported = await readFile(join(destination, 'narrative.geonarrative.json'));
-    expect(imported).toEqual(source);
-    expect(JSON.parse(imported.toString('utf8'))).toEqual(JSON.parse(source.toString('utf8')));
-    expect(result.value.unsupportedRequests.length).toBeGreaterThan(0);
-    expect((await loadProject(destination)).ok).toBe(true);
   });
 });

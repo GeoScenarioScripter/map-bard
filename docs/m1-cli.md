@@ -1,6 +1,6 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-20. Status: **next, not started**. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-20. Status: **in progress; A complete**. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 

@@ -9,10 +9,10 @@ import {
   type GeoNarrative,
 } from './index.js';
 
-/** Load the hand-written example from `examples/` at the repo root. */
+/** Load the authored project example. */
 function loadExample(): unknown {
   const path = fileURLToPath(
-    new URL('../../../examples/sf-waterfront.geonarrative.json', import.meta.url),
+    new URL('../../../examples/projects/first-slice/narrative.geonarrative.json', import.meta.url),
   );
   return JSON.parse(readFileSync(path, 'utf8'));
 }
@@ -35,17 +35,24 @@ describe('the hand-written example', () => {
     expect(safeParseGeoNarrative(loadExample()).success).toBe(true);
   });
 
-  it('exercises both panel media and map-anchored media', () => {
+  it('exercises panel media', () => {
     const story = exampleClone();
     const hasPanelMedia = story.scenes.some((s) => (s.media?.length ?? 0) > 0);
-    const hasAnchoredMedia = story.scenes.some((s) => (s.mediaAnchors?.length ?? 0) > 0);
     expect(hasPanelMedia).toBe(true);
-    expect(hasAnchoredMedia).toBe(true);
   });
 
-  it('exposes at least one runtime control', () => {
+  it('accepts a control bound to a layer in its scene', () => {
     const story = exampleClone();
-    expect(story.scenes.some((s) => (s.controls?.length ?? 0) > 0)).toBe(true);
+    story.scenes[0]!.controls = [
+      {
+        id: 'opacity',
+        kind: 'slider',
+        label: 'Opacity',
+        bindsTo: { layerId: 'gauges', property: 'opacity' },
+        range: [0, 1],
+      },
+    ];
+    expect(safeParseGeoNarrative(story).success).toBe(true);
   });
 });
 
@@ -94,7 +101,15 @@ describe('referential integrity', () => {
 
   it('rejects a control bound to a layer not in its scene', () => {
     const broken = exampleClone();
-    broken.scenes[1]!.controls![0]!.bindsTo.layerId = 'lyr-from-another-scene';
+    broken.scenes[1]!.controls = [
+      {
+        id: 'opacity',
+        kind: 'slider',
+        label: 'Opacity',
+        bindsTo: { layerId: 'lyr-from-another-scene', property: 'opacity' },
+        range: [0, 1],
+      },
+    ];
     expect(safeParseGeoNarrative(broken).success).toBe(false);
   });
 

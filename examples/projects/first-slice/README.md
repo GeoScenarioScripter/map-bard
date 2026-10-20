@@ -68,14 +68,7 @@ offline reload and relocated playback, with no Console or Network errors.
 The [browser record](../../../docs/archive/2026-10-20-process-reset/stage-1/browser-checks.md) separates that
 report from generated-output checks.
 
-## Import and diagnostics
-
-For a separate v0.1.0 GeoNarrative, call the public
-`importLegacyNarrative(inputPath, newProjectDirectory)` API, then inspect its
-`ok`, `diagnostics`, and `value.unsupportedRequests` fields before compiling.
-An import preserves source bytes but does not promise that every legacy request
-is supported by the compiled player. This example is already in the editable
-project format and needs no import.
+## Diagnostics
 
 To inspect a failure without changing this project, copy it to a scratch
 directory, edit a copied data file, and run the build script with that directory

@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { classifyMedia, registerMedia, registerMediaInputs } from './index.js';
 
-const EXAMPLES = new URL('../../../../examples/', import.meta.url);
-const fixture = (rel: string): string => fileURLToPath(new URL(rel, EXAMPLES));
+const FIXTURES = new URL('../../../../fixtures/ingest/', import.meta.url);
+const fixture = (rel: string): string => fileURLToPath(new URL(rel, FIXTURES));
 
 describe('classifyMedia (pure)', () => {
   it('classifies local images and remote videos by extension', () => {
@@ -40,12 +40,19 @@ describe('registerMedia', () => {
 
   it('registers a URL asset without dimensions', async () => {
     const asset = await registerMedia({ path: 'https://cdn.example.com/clip.mp4', credit: 'ACME' });
-    expect(asset).toMatchObject({ kind: 'video', source: 'url', mimeType: 'video/mp4', credit: 'ACME' });
+    expect(asset).toMatchObject({
+      kind: 'video',
+      source: 'url',
+      mimeType: 'video/mp4',
+      credit: 'ACME',
+    });
     expect(asset.width).toBeUndefined();
   });
 
   it('rejects a missing local file', async () => {
-    await expect(registerMedia({ path: fixture('media/missing.png') })).rejects.toThrow(/not found/);
+    await expect(registerMedia({ path: fixture('media/missing.png') })).rejects.toThrow(
+      /not found/,
+    );
   });
 
   it('rejects a malformed URL with an image extension', async () => {

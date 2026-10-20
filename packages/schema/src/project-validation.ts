@@ -44,26 +44,6 @@ export const PublicationInputsSchema = z
     assets: ResolvedAssetsSchema,
   })
   .strict();
-export const ImportReportSchema = z
-  .object({
-    projectRoot: z.string(),
-    retainedFields: z.array(z.string()),
-    normalizedPaths: z.array(
-      z.object({ resourceId: IdSchema, from: z.string(), to: z.string() }).strict(),
-    ),
-    unsupportedRequests: z.array(DiagnosticSchema),
-    featureIdAssignments: z.array(
-      z
-        .object({
-          sourceId: IdSchema,
-          featureIndex: z.number().int().nonnegative(),
-          assignedId: IdSchema,
-          basis: z.string(),
-        })
-        .strict(),
-    ),
-  })
-  .strict();
 export const RenderCompiledOptionsSchema = z.object({}).strict();
 export const CompiledBundleSchema = z
   .object({
@@ -84,7 +64,6 @@ export const CompiledWriteResultSchema = z
 export type LoadedProject = z.infer<typeof LoadedProjectSchema>;
 export type ValidatedProject = z.infer<typeof ValidatedProjectSchema>;
 export type PublicationInputs = z.infer<typeof PublicationInputsSchema>;
-export type ImportReport = z.infer<typeof ImportReportSchema>;
 export type RenderCompiledOptions = z.infer<typeof RenderCompiledOptionsSchema>;
 export type CompiledBundle = z.infer<typeof CompiledBundleSchema>;
 export type CompiledWriteResult = z.infer<typeof CompiledWriteResultSchema>;

@@ -37,10 +37,6 @@ export function projectRelativePath(value: string): string {
   return parts.join('/');
 }
 
-export function legacyRelativePath(value: string): string {
-  return projectRelativePath(value.replaceAll('\\', '/'));
-}
-
 export function containedPath(root: string, candidate: string): boolean {
   const rel = relative(root, candidate);
   return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));

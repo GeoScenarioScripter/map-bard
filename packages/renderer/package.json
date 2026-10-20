@@ -17,7 +17,7 @@
     "./player.js": "./dist/player/player.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && pnpm run build:player",
+    "build": "node ../../scripts/clean-package-dist.mjs renderer && tsc -p tsconfig.json && tsc -p player/tsconfig.json && node scripts/build-player.mjs",
     "build:player": "tsc -p player/tsconfig.json && node scripts/build-player.mjs",
     "test": "vitest run --passWithNoTests"
   },

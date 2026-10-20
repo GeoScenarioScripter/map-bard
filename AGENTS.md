@@ -15,13 +15,13 @@ assuming that a planned capability exists.
 
 ## Repository map
 
-| Package              | Today                                                                                       | Heading to                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `@mapbard/schema`    | Zod contracts: project/narrative/design 0.1, compiled spec, diagnostics                     | Format 0.2 (`mapbard.json`, `story.json`, lockfile), JSON Schema   |
-| `@mapbard/core`      | Project load/validate, compiler, ingest/profiling; legacy DashScope planner (to be retired) | Lockfile, migrate, M3 analysis and bindings                        |
-| `@mapbard/knowledge` | Capability IDs and encoding prerequisites                                                   | Technique catalog, critic rules, basemap provider registry         |
-| `@mapbard/renderer`  | Compiled publication + TypeScript player (MapLibre); legacy `app.js` path (to be retired)   | Multi-tier player (MapLibre + deck.gl + three.js), layouts, themes |
-| `@mapbard/cli`       | Stub                                                                                        | The `mapbard` command (M1)                                         |
+| Package              | Today                                                                   | Heading to                                                         |
+| -------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `@mapbard/schema`    | Zod contracts: project/narrative/design 0.1, compiled spec, diagnostics | Format 0.2 (`mapbard.json`, `story.json`, lockfile), JSON Schema   |
+| `@mapbard/core`      | Project load/validate, compiler, ingest/profiling                       | Lockfile, migrate, M3 analysis and bindings                        |
+| `@mapbard/knowledge` | Capability IDs and encoding prerequisites                               | Technique catalog, critic rules, basemap provider registry         |
+| `@mapbard/renderer`  | Compiled publication + TypeScript player (MapLibre)                     | Multi-tier player (MapLibre + deck.gl + three.js), layouts, themes |
+| `@mapbard/cli`       | Stub                                                                    | The `mapbard` command (M1)                                         |
 
 Fixtures live in `fixtures/`; examples in `examples/projects/`.
 

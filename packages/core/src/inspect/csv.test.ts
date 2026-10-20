@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { coerceCell, ingestCsvFile, ingestCsvText, parseCsv } from './index.js';
 
-const EXAMPLES = new URL('../../../../examples/', import.meta.url);
-const fixture = (rel: string): string => fileURLToPath(new URL(rel, EXAMPLES));
+const FIXTURES = new URL('../../../../fixtures/ingest/', import.meta.url);
+const fixture = (rel: string): string => fileURLToPath(new URL(rel, FIXTURES));
 
 describe('parseCsv', () => {
   it('handles quotes, escaped quotes, and CRLF', () => {
@@ -45,7 +45,10 @@ describe('CSV-with-coordinates ingest', () => {
     expect(byName.reading).toMatchObject({ dataType: 'number', measurement: 'ratio' });
     expect(byName.installed_on).toMatchObject({ dataType: 'date', measurement: 'interval' });
 
-    expect(data.features[0]!.geometry).toEqual({ type: 'Point', coordinates: [-122.3933, 37.7955] });
+    expect(data.features[0]!.geometry).toEqual({
+      type: 'Point',
+      coordinates: [-122.3933, 37.7955],
+    });
     expect(data.features[0]!.properties).toMatchObject({ id: 'S1', reading: 42.5 });
   });
 

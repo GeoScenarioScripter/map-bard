@@ -84,8 +84,8 @@ command, cliVersion, diagnostics[], result }`. Exit codes: `0` ok, `1`
 - Dependencies: `commander` (MIT) for parsing; `node:http` and `fs.watch` for
   preview (no extra watcher dependency unless Linux recursive watching proves
   unreliable).
-- Distribution: workspace `bin` now. The npm package name and publishing are
-  decided by the product owner before release.
+- Distribution: published to npm as **`mapbard`**, so users run `npx mapbard
+init` or `npm i -g mapbard` (see item G).
 
 ### D. Free online basemaps
 
@@ -102,8 +102,11 @@ command, cliVersion, diagnostics[], result }`. Exit codes: `0` ok, `1`
 - Upgrade MapLibre GL JS from 4.7 to 6.x. The compiler resolves provider plus
   style to a style URL, attribution and the required network hosts. The player
   loads the style and inserts story layers below the label layers.
-- `custom` takes `styleUrl` and `attribution`, for self-hosted or
-  regional mirrors. No provider that needs an API key is built in.
+- `custom` takes `styleUrl` and `attribution`, for self-hosted tiles or any
+  other open provider. No provider that needs an API key is built in.
+- `fallback` lists alternative providers, tried in order when the primary
+  fails to load (default: OpenFreeMap → VersaTiles). If all fail, the story
+  degrades to its local context layers with a visible notice.
 - `build --offline` drops online sources, keeps authored local context layers
   and warns that the basemap was removed. The output must make zero network
   requests.
@@ -139,6 +142,29 @@ it.
   the seed of M2's visual QA.
 - The README gets a five-minute quickstart for humans and for agents.
 
+### G. npm release
+
+- **Packages:** the unscoped `mapbard` package is the CLI and the entry point
+  users install. The libraries publish under the `@mapbard/` scope (`schema`,
+  `core`, `knowledge`, `renderer`), and `@mapbard/assets-starter` follows in
+  M2. `mapbard` depends on them with normal semver ranges, and `workspace:*` is
+  rewritten at publish time.
+- **Name status:** on 2026-10-20 the `mapbard` package and the `@mapbard/cli`
+  name were both unclaimed on npm. The product owner needs to create the npm
+  account or organization (`mapbard`) and claim the names early. Publishing uses
+  the owner's credentials; agents never handle npm tokens.
+- **Package hygiene:** `files` allowlists, an `exports` map, a `bin` entry with
+  a shebang, `engines.node >= 20`, an MIT `LICENSE` and a README per package.
+  The published player bundle and vendored MapLibre are included in
+  `@mapbard/renderer`.
+- **Versioning:** Changesets (MIT) for versions and changelogs. A GitHub
+  Actions release workflow runs build, tests and lint, then publishes with npm
+  provenance using a repository secret the owner adds.
+- **Pre-release check:** `npm pack` each package, install the tarballs in a
+  temp folder, and run `npx mapbard init && mapbard build` on Windows, macOS
+  and Linux in CI. The first public release is `0.1.0` once acceptance below
+  passes. Earlier builds go out under the `next` tag only.
+
 ## Acceptance
 
 1. `pnpm install && pnpm build && pnpm test && pnpm lint` pass from a clean
@@ -151,9 +177,11 @@ it.
    Potomac GeoJSON, the photo, the intent and the skill pack. It reaches a
    successful `mapbard build` with no human file edits. Friction found in the
    transcript becomes skill or CLI fixes, recorded in STATUS.md.
+5. Packed tarballs install and run `init` → `build` on Windows, macOS and
+   Linux in CI, and `mapbard@0.1.0` is published once the owner has claimed the
+   npm names.
 
 ## Out of scope for M1
 
-Visual redesign, deck.gl/three.js, motion tracks (M2); computed results and
-bindings (M3); the workbench (M5); npm publishing (needs a product-owner
-decision).
+Visual redesign, deck.gl/three.js, motion tracks and the asset library (M2);
+computed results and bindings (M3); the workbench (M5).

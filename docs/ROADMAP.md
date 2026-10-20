@@ -23,8 +23,8 @@ reproducible builds we keep producing are its future evaluation material.
 
 ### Who it serves first
 
-Data journalists, researchers, analysts and educators who have their own data
-and use a coding agent. A human can still author directly, because the project
+Data journalists, researchers, analysts and educators worldwide who have their
+own data and use a coding agent. A human can still author directly, because the project
 is plain files and the CLI is human-friendly.
 
 ### Positioning
@@ -67,15 +67,15 @@ Each milestone has one short plan document, written when it becomes active.
 Work proceeds in small, committed increments. There are no waves or gates; a
 milestone closes when its acceptance list passes and STATUS.md says so.
 
-| #      | Milestone                 | Outcome                                                                                                                                                        | Status   |
-| ------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| **M1** | CLI and foundation        | `mapbard` CLI and agent skill pack, format 0.2 with a CLI-managed lockfile, live preview, free online basemaps, legacy code retired. [Plan](m1-cli.md)         | **Next** |
-| **M2** | Visual engine             | Multi-tier renderer (MapLibre + deck.gl + three.js), cinematic camera/scroll motion, technique catalog v1, layouts/themes, visual QA. [Plan](visual-engine.md) | Planned  |
-| **M3** | Evidence-bound narration  | Computed results, `{{bindings}}` in narration/annotations, number linter, evidence popovers, staleness on data change                                          | Planned  |
-| **M4** | Showcase and recipes      | 3–5 flagship stories (hydrology, socioeconomic, movement/flows, urban 3D, terrain); reusable recipes; landing page                                             | Planned  |
-| **M5** | Local workbench           | Browser workbench over the same project: scene outline, live preview, camera capture, style tweaks, evidence inspector                                         | Outline  |
-| **M6** | Built-in agent            | One LLM + system prompt + dynamically loaded skills + purpose-built harness, reusing the CLI operations and the M1 skill pack                                  | Outline  |
-| **M7** | Community center (hosted) | Upload, serve and discover stories; remix recipes; attribution and reuse terms                                                                                 | Outline  |
+| #      | Milestone                 | Outcome                                                                                                                                                                               | Status   |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| **M1** | CLI and foundation        | `mapbard` CLI and agent skill pack, format 0.2 with a CLI-managed lockfile, live preview, free online basemaps, legacy code retired, published to npm as `mapbard`. [Plan](m1-cli.md) | **Next** |
+| **M2** | Visual engine             | Multi-tier renderer (MapLibre + deck.gl + three.js), cinematic camera/scroll motion, technique catalog v1, layouts/themes, visual QA. [Plan](visual-engine.md)                        | Planned  |
+| **M3** | Evidence-bound narration  | Computed results, `{{bindings}}` in narration/annotations, number linter, evidence popovers, staleness on data change                                                                 | Planned  |
+| **M4** | Showcase and recipes      | 3–5 flagship stories (hydrology, socioeconomic, movement/flows, urban 3D, terrain); reusable recipes; landing page                                                                    | Planned  |
+| **M5** | Local workbench           | Browser workbench over the same project: scene outline, live preview, camera capture, style tweaks, evidence inspector                                                                | Outline  |
+| **M6** | Built-in agent            | One LLM + system prompt + dynamically loaded skills + purpose-built harness, reusing the CLI operations and the M1 skill pack                                                         | Outline  |
+| **M7** | Community center (hosted) | Upload, serve and discover stories; share and remix recipes and assets (models, icons, themes, motion presets); attribution and reuse terms                                           | Outline  |
 
 M2 and M3 can run in parallel once M1 lands format 0.2 and the CLI, because
 they touch different parts (renderer/player vs core analysis/bindings).
@@ -120,8 +120,11 @@ Potomac story is redesigned first as the M2 acceptance demo.
   framework or specialized-agent team. The retired DashScope planner is not
   reused. The provider choice is made when M6 starts.
 - **M7 community center:** hosted upload/serve/discover for published stories,
-  recipe remix, attribution and reuse conditions, and separation of public story
-  assets from restricted source data. Commercial terms are deferred.
+  plus a shared library of story elements: 3D models, icons, themes, palettes,
+  motion presets and recipes. Elements are referenced as `community:<user>/<id>@<version>`
+  and pinned by content hash, with mandatory licence and attribution
+  metadata. Also covers separating public story assets from restricted source
+  data, and moderation and takedown. Commercial terms are deferred.
 
 ## Deferred
 

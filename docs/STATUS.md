@@ -42,3 +42,8 @@ next step. Details belong in commit messages.
   first; CLI first; free keyless online basemaps (OpenFreeMap, VersaTiles,
   Mapterhorn/Terrarium terrain); retire legacy code; deck.gl + three.js for the
   visual engine, without Threebox. Next: M1-A.
+- 2026-10-20: Owner decisions: publish to npm as `mapbard` (names unclaimed today;
+  the owner must create the npm org and claim them), motion defaults with a
+  layered override system, a CC0 starter asset pack plus user and community
+  assets, and a worldwide audience (tile fallback chain, label language, scripts/RTL,
+  locale formatting). Plans updated. Next: M1-A.

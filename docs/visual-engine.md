@@ -97,12 +97,41 @@ dropped). The compiler resolves authored motion into typed tracks:
 - **Data transitions:** between scenes that share a layer and scale, values
   interpolate on the GPU (deck.gl transitions), so 2024 → 2025 visibly falls.
 - **Modes:** `scrub` (tied to scroll), `play` (triggered timeline with duration),
-  or `step` (current behaviour). `prefers-reduced-motion` forces step with final
-  states, and every track declares its final state.
+  `loop` (ambient: particles, orbit, pulse) or `step` (instant final state).
+  Every track declares its final state.
 
-The authored form stays short. For example `"camera": {"preset": "fly-along",
-"feature": "river-context/potomac", "pitch": 60}` or explicit `keyframes`. The
-M5 workbench will capture keyframes from the live map.
+### Defaults and configuration
+
+The defaults are decided: **the camera scrubs with scroll, data transitions
+play once when triggered, and ambient effects loop.** Every part of that can be
+overridden. Settings cascade from most general to most specific, and the most
+specific one wins:
+
+1. Built-in defaults.
+2. Story-wide `motion` in `mapbard.json`.
+3. Named presets in `motionPresets`, reusable across scenes. Later they can be
+   shared through the community hub (M7).
+4. Scene-level `motion` in `story.json`.
+5. Per-track overrides on a camera, layer or annotation.
+
+| Setting            | Meaning                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `mode`             | `scrub`, `play`, `loop` or `step`, per track type (`camera`, `data`, `ambient`, `annotation`)     |
+| `easing`           | Named (`linear`, `ease-in-out`, `expo-out`, …), `cubic-bezier(…)` or `spring(stiffness, damping)` |
+| `duration`         | For `play`/`loop`, in ms                                                                          |
+| `delay`, `stagger` | Offset tracks and stagger per feature (e.g. columns rising one after another)                     |
+| `scrollLength`     | Scene length in viewport heights, so long camera flights get more scroll                          |
+| `range`            | The progress window `[start, end]` a track occupies, so tracks can be sequenced inside one scene  |
+| `trigger`          | Where in the viewport a scene starts (`top`, `center`, a fraction)                                |
+| `keyframes`        | Explicit camera or property keyframes at progress positions, which take precedence over presets   |
+| `reducedMotion`    | `step` (default), `shorten` (fast cross-fades) or `keep`, honouring `prefers-reduced-motion`      |
+
+Short form: `"camera": {"preset": "fly-along", "feature":
+"river-context/potomac", "pitch": 60}`. Full control: explicit `keyframes` plus
+any setting above. Readers always get a pause control for looping animation
+(WCAG 2.2.2). The M5 workbench will capture keyframes from the live map. The
+critic warns about motion that hides content, such as a camera flight that
+outruns its narration.
 
 ## Technique catalog v1
 
@@ -149,8 +178,26 @@ screenshot test and a skill reference page with "when to use / when not to".
 
 ### 3D objects (Tier 2)
 
-glTF/GLB landmark models (bundled locally, with licence attribution required),
-3D text labels, pulsing beacons and lights/shadows for model scenes.
+glTF/GLB models, 3D text labels, pulsing beacons and lights/shadows for model
+scenes. Models come from the asset library below.
+
+### Asset library
+
+Models, icons, textures, themes, palettes and motion presets are all
+**assets**. A story references them the same way wherever they come from:
+
+| Source       | Reference form              | Notes                                                                                                                                                                                                                                                                  |
+| ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starter pack | `builtin:<id>`              | A curated set of free models and icons in a separate package (`@mapbard/assets-starter`) so the CLI stays small. Only CC0 sources such as Kenney, Quaternius, Poly Haven and CC0 items from Smithsonian Open Access; each asset's license is verified when it is added |
+| Author's own | `./assets/…` (project path) | Registered with `mapbard add`; licence and credit fields are required                                                                                                                                                                                                  |
+| Community    | `community:<user>/<id>@<v>` | M7: shared through the hosted hub with licence, attribution and version pinning                                                                                                                                                                                        |
+
+- **Licence metadata is mandatory** for every asset. `build` writes the credits
+  into the story, and `check` rejects assets with an unknown licence.
+- **Builds copy assets locally,** so stories stay portable and offline-capable.
+  Community assets are pinned by version and content hash.
+- **Budgets:** `check` warns about models over a size or triangle limit and
+  suggests compressing them (glTF with Draco/meshopt compression).
 
 ### Comparison
 
@@ -246,15 +293,27 @@ needs M3 bindings for the callouts, or uses literal text until M3 lands.
 | V3    | Tier 2 three.js: adapter, flow particles, glTF models, lighting                                                                                                             | Potomac particles; a model scene; 60 fps on reference laptop               |
 | V4    | Comparison and charts: swipe, synced maps, small multiples, inline charts                                                                                                   | Potomac swipe; one chart-linked scene; Potomac scores ≥ 85                 |
 
+## Worldwide readers
+
+MapBard's readers and creators are worldwide, so stories must work and read
+well anywhere:
+
+- **Reliable tiles:** a provider fallback chain (for example OpenFreeMap →
+  VersaTiles), load timeouts, and graceful degradation to authored local context
+  layers with a visible notice when tiles fail. Custom or self-hosted style URLs
+  are first-class. Visual QA includes a "tiles unavailable" run.
+- **Label language:** a `labels.language` setting that uses OpenMapTiles
+  `name:<lang>` fields with fallback to the local name, so basemap labels match
+  the story's language.
+- **Scripts and direction:** font stacks with fallbacks for CJK, Arabic,
+  Devanagari and other scripts, and RTL layout for card and legend placement.
+- **Locale formatting:** numbers, dates and units follow the story's locale.
+  M3's bound values use the same formatter.
+
 ## Open questions
 
-- Should `scrub` or `play` be the default motion mode? The proposal is `scrub`
-  for camera and `play` for data transitions.
-- Bundled model library: ship a few CC0 glTF landmarks/icons, or require
-  author-supplied models only?
 - Imagery basemap: keyless, openly licensed satellite imagery is limited (for
   example EOX Sentinel-2 cloudless 2016 is CC BY 4.0, while later years are
   non-commercial). Verify the terms before adding a preset.
-- Reach from mainland China: all listed providers responded from the
-  development machine, but slowly. Keep the provider list configurable and allow
-  custom/self-hosted tile URLs.
+- Starter pack contents: which 20–40 models and icons give the most storytelling
+  range (landmarks, vehicles, infrastructure, nature, people markers)?

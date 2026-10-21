@@ -184,6 +184,54 @@ describe('CLI binary', () => {
       server.kill();
     }
   });
+  it('keeps previewing a broken project and streams its diagnostics', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    const root = join(scratch, 'project');
+    await cli('init', root);
+    const story = JSON.parse(await readFile(join(root, 'story.json'), 'utf8'));
+    story.scenes[0].layers = [{ id: 'a', sourceId: 'nowhere', technique: 'point' }];
+    await writeFile(join(root, 'story.json'), JSON.stringify(story));
+    const server = spawn(process.execPath, [binary, '--json', '--project', root, 'preview']);
+    try {
+      const line = await new Promise<string>((ready, fail) => {
+        let text = '';
+        server.stdout.on('data', (chunk) => {
+          text += chunk;
+          if (text.includes('\n')) ready(text);
+        });
+        server.once('exit', () => fail(new Error(`preview exited: ${text}`)));
+      });
+      const envelope = JSON.parse(line);
+      expect(envelope.ok).toBe(false);
+      const page = await (await fetch(envelope.result.url)).text();
+      expect(page).toContain('__mapbard_events');
+      const events = await fetch(`${envelope.result.url}__mapbard_events`);
+      const reader = events.body!.getReader();
+      let stream = '';
+      while (!stream.includes('REFERENCE_MISSING'))
+        stream += new TextDecoder().decode((await reader.read()).value);
+      await reader.cancel();
+    } finally {
+      server.kill();
+    }
+  });
+  it('rejects names outside printable ASCII', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    expect((await cli('init', join(scratch, '地图'))).envelope.diagnostics[0].message).toContain(
+      'English (ASCII)',
+    );
+    const root = join(scratch, 'project');
+    await cli('init', root);
+    const data = join(scratch, '河流.geojson');
+    await writeFile(data, JSON.stringify({ type: 'FeatureCollection', features: [] }));
+    const named = await cli('--project', root, 'add', data);
+    expect(named.envelope.result.added).toEqual([]);
+    expect(named.envelope.diagnostics[0].message).toContain('English (ASCII)');
+    const id = await cli('--project', root, 'add', data, '--id', '河流');
+    expect(id.envelope.diagnostics[0].path).toEqual(['--id']);
+  });
   it('returns usage code 2 in JSON mode', async () => {
     const usage = await cli('build', '--bogus');
     expect(usage.code).toBe(2);

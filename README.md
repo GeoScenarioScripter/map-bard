@@ -46,7 +46,7 @@ node packages/cli/dist/bin.js --project my-story preview --open
 node packages/cli/dist/bin.js --project my-story build
 ```
 
-`preview` stays running and reloads when authored files change. Stop it with Ctrl+C before the final `build`. The publication is `my-story/out/index.html`; `my-story/out/verification.json` lists its input hashes and online hosts. Add `--offline` to `build` for a publication with no network requests. A richer [three-scene Potomac example](examples/projects/potomac/README.md) uses a shared data scale, credited photo, local context layers, and an online basemap.
+`preview` stays running and reloads when authored files change; while the project has errors, the page lists them instead. Stop it with Ctrl+C before the final `build`. The publication is `my-story/out/index.html`; `my-story/out/verification.json` lists its input hashes and online hosts. Add `--offline` to `build` for a publication with no network requests. A richer [three-scene Potomac example](examples/projects/potomac/README.md) uses a shared data scale, credited photo, local context layers, and an online basemap.
 
 ## With a coding agent
 

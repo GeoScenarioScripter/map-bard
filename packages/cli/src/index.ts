@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { readFileSync, watch } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { Command, CommanderError } from 'commander';
 import { BASEMAP_PROVIDERS, TERRAIN_PROVIDERS, STAGE1_CAPABILITIES } from '@mapbard/knowledge';
@@ -100,13 +100,22 @@ const ignoredChange = (file: string, output: string): boolean => {
 async function preview(root: string, port: number, open: boolean): Promise<Outcome> {
   const output = '.mapbard-preview';
   const rebuilt = await build(root, output, false);
-  if (rebuilt.diagnostics.some((entry) => entry.severity === 'error')) return rebuilt;
+  // Without a manifest there is nothing to watch; any other failure is shown in the page.
+  if (!(await stat(resolve(root, 'mapbard.json')).catch(() => undefined))) return rebuilt;
+  const status = (outcome: Outcome): string =>
+    JSON.stringify({
+      ok: !outcome.diagnostics.some((entry) => entry.severity === 'error'),
+      diagnostics: outcome.diagnostics,
+    });
+  let latest = rebuilt;
   const directory = resolve(root, output);
   const clients = new Set<import('node:http').ServerResponse>();
   const server = createServer(async (request, response) => {
     if (request.url === '/__mapbard_events') {
       response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
       response.write(': connected\n\n');
+      if (latest.diagnostics.some((entry) => entry.severity === 'error'))
+        response.write(`data: ${status(latest)}\n\n`);
       clients.add(response);
       request.on('close', () => clients.delete(response));
       return;
@@ -127,9 +136,16 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
       response.end();
       return;
     }
+    const index = file === resolve(directory, 'index.html');
     try {
-      let bytes = await readFile(file);
-      if (file.endsWith('index.html'))
+      let bytes = await readFile(file).catch((error: unknown) => {
+        if (!index) throw error;
+        // No successful build yet: a blank page that carries the diagnostics panel.
+        return Buffer.from(
+          '<!doctype html><html><head><meta charset="utf-8"><title>MapBard preview</title></head><body></body></html>',
+        );
+      });
+      if (index)
         bytes = Buffer.from(
           bytes
             .toString()
@@ -161,10 +177,8 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
         ],
       }),
     );
-    for (const client of clients)
-      client.write(
-        `data: ${JSON.stringify({ ok: !next.diagnostics.some((entry) => entry.severity === 'error'), diagnostics: next.diagnostics })}\n\n`,
-      );
+    latest = next;
+    for (const client of clients) client.write(`data: ${status(next)}\n\n`);
   };
   const watcher = watch(root, { recursive: true }, (_event, file) => {
     if (!file || ignoredChange(String(file), output)) return;

@@ -36,6 +36,8 @@ export const issue = (
   severity: Diagnostic['severity'] = 'error',
 ): Diagnostic => ({ code, artifact, path, message, remedy, severity, ids: {} });
 export type Outcome = { result?: unknown; diagnostics: Diagnostic[] };
+/** Names that become IDs and project paths stay printable ASCII to avoid encoding surprises. */
+const asciiName = (name: string): boolean => /^[\x20-\x7e]+$/.test(name);
 const jsonFile = async <T>(path: string): Promise<T> =>
   JSON.parse(await readFile(path, 'utf8')) as T;
 const saveJson = async (path: string, value: unknown): Promise<void> => {
@@ -44,6 +46,18 @@ const saveJson = async (path: string, value: unknown): Promise<void> => {
 
 export async function initialize(directory: string, template: boolean): Promise<Outcome> {
   const root = resolve(directory);
+  if (!asciiName(basename(root)))
+    return {
+      diagnostics: [
+        issue(
+          'VALUE_INVALID',
+          'project',
+          [basename(root)],
+          'Project directory names must use English (ASCII) characters.',
+          'Choose a directory name such as my-story.',
+        ),
+      ],
+    };
   try {
     if ((await readdir(root)).length)
       return {
@@ -160,6 +174,18 @@ export async function add(
       ],
     };
   }
+  if (requestedId !== undefined && !/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(requestedId))
+    return {
+      diagnostics: [
+        issue(
+          'VALUE_INVALID',
+          'project',
+          ['--id'],
+          `Resource ID ${requestedId} is not allowed.`,
+          'Use English letters, digits, hyphens or underscores, for example river-gauges.',
+        ),
+      ],
+    };
   if (requestedId && files.length > 1)
     return {
       diagnostics: [
@@ -179,6 +205,18 @@ export async function add(
     const extension = extname(source).toLowerCase();
     const media = !['.geojson', '.json', '.csv'].includes(extension);
     const id = requestedId ?? slugify(basename(source));
+    if (!asciiName(basename(source))) {
+      diagnostics.push(
+        issue(
+          'VALUE_INVALID',
+          media ? 'media' : 'data',
+          [file],
+          `File name ${basename(source)} must use English (ASCII) characters.`,
+          'Rename the file, for example to river-gauges.geojson, and add it again.',
+        ),
+      );
+      continue;
+    }
     if (
       manifest.resources.data.some((entry) => entry.id === id) ||
       manifest.resources.media.some((entry) => entry.id === id)

@@ -293,22 +293,12 @@ needs M3 bindings for the callouts, or uses literal text until M3 lands.
 | V3    | Tier 2 three.js: adapter, flow particles, glTF models, lighting                                                                                                             | Potomac particles; a model scene; 60 fps on reference laptop               |
 | V4    | Comparison and charts: swipe, synced maps, small multiples, inline charts                                                                                                   | Potomac swipe; one chart-linked scene; Potomac scores ≥ 85                 |
 
-## Worldwide readers
+## Reliable tiles
 
-MapBard's readers and creators are worldwide, so stories must work and read
-well anywhere:
-
-- **Reliable tiles:** a provider fallback chain (for example OpenFreeMap →
-  VersaTiles), load timeouts, and graceful degradation to authored local context
-  layers with a visible notice when tiles fail. Custom or self-hosted style URLs
-  are first-class. Visual QA includes a "tiles unavailable" run.
-- **Label language:** a `labels.language` setting that uses OpenMapTiles
-  `name:<lang>` fields with fallback to the local name, so basemap labels match
-  the story's language.
-- **Scripts and direction:** font stacks with fallbacks for CJK, Arabic,
-  Devanagari and other scripts, and RTL layout for card and legend placement.
-- **Locale formatting:** numbers, dates and units follow the story's locale.
-  M3's bound values use the same formatter.
+Stories use a provider fallback chain (for example OpenFreeMap → VersaTiles),
+load timeouts, and graceful degradation to authored local context layers with a
+visible notice when tiles fail. Custom or self-hosted style URLs are
+first-class. Visual QA includes a "tiles unavailable" run.
 
 ## Open questions
 

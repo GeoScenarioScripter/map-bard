@@ -32,7 +32,7 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
   published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 110 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 4,
+- Checks: 112 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 6,
   root integration 3, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -56,6 +56,12 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Owner follow-up to the M1 review. `preview` keeps serving when the
+  first build fails and shows the diagnostics panel until a saved fix builds
+  (checked in headless Chrome with screenshots). `init` and `add` reject
+  non-ASCII names and IDs. Removed the worldwide-audience records. The root
+  `test` script now runs through `scripts/test.mjs` with the invoking pnpm.
+  Versioned `mapbard` and `@mapbard/core` 0.1.2. Next: publish 0.1.2, then M2.
 - 2026-10-21: M1 review fixes. `preview` no longer crashes on a malformed URL,
   serves media with real content types, serializes rebuilds and closes
   live-reload streams on Ctrl+C. A failed `add` removes its copied file, `add
@@ -130,5 +136,4 @@ next step. Details belong in commit messages.
 - 2026-10-20: Owner decisions: publish to npm as `mapbard` (names unclaimed today;
   the owner must create the npm org and claim them), motion defaults with a
   layered override system, a CC0 starter asset pack plus user and community
-  assets, and a worldwide audience (tile fallback chain, label language, scripts/RTL,
-  locale formatting). Plans updated. Next: M1-A.
+  assets, and a tile fallback chain. Plans updated. Next: M1-A.

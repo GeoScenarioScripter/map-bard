@@ -23,7 +23,7 @@ reproducible builds we keep producing are its future evaluation material.
 
 ### Who it serves first
 
-Data journalists, researchers, analysts and educators worldwide who have their
+Data journalists, researchers, analysts and educators who have their
 own data and use a coding agent. A human can still author directly, because the project
 is plain files and the CLI is human-friendly.
 

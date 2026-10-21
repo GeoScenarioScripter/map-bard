@@ -97,13 +97,75 @@ describe('compileProject', () => {
   it('blocks unsupported basemaps, classification and scope controls', async () => {
     const project = await fixture();
     project.narrative.basemap.style = 'protomaps-light';
-    project.narrative.scenes[0]!.layers[0]!.classification!.method = 'quantile';
+    const shared = project.design.sharedScales[0]!;
+    if (shared.visualVariable !== 'color') throw new Error('Frozen specimen lost its color scale');
+    shared.method = 'quantile';
+    for (const member of shared.members)
+      project.narrative.scenes
+        .find((scene) => scene.id === member.sceneId)!
+        .layers.find((layer) => layer.id === member.layerId)!.classification!.method = 'quantile';
     project.narrative.scenes[0]!.controls![0]!.bindsTo.property = 'filter';
-    const result = compileProject(project, STAGE1_CAPABILITIES);
+    const withoutQuantile = {
+      ...STAGE1_CAPABILITIES,
+      ids: STAGE1_CAPABILITIES.ids.filter((id) => id !== 'color.quantile'),
+    };
+    const result = compileProject(project, withoutQuantile);
     expect(result.ok).toBe(false);
-    expect(
-      result.diagnostics.filter((item) => item.code === 'CAPABILITY_UNSUPPORTED'),
-    ).toHaveLength(3);
+    const unsupported = result.diagnostics.filter((item) => item.code === 'CAPABILITY_UNSUPPORTED');
+    expect(unsupported).toHaveLength(3);
+    expect(unsupported).toContainEqual(
+      expect.objectContaining({ message: 'Capability color.quantile is unavailable.' }),
+    );
+    expect(compileProject(project, STAGE1_CAPABILITIES).diagnostics).not.toContainEqual(
+      expect.objectContaining({ message: 'Capability color.quantile is unavailable.' }),
+    );
+  });
+
+  it('shares one size scale across scenes and rejects classified size members', async () => {
+    const project = await fixture();
+    const shared = project.design.sharedScales[0]!;
+    project.design.sharedScales[0] = {
+      id: shared.id,
+      title: 'Shared value',
+      members: shared.members,
+      visualVariable: 'size',
+    };
+    // Area needs a real zero; the specimen's index is interval-level, so restate it as a ratio.
+    for (const resource of project.project.resources.data)
+      for (const attribute of resource.attributes)
+        if (attribute.role === 'quantity') attribute.level = 'ratio';
+    for (const member of shared.members) {
+      const layer = project.narrative.scenes
+        .find((scene) => scene.id === member.sceneId)!
+        .layers.find((layer) => layer.id === member.layerId)!;
+      layer.technique = 'graduated-symbol';
+      layer.encode = { attribute: layer.encode!.attribute, visualVariable: 'size' };
+      delete layer.classification;
+    }
+    const result = compileProject(project, STAGE1_CAPABILITIES);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const scale = result.value.scales.find((item) => item.id === shared.id)!;
+    expect(scale).toEqual(
+      expect.objectContaining({
+        kind: 'numeric-size',
+        title: 'Shared value',
+        mapping: 'sqrt-area',
+      }),
+    );
+    expect(scale.memberKeys).toHaveLength(shared.members.length);
+    for (const scene of result.value.scenes)
+      expect(scene.layers.some((layer) => layer.scaleId === shared.id)).toBe(true);
+
+    const first = shared.members[0]!;
+    project.narrative.scenes
+      .find((scene) => scene.id === first.sceneId)!
+      .layers.find((layer) => layer.id === first.layerId)!.classification = {
+      method: 'quantile',
+      classes: 3,
+    };
+    expect(compileProject(project, STAGE1_CAPABILITIES).diagnostics).toContainEqual(
+      expect.objectContaining({ code: 'MEASUREMENT_INCOMPATIBLE', ids: { scaleId: shared.id } }),
+    );
   });
 
   it('rejects nonnumeric values and all-missing numeric scales with counts', async () => {

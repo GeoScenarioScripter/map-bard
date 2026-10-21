@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LngLatSchema } from './geo-narrative.js';
+import { ClassificationMethodSchema, LngLatSchema } from './geo-narrative.js';
 import { DESIGN_VERSION, ExtensionsSchema, IdSchema } from './project.js';
 
 export const AnnotationSchema = z
@@ -28,31 +28,41 @@ export const TypedFilterSchema = z
   })
   .strict();
 
+const sharedScaleBase = {
+  id: IdSchema,
+  /** Reader-facing legend title; defaults to the encoded attribute's label. */
+  title: z.string().min(1).optional(),
+  members: z
+    .array(
+      z
+        .object({
+          sceneId: IdSchema,
+          layerId: IdSchema,
+          sourceId: IdSchema,
+          observationLabel: z.string().min(1),
+        })
+        .strict(),
+    )
+    .min(2),
+};
+
 /** One scale shared by layers that a story compares; format 0.1 design and 0.2 story agree. */
-export const SharedScaleSchema = z
-  .object({
-    id: IdSchema,
-    /** Reader-facing legend title; defaults to the encoded attribute's label. */
-    title: z.string().min(1).optional(),
-    members: z
-      .array(
-        z
-          .object({
-            sceneId: IdSchema,
-            layerId: IdSchema,
-            sourceId: IdSchema,
-            observationLabel: z.string().min(1),
-          })
-          .strict(),
-      )
-      .min(2),
-    visualVariable: z.literal('color'),
-    method: z.literal('equal-interval'),
-    classes: z.number().int().min(2).max(9),
-    palette: z.array(z.string()).min(2),
-    domain: z.tuple([z.number().finite(), z.number().finite()]).optional(),
-  })
-  .strict();
+export const SharedScaleSchema = z.discriminatedUnion('visualVariable', [
+  z
+    .object({
+      ...sharedScaleBase,
+      visualVariable: z.literal('color'),
+      method: ClassificationMethodSchema,
+      classes: z.number().int().min(2).max(9),
+      /** Manual interior class edges, strictly increasing; `classes - 1` of them. */
+      breaks: z.array(z.number().finite()).min(1).optional(),
+      palette: z.array(z.string()).min(2),
+      domain: z.tuple([z.number().finite(), z.number().finite()]).optional(),
+    })
+    .strict(),
+  // Graduated symbols: one sqrt-area mapping from zero to the largest value of every member.
+  z.object({ ...sharedScaleBase, visualVariable: z.literal('size') }).strict(),
+]);
 
 export const LayerConstantSchema = z
   .object({

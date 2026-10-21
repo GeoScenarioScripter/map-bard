@@ -11,4 +11,15 @@ Choose for the claim and source geometry. Check `mapbard capabilities` before au
 | `categorical`      | Coloring distinct nominal or ordinal values on matching geometry                       | A continuous ramp would falsely imply magnitude                       |
 | `choropleth`       | Coloring an already-normalized polygon ratio with a declared denominator               | Raw counts over unequal areas, or a denominator inferred from the map |
 
-For numeric color, the current compiler supports `classification: {"method":"equal-interval","classes":3}`. Quantile and natural-breaks classifications, heatmaps, and data-driven opacity produce capability diagnostics. For a cross-scene numeric comparison, use a shared scale rather than independently rescaling each scene.
+Numeric color needs a `classification` with 2–9 `classes` and one of these methods:
+
+| Method           | Use when                                                                  | Watch for                                                                 |
+| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `equal-interval` | Values spread fairly evenly and readers compare magnitudes                | A few large values push most features into the lowest class               |
+| `quantile`       | Ranking matters more than magnitude                                       | Equal-count classes can split near-identical values or merge distant ones |
+| `natural-breaks` | Values form clusters, or an outlier needs its own class                   | Breaks change when the data changes; up to 5,000 distinct values          |
+| `manual`         | The story has meaningful thresholds; list `breaks` (`classes - 1` values) | Breaks must increase and lie strictly inside the data range or `domain`   |
+
+If ties leave fewer distinct quantile or natural-breaks classes than requested, `check` warns. Check that the classes separate the features the narration compares; if they don't, use graduated symbols or manual breaks.
+
+For a cross-scene comparison, use a shared scale rather than rescaling each scene. A colour shared scale repeats the members' `method`, `classes` and `breaks`. A shared size scale (`"visualVariable": "size"`, members are `graduated-symbol` layers with no classification) sizes every member by area on one range from zero to the largest value, so a drop between periods shows as smaller circles. Heatmaps and data-driven opacity produce capability diagnostics.

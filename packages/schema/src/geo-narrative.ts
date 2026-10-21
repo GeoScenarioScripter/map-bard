@@ -131,6 +131,13 @@ export const DiscourseDimensionsSchema = z.object({
 // Visual bindings, camera, controls
 // ---------------------------------------------------------------------------
 
+export const ClassificationMethodSchema = z.enum([
+  'equal-interval',
+  'quantile',
+  'natural-breaks',
+  'manual',
+]);
+
 export const LayerBindingSchema = z.object({
   id: z.string().min(1),
   dataSourceId: z.string().min(1),
@@ -151,8 +158,10 @@ export const LayerBindingSchema = z.object({
     .optional(),
   classification: z
     .object({
-      method: z.enum(['quantile', 'equal-interval', 'natural-breaks']),
+      method: ClassificationMethodSchema,
       classes: z.number().int().positive(),
+      /** Manual interior class edges, strictly increasing; `classes - 1` of them. */
+      breaks: z.array(z.number().finite()).min(1).optional(),
     })
     .optional(),
   /** Simple expression, e.g. "year == 2020". */

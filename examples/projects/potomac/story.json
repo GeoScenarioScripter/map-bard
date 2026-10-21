@@ -43,17 +43,14 @@
         },
         {
           "id": "gauges",
-          "technique": "point",
+          "technique": "graduated-symbol",
           "encode": {
             "attribute": "daily_mean_discharge",
-            "visualVariable": "color"
-          },
-          "classification": {
-            "method": "equal-interval",
-            "classes": 3
+            "visualVariable": "size"
           },
           "sourceId": "potomac-2024",
           "constant": {
+            "color": "#174b75",
             "opacity": 0.9
           }
         }
@@ -99,11 +96,11 @@
     {
       "id": "compare-2025",
       "title": "The same gauges, one year later",
-      "narration": "For 2025-10-01, the published daily means were 580 ft³/s at Hancock, 2,020 ft³/s at Point of Rocks, and 1,800 ft³/s at Little Falls. The map keeps the same extent and color scale so each station can be compared across the two dates. These two daily snapshots do not establish a long-term trend or a cause for the differences.",
+      "narration": "For 2025-10-01, the published daily means were 580 ft³/s at Hancock, 2,020 ft³/s at Point of Rocks, and 1,800 ft³/s at Little Falls. The map keeps the same extent and symbol scale, with circle area proportional to discharge, so each station can be compared across the two dates. These two daily snapshots do not establish a long-term trend or a cause for the differences.",
       "content": {
         "semantics": "Published daily mean discharge at the same stations on 2025-10-01.",
         "attribute": "daily_mean_discharge in ft^3/s",
-        "relationship": "Compare each station with its 2024-10-01 published value using one shared scale."
+        "relationship": "Compare each station with its 2024-10-01 published value using one shared area scale."
       },
       "discourse": {
         "narrativeRole": "compare",
@@ -131,17 +128,14 @@
         },
         {
           "id": "gauges",
-          "technique": "point",
+          "technique": "graduated-symbol",
           "encode": {
             "attribute": "daily_mean_discharge",
-            "visualVariable": "color"
-          },
-          "classification": {
-            "method": "equal-interval",
-            "classes": 3
+            "visualVariable": "size"
           },
           "sourceId": "potomac-2025",
           "constant": {
+            "color": "#174b75",
             "opacity": 0.9
           }
         }
@@ -199,17 +193,14 @@
         },
         {
           "id": "gauges",
-          "technique": "point",
+          "technique": "graduated-symbol",
           "encode": {
             "attribute": "daily_mean_discharge",
-            "visualVariable": "color"
-          },
-          "classification": {
-            "method": "equal-interval",
-            "classes": 3
+            "visualVariable": "size"
           },
           "sourceId": "potomac-2025",
           "constant": {
+            "color": "#174b75",
             "opacity": 0.9
           }
         }
@@ -236,6 +227,7 @@
   "sharedScales": [
     {
       "id": "daily-discharge",
+      "title": "Daily mean discharge",
       "members": [
         {
           "sceneId": "context-2024",
@@ -256,11 +248,7 @@
           "observationLabel": "2025-10-01 (limits)"
         }
       ],
-      "visualVariable": "color",
-      "method": "equal-interval",
-      "classes": 3,
-      "palette": ["#d9f0f0", "#65a9bd", "#174b75"],
-      "title": "Daily mean discharge"
+      "visualVariable": "size"
     }
   ]
 }

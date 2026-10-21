@@ -150,3 +150,61 @@ describe('resolved scale oracles', () => {
     );
   });
 });
+
+describe('classification methods', () => {
+  const color = (values: number[], extra: Partial<ScaleInput>) => {
+    const result = numericColorScale({ ...common, values, classes: 3, ...extra });
+    const scale = result.scale?.kind === 'numeric-color' ? result.scale : undefined;
+    return { scale, diagnostics: result.diagnostics };
+  };
+
+  it('splits quantiles between classes and keeps tied values together', () => {
+    const even = color([9, 1, 2, 3, 4, 5, 6, 7, 8], { method: 'quantile' });
+    expect(even.diagnostics).toEqual([]);
+    expect(even.scale?.edges).toEqual([1, 3.5, 6.5, 9]);
+    expect(even.scale?.labels).toEqual(['1–3', '4–6', '7–9']);
+    const tied = color([1, 1, 1, 1, 2, 3], { method: 'quantile' });
+    expect(tied.scale?.edges).toEqual([1, 1.5, 3]);
+    expect(tied.scale?.labels).toEqual(['1', '2–3']);
+    expect(tied.diagnostics).toEqual([
+      expect.objectContaining({
+        severity: 'warning',
+        message: 'Only 2 of 3 quantile classes are distinct for these values.',
+      }),
+    ]);
+  });
+
+  it('finds natural breaks deterministically and gives an outlier its own class', () => {
+    const groups = color([30, 1, 2, 3, 10, 11, 12], { method: 'natural-breaks' });
+    expect(groups.diagnostics).toEqual([]);
+    expect(groups.scale?.edges).toEqual([1, 6.5, 21, 30]);
+    expect(groups.scale?.labels).toEqual(['1–6', '7–20', '21–30']);
+    const outlier = color([1, 2, 3, 4, 100], { method: 'natural-breaks', classes: 2 });
+    expect(outlier.scale?.edges).toEqual([1, 52, 100]);
+    expect(color([30, 1, 2, 3, 10, 11, 12], { method: 'natural-breaks' })).toEqual(groups);
+    const single = color([5, 5, 5], { method: 'natural-breaks' });
+    expect(single.scale).toEqual(expect.objectContaining({ edges: [5], labels: ['5'] }));
+    expect(single.diagnostics[0]?.severity).toBe('warning');
+  });
+
+  it('uses manual breaks as authored and rejects unusable ones', () => {
+    const manual = color([0, 10, 50, 90, 100], { method: 'manual', breaks: [20, 60] });
+    expect(manual.diagnostics).toEqual([]);
+    expect(manual.scale?.edges).toEqual([0, 20, 60, 100]);
+    const message = (extra: Partial<ScaleInput>) =>
+      color([0, 10, 50, 90, 100], extra).diagnostics.map((item) => item.message);
+    expect(message({ method: 'manual', breaks: [20] })).toEqual([
+      'Manual classification with 3 classes needs 2 breaks.',
+    ]);
+    expect(message({ method: 'manual', breaks: [60, 20] })).toEqual([
+      'Manual breaks must be strictly increasing.',
+    ]);
+    expect(message({ method: 'manual', breaks: [20, 100] })).toEqual([
+      'Manual breaks must lie strictly inside the scale domain.',
+    ]);
+    expect(message({ method: 'manual', breaks: [20, 100], domain: [0, 120] })).toEqual([]);
+    expect(message({ method: 'quantile', breaks: [20, 60] })).toEqual([
+      'Breaks are only used by manual classification.',
+    ]);
+  });
+});

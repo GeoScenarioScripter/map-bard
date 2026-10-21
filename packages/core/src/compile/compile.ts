@@ -32,6 +32,7 @@ import {
   categoryColorScale,
   numericColorScale,
   numericSizeScale,
+  type ClassificationMethod,
   type ScaleInput,
   type ScaleKey,
 } from './scales.js';
@@ -79,6 +80,13 @@ function capability(
   );
   return false;
 }
+const CLASSIFICATION_CAPABILITY: Record<ClassificationMethod, CapabilityId> = {
+  'equal-interval': 'color.equal-interval',
+  quantile: 'color.quantile',
+  'natural-breaks': 'color.natural-breaks',
+  manual: 'color.manual-breaks',
+};
+
 function key(sceneId: string, layerId: string): string {
   return `${sceneId.length}:${sceneId}:${layerId.length}:${layerId}`;
 }
@@ -596,17 +604,6 @@ export function compileProject(
             ids,
           ),
         );
-      if (layer.classification && layer.classification.method !== 'equal-interval')
-        diagnostics.push(
-          issue(
-            'CAPABILITY_UNSUPPORTED',
-            'narrative',
-            [...at, 'classification'],
-            `Classification ${layer.classification.method} is unavailable.`,
-            'Use equal-interval color or categorical color.',
-            ids,
-          ),
-        );
       if (
         layer.encode?.visualVariable === 'size' &&
         layer.technique !== 'graduated-symbol' &&
@@ -903,12 +900,17 @@ export function compileProject(
       .filter((item): item is LayerContext => !!item);
     if (members.length !== scale.members.length) continue;
     const first = members[0]!;
+    const color = scale.visualVariable === 'color' ? scale : undefined;
+    const sameBreaks = (breaks: number[] | undefined) =>
+      JSON.stringify(breaks ?? null) === JSON.stringify(color?.breaks ?? null);
     if (
-      members.some(
-        (item) =>
-          item.layer.encode?.visualVariable !== 'color' ||
-          item.layer.classification?.method !== 'equal-interval' ||
-          item.layer.classification.classes !== scale.classes,
+      members.some((item) =>
+        color
+          ? item.layer.encode?.visualVariable !== 'color' ||
+            item.layer.classification?.method !== color.method ||
+            item.layer.classification.classes !== color.classes ||
+            !sameBreaks(item.layer.classification.breaks)
+          : item.layer.encode?.visualVariable !== 'size' || item.layer.classification !== undefined,
       )
     )
       diagnostics.push(
@@ -916,18 +918,26 @@ export function compileProject(
           'MEASUREMENT_INCOMPATIBLE',
           'design',
           ['sharedScales', scale.id],
-          'Shared scale members must use the same equal-interval color classification.',
-          'Align classification and color encoding across all members.',
+          color
+            ? `Shared scale members must use the same ${color.method} color classification.`
+            : 'Shared size scale members must encode size without classification.',
+          color
+            ? 'Align the encoding, method, classes and breaks of every member with the shared scale.'
+            : 'Encode size on every member and remove member classifications.',
           { scaleId: scale.id },
         ),
       );
     members.forEach((member) => {
       handled.add(key(member.sceneId, member.layer.id));
-      checkMeasurement(member, 'color', diagnostics, scale.id);
+      checkMeasurement(member, color ? 'color' : 'size', diagnostics, scale.id);
     });
-    capability(capabilities, 'color.equal-interval', diagnostics, ['sharedScales', scale.id], {
-      scaleId: scale.id,
-    });
+    capability(
+      capabilities,
+      color ? CLASSIFICATION_CAPABILITY[color.method] : 'size.graduated-area',
+      diagnostics,
+      ['sharedScales', scale.id],
+      { scaleId: scale.id },
+    );
     const values = members.flatMap((member) => valuesFor(member, diagnostics, true));
     const firstDeclaration = first.resource.attributes.find(
       (entry) => entry.name === first.layer.encode?.attribute,
@@ -940,12 +950,14 @@ export function compileProject(
       ),
       unit: firstDeclaration?.unit ?? null,
       values,
-      palette: scale.palette,
-      classes: scale.classes,
-      domain: scale.domain,
+      palette: color?.palette ?? [],
+      classes: color?.classes ?? 0,
+      ...(color ? { method: color.method } : {}),
+      ...(color?.breaks ? { breaks: color.breaks } : {}),
+      ...(color?.domain ? { domain: color.domain } : {}),
       path: ['sharedScales', scale.id],
     };
-    const resolved = resolveScale(input, 'numeric-color', diagnostics);
+    const resolved = resolveScale(input, color ? 'numeric-color' : 'numeric-size', diagnostics);
     if (resolved) scales.push(resolved);
   }
   for (const context of contexts.values()) {
@@ -972,14 +984,25 @@ export function compileProject(
         : layer.technique === 'categorical' || declaration.role !== 'quantity'
           ? 'category-color'
           : 'numeric-color';
-    if (kind === 'numeric-color' && layer.classification?.method !== 'equal-interval')
+    if (kind === 'numeric-color' && !layer.classification)
       diagnostics.push(
         issue(
           'CAPABILITY_UNSUPPORTED',
           'narrative',
           ['scenes', context.sceneId, 'layers', layer.id, 'classification'],
-          'Numeric color needs equal-interval classification.',
-          'Specify equal-interval classes.',
+          'Numeric color needs a classification.',
+          'Specify equal-interval, quantile, natural-breaks or manual classes.',
+          { sceneId: context.sceneId, layerId: layer.id },
+        ),
+      );
+    if (kind === 'numeric-size' && layer.classification)
+      diagnostics.push(
+        issue(
+          'CAPABILITY_UNSUPPORTED',
+          'narrative',
+          ['scenes', context.sceneId, 'layers', layer.id, 'classification'],
+          'Graduated size is continuous and cannot be classified.',
+          'Remove the classification from this size encoding.',
           { sceneId: context.sceneId, layerId: layer.id },
         ),
       );
@@ -1015,7 +1038,7 @@ export function compileProject(
     capability(
       capabilities,
       kind === 'numeric-color'
-        ? 'color.equal-interval'
+        ? CLASSIFICATION_CAPABILITY[layer.classification?.method ?? 'equal-interval']
         : kind === 'numeric-size'
           ? 'size.graduated-area'
           : 'color.categorical',
@@ -1031,6 +1054,8 @@ export function compileProject(
       values: valuesFor(context, diagnostics, kind !== 'category-color'),
       palette: narrative.theme?.palette?.length ? narrative.theme.palette : DEFAULT_PALETTE,
       classes: layer.classification?.classes ?? 3,
+      ...(layer.classification ? { method: layer.classification.method } : {}),
+      ...(layer.classification?.breaks ? { breaks: layer.classification.breaks } : {}),
       path: ['features', 'properties', layer.encode.attribute],
     };
     const resolved = resolveScale(input, kind, diagnostics);

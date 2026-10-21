@@ -7,6 +7,7 @@ import {
 } from './design.js';
 import {
   CameraSchema,
+  ClassificationMethodSchema,
   ContentDimensionsSchema,
   ControlSchema,
   DiscourseDimensionsSchema,
@@ -132,8 +133,9 @@ export const StoryLayerSchema = LayerBindingSchema.omit({ dataSourceId: true, fi
       .optional(),
     classification: z
       .object({
-        method: z.enum(['quantile', 'equal-interval', 'natural-breaks']),
+        method: ClassificationMethodSchema,
         classes: z.number().int().positive(),
+        breaks: z.array(z.number().finite()).min(1).optional(),
       })
       .strict()
       .optional(),

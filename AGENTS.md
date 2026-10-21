@@ -6,7 +6,7 @@ Repository instructions for coding agents. Updated 2026-10-21.
 
 1. [docs/STATUS.md](docs/STATUS.md): current state, known issues, recent log.
 2. [docs/ROADMAP.md](docs/ROADMAP.md): product, principles, milestones.
-3. The active milestone plan, currently [docs/m1-cli.md](docs/m1-cli.md).
+3. The next milestone plan, currently [docs/visual-engine.md](docs/visual-engine.md).
 4. [docs/visual-engine.md](docs/visual-engine.md) before touching rendering,
    the player, themes or techniques.
 
@@ -15,13 +15,13 @@ assuming that a planned capability exists.
 
 ## Repository map
 
-| Package              | Today                                                                   | Heading to                                                         |
-| -------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `@mapbard/schema`    | Zod contracts: project/narrative/design 0.1, compiled spec, diagnostics | Format 0.2 (`mapbard.json`, `story.json`, lockfile), JSON Schema   |
-| `@mapbard/core`      | Project load/validate, compiler, ingest/profiling                       | Lockfile, migrate, M3 analysis and bindings                        |
-| `@mapbard/knowledge` | Capability IDs and encoding prerequisites                               | Technique catalog, critic rules, basemap provider registry         |
-| `@mapbard/renderer`  | Compiled publication + TypeScript player (MapLibre)                     | Multi-tier player (MapLibre + deck.gl + three.js), layouts, themes |
-| `mapbard`            | CLI with project, build, preview, schema and skill commands             | npm release, then agent authoring trial                            |
+| Package              | Today                                                                       | Heading to                                                         |
+| -------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `@mapbard/schema`    | Zod contracts: project/narrative/design 0.1, compiled spec, diagnostics     | Format 0.2 (`mapbard.json`, `story.json`, lockfile), JSON Schema   |
+| `@mapbard/core`      | Project load/validate, compiler, ingest/profiling                           | Lockfile, migrate, M3 analysis and bindings                        |
+| `@mapbard/knowledge` | Capability IDs and encoding prerequisites                                   | Technique catalog, critic rules, basemap provider registry         |
+| `@mapbard/renderer`  | Compiled publication + TypeScript player (MapLibre)                         | Multi-tier player (MapLibre + deck.gl + three.js), layouts, themes |
+| `mapbard`            | Published 0.1.0 CLI with project, build, preview, schema and skill commands | Agent authoring trial (deferred by owner)                          |
 
 Fixtures live in `fixtures/`; examples in `examples/projects/`.
 

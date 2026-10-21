@@ -1,7 +1,7 @@
 # MapBard — Product Roadmap
 
-Updated 2026-10-20 (process reset). Current state lives in [STATUS.md](STATUS.md).
-The active milestone plan is [M1 — CLI and foundation](m1-cli.md); the visual
+Updated 2026-10-21. Current state lives in [STATUS.md](STATUS.md).
+M1 is complete; the next milestone plan is [M2 — Visual Engine](visual-engine.md). The visual
 direction is [the visual engine plan](visual-engine.md). Earlier stage/wave/gate
 plans are archived in [archive/2026-10-20-process-reset/](archive/2026-10-20-process-reset/README.md).
 
@@ -67,15 +67,15 @@ Each milestone has one short plan document, written when it becomes active.
 Work proceeds in small, committed increments. There are no waves or gates; a
 milestone closes when its acceptance list passes and STATUS.md says so.
 
-| #      | Milestone                 | Outcome                                                                                                                                                                               | Status          |
-| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| **M1** | CLI and foundation        | `mapbard` CLI and agent skill pack, format 0.2 with a CLI-managed lockfile, live preview, free online basemaps, legacy code retired, published to npm as `mapbard`. [Plan](m1-cli.md) | **In progress** |
-| **M2** | Visual engine             | Multi-tier renderer (MapLibre + deck.gl + three.js), cinematic camera/scroll motion, technique catalog v1, layouts/themes, visual QA. [Plan](visual-engine.md)                        | Planned         |
-| **M3** | Evidence-bound narration  | Computed results, `{{bindings}}` in narration/annotations, number linter, evidence popovers, staleness on data change                                                                 | Planned         |
-| **M4** | Showcase and recipes      | 3–5 flagship stories (hydrology, socioeconomic, movement/flows, urban 3D, terrain); reusable recipes; landing page                                                                    | Planned         |
-| **M5** | Local workbench           | Browser workbench over the same project: scene outline, live preview, camera capture, style tweaks, evidence inspector                                                                | Outline         |
-| **M6** | Built-in agent            | One LLM + system prompt + dynamically loaded skills + purpose-built harness, reusing the CLI operations and the M1 skill pack                                                         | Outline         |
-| **M7** | Community center (hosted) | Upload, serve and discover stories; share and remix recipes and assets (models, icons, themes, motion presets); attribution and reuse terms                                           | Outline         |
+| #      | Milestone                 | Outcome                                                                                                                                                                               | Status       |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| **M1** | CLI and foundation        | `mapbard` CLI and agent skill pack, format 0.2 with a CLI-managed lockfile, live preview, free online basemaps, legacy code retired, published to npm as `mapbard`. [Plan](m1-cli.md) | **Complete** |
+| **M2** | Visual engine             | Multi-tier renderer (MapLibre + deck.gl + three.js), cinematic camera/scroll motion, technique catalog v1, layouts/themes, visual QA. [Plan](visual-engine.md)                        | Next         |
+| **M3** | Evidence-bound narration  | Computed results, `{{bindings}}` in narration/annotations, number linter, evidence popovers, staleness on data change                                                                 | Planned      |
+| **M4** | Showcase and recipes      | 3–5 flagship stories (hydrology, socioeconomic, movement/flows, urban 3D, terrain); reusable recipes; landing page                                                                    | Planned      |
+| **M5** | Local workbench           | Browser workbench over the same project: scene outline, live preview, camera capture, style tweaks, evidence inspector                                                                | Outline      |
+| **M6** | Built-in agent            | One LLM + system prompt + dynamically loaded skills + purpose-built harness, reusing the CLI operations and the M1 skill pack                                                         | Outline      |
+| **M7** | Community center (hosted) | Upload, serve and discover stories; share and remix recipes and assets (models, icons, themes, motion presets); attribution and reuse terms                                           | Outline      |
 
 M2 and M3 can run in parallel once M1 lands format 0.2 and the CLI, because
 they touch different parts (renderer/player vs core analysis/bindings).

@@ -1,8 +1,8 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-21. Status: **code complete; npm publication and cross-platform
-CI execution pending**. The owner deferred the fresh Claude Code trial beyond
-M1. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-21. Status: **complete**. Three-OS CI passed and all five 0.1.0
+packages were published to npm. The owner deferred the fresh Claude Code trial
+beyond M1. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -175,11 +175,10 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
   `core`, `knowledge`, `renderer`), and `@mapbard/assets-starter` follows in
   M2. `mapbard` depends on them with normal semver ranges, and `workspace:*` is
   rewritten at publish time.
-- **Name status:** the npm registry returned 404 for `mapbard` and
-  `@mapbard/schema` on 2026-10-21. The product owner created the `@mapbard`
-  npm organization, and the `npm` GitHub environment now exists. A fresh
-  `NPM_TOKEN` secret still needs to be added. This checkout has no npm login
-  (`npm whoami` returned `ENEEDAUTH`). Agents never handle npm tokens.
+- **Name status:** the product owner created the `@mapbard` npm organization
+  and configured the GitHub `npm` environment secret. All five packages are
+  published at 0.1.0. This checkout has no npm login (`npm whoami` returned
+  `ENEEDAUTH`). Agents never handle npm tokens.
 - **Package hygiene:** `files` allowlists, an `exports` map, a `bin` entry with
   a shebang, `engines.node >= 20`, an MIT `LICENSE` and a README per package.
   The published player bundle and vendored MapLibre are included in
@@ -191,16 +190,15 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
   checks tarballs on Windows, macOS and Linux. The manual release workflow
   repeats those checks for the chosen ref and publishes through Changesets
   using the owner's `NPM_TOKEN` secret. npm provenance is unavailable while
-  the GitHub source repository is private. After the GitHub billing block
-  cleared, all three CI jobs reached tests and exposed two text-normalized PNG
-  fixtures. The binary attributes and blobs were corrected; cross-platform
-  verification remains pending.
+  the GitHub source repository is private. The PNG fixture normalization found
+  in the first CI run was corrected. Three-OS CI and release verification then
+  passed, and the publish job succeeded.
 - **Pre-release check:** `pnpm pack` rewrites workspace dependency ranges in
   each tarball. `pnpm test:pack` installs all five tarballs in a temporary
   consumer outside the workspace and runs `mapbard init` → an offline build.
-  This passed on Windows. The first public release is `0.1.0` after
-  the owner configures npm access and the cross-platform CI jobs pass; use the
-  `next` tag for earlier builds.
+  This passed on Windows, macOS and Linux in CI. The public 0.1.0 release is
+  available under both the `latest` and `next` npm tags. The published CLI ran
+  through `npm exec` and reported version 0.1.0.
 
 ## Acceptance
 
@@ -216,8 +214,8 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
    fixes when this trial resumes; it does not block M1.
 5. Packed tarballs install and run `init` → `build` on Windows, macOS and
    Linux in CI, and `mapbard@0.1.0` is published once the owner has claimed the
-   npm names and configured the release secret. Windows passed locally;
-   cross-platform CI and publication remain open.
+   npm names and configured the release secret. Cross-platform CI and
+   publication passed on 2026-10-21.
 
 ## Out of scope for M1
 

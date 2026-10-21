@@ -1,9 +1,8 @@
 # MapBard — Status
 
-**Updated 2026-10-21. Active milestone: [M1 — CLI and foundation](m1-cli.md),
-release ready locally. The owner deferred the fresh Claude Code trial. M1 closes
-after cross-platform CI and npm publication.** See the
-[roadmap](ROADMAP.md).
+**Updated 2026-10-21. [M1 — CLI and foundation](m1-cli.md) is complete.
+Next: [M2 — Visual Engine](visual-engine.md).** The owner deferred the fresh
+Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
 
@@ -29,9 +28,10 @@ after cross-platform CI and npm publication.** See the
   built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.0, each
-  with a README, MIT license, explicit published files, exports and Node engine.
-  Changesets, three-OS CI and a manual npm release workflow are configured.
+- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.0 are
+  published on npm, each with a README, MIT license, explicit published files,
+  exports and Node engine. Changesets, three-OS CI and a manual npm release
+  workflow are configured. The public `mapbard@0.1.0` CLI ran via `npm exec`.
 - Checks: 108 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
   root integration 3, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
@@ -45,11 +45,9 @@ after cross-platform CI and npm publication.** See the
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
   remains network independent. The separate live check passed on 2026-10-21.
-- Three-OS GitHub CI reached tests after the billing block cleared, then found
-  PNG fixture blobs that had been normalized as text. The `npm` release
-  environment and `NPM_TOKEN` secret exist. The owner created the `@mapbard`
-  npm organization. npm provenance is unavailable while the GitHub repository
-  is private. This machine has no npm login (`ENEEDAUTH`).
+- npm provenance is unavailable while the GitHub repository is private. The
+  release used the GitHub `npm` environment secret; this machine has no npm
+  login (`ENEEDAUTH`).
 - The fresh Claude Code agent trial could not start because its API connection
   was refused before any tokens or tool calls. The owner deferred that trial
   beyond M1 on 2026-10-21. The direct CLI trial passed.
@@ -59,6 +57,11 @@ after cross-platform CI and npm publication.** See the
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Three-OS CI and release verification passed. Published all five
+  0.1.0 packages to npm using the GitHub `npm` environment secret; the four
+  scoped libraries published first, then `mapbard` after the secret was updated.
+  Confirmed registry tags and ran `mapbard@0.1.0 --version` through `npm exec`.
+  M1 complete. Next: M2 visual engine.
 - 2026-10-21: Retried three-OS CI after GitHub billing cleared. All jobs reached
   tests and failed on two PNG fixture dimensions; their committed blobs had lost
   the PNG signature carriage return. Removed inherited `eol=lf` from binary

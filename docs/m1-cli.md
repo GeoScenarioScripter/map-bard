@@ -191,9 +191,10 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
   checks tarballs on Windows, macOS and Linux. The manual release workflow
   repeats those checks for the chosen ref and publishes through Changesets
   using the owner's `NPM_TOKEN` secret. npm provenance is unavailable while
-  the GitHub source repository is private. The first CI run was rejected before
-  any job steps because of the GitHub account's billing or spending limit;
-  cross-platform execution remains pending.
+  the GitHub source repository is private. After the GitHub billing block
+  cleared, all three CI jobs reached tests and exposed two text-normalized PNG
+  fixtures. The binary attributes and blobs were corrected; cross-platform
+  verification remains pending.
 - **Pre-release check:** `pnpm pack` rewrites workspace dependency ranges in
   each tarball. `pnpm test:pack` installs all five tarballs in a temporary
   consumer outside the workspace and runs `mapbard init` → an offline build.

@@ -45,11 +45,11 @@ after cross-platform CI and npm publication.** See the
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
   remains network independent. The separate live check passed on 2026-10-21.
-- Three-OS GitHub CI was rejected before any job steps because of the GitHub
-  account's billing or spending limit. The `npm` release environment exists,
-  but its `NPM_TOKEN` secret is pending. The owner created the `@mapbard` npm
-  organization. npm provenance is unavailable while the GitHub repository is
-  private. This machine has no npm login (`ENEEDAUTH`).
+- Three-OS GitHub CI reached tests after the billing block cleared, then found
+  PNG fixture blobs that had been normalized as text. The `npm` release
+  environment and `NPM_TOKEN` secret exist. The owner created the `@mapbard`
+  npm organization. npm provenance is unavailable while the GitHub repository
+  is private. This machine has no npm login (`ENEEDAUTH`).
 - The fresh Claude Code agent trial could not start because its API connection
   was refused before any tokens or tool calls. The owner deferred that trial
   beyond M1 on 2026-10-21. The direct CLI trial passed.
@@ -59,6 +59,11 @@ after cross-platform CI and npm publication.** See the
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Retried three-OS CI after GitHub billing cleared. All jobs reached
+  tests and failed on two PNG fixture dimensions; their committed blobs had lost
+  the PNG signature carriage return. Removed inherited `eol=lf` from binary
+  patterns and restored the two fixtures. Core's 52 tests pass locally and the
+  staged PNG bytes match the local files. Next: rerun CI, then publish 0.1.0.
 - 2026-10-21: Pushed release preparation to `main`; GitHub CI jobs were
   rejected before steps because of billing or spending limits. Created the
   `npm` GitHub environment and removed provenance from the private-repository

@@ -32,7 +32,7 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
   published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 108 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
+- Checks: 110 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 4,
   root integration 3, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -56,6 +56,15 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: M1 review fixes. `preview` no longer crashes on a malformed URL,
+  serves media with real content types, serializes rebuilds and closes
+  live-reload streams on Ctrl+C. A failed `add` removes its copied file, `add
+--feature-id` names a unique property, and `add` outside a project returns
+  `RESOURCE_MISSING` (exit 1, not 3). `--limit` no longer truncates nested
+  arrays such as JSON Schema `required`, and envelopes report `truncated`.
+  `check` reports placeholder credits together with compile diagnostics and
+  every missing reference. Build, tests, lint and browser smoke pass. Ctrl+C
+  shutdown was not exercised on Windows. Next: M2.
 - 2026-10-21: Documented npm CLI skill installation and its Codex/Claude output
   paths in the package README. Confirmed the skill pack is bundled in `dist` and
   the CLI test covers installation; next: publish the README update in a future

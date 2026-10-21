@@ -1,6 +1,6 @@
 # Diagnostics
 
-`mapbard --json check` returns `{ok, command, cliVersion, diagnostics, result}`. Each diagnostic includes a code, artifact, path, IDs when relevant, message, severity, and remedy. Errors give exit code 1; invalid CLI usage gives 2; internal failures give 3. Read the specific remedy before changing authored content.
+`mapbard --json check` returns `{ok, command, cliVersion, diagnostics, result, truncated}`. `truncated` is true when `--limit` cut the diagnostics or a result list; raise the limit to see the rest. Each diagnostic includes a code, artifact, path, IDs when relevant, message, severity, and remedy. Errors give exit code 1; invalid CLI usage gives 2; internal failures give 3. Read the specific remedy before changing authored content.
 
 | Code                                               | What to inspect                                                                                         |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |

@@ -82,7 +82,7 @@ scales). Format 0.2:
 | `skill install [--claude\|--codex]` | Copy the versioned skill pack into the project                                                             |
 
 - **Every command takes `--json`** and returns a stable envelope: `{ ok,
-command, cliVersion, diagnostics[], result }`. Exit codes: `0` ok, `1`
+command, cliVersion, diagnostics[], result, truncated }`. Exit codes: `0` ok, `1`
   diagnostics with errors, `2` usage error, `3` internal error. Output is
   bounded (`--limit`) so agents don't flood their context.
 - Human mode prints readable diagnostics with path, IDs and remedy, plus colour

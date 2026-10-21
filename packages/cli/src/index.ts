@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, watch } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { extname, resolve } from 'node:path';
 import { Command, CommanderError } from 'commander';
 import { BASEMAP_PROVIDERS, TERRAIN_PROVIDERS, STAGE1_CAPABILITIES } from '@mapbard/knowledge';
 import { projectJsonSchema, storyJsonSchema, type Diagnostic } from '@mapbard/schema';
@@ -25,24 +25,37 @@ const cliVersion = (
 ).version;
 type Global = { json?: boolean; limit?: string; project?: string };
 const rootOf = (options: Global): string => resolve(options.project ?? '.');
-function bounded(value: unknown, limit: number): unknown {
-  if (Array.isArray(value)) return value.slice(0, limit).map((item) => bounded(item, limit));
-  if (value && typeof value === 'object')
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, bounded(item, limit)]),
-    );
-  return value;
+/**
+ * Bound list output: diagnostics, a list result and the lists directly inside an object result.
+ * Deeper arrays (coordinates, extents, schema `required` lists) are content and stay whole.
+ */
+function bounded(outcome: Outcome, limit: number) {
+  let truncated = outcome.diagnostics.length > limit;
+  const cut = <T>(list: T[]): T[] => {
+    if (list.length > limit) truncated = true;
+    return list.slice(0, limit);
+  };
+  const result = outcome.result ?? null;
+  return {
+    diagnostics: outcome.diagnostics.slice(0, limit),
+    result: Array.isArray(result)
+      ? cut(result)
+      : result && typeof result === 'object'
+        ? Object.fromEntries(
+            Object.entries(result).map(([key, item]) => [
+              key,
+              Array.isArray(item) ? cut(item) : item,
+            ]),
+          )
+        : result,
+    truncated,
+  };
 }
 function emit(command: string, outcome: Outcome, options: Global): number {
   const limit = Math.max(1, Math.min(1000, Number(options.limit ?? 100) || 100));
   const ok = !outcome.diagnostics.some((entry) => entry.severity === 'error');
-  const envelope = {
-    ok,
-    command,
-    cliVersion,
-    diagnostics: outcome.diagnostics.slice(0, limit),
-    result: bounded(outcome.result ?? null, limit),
-  };
+  const { diagnostics, result, truncated } = bounded(outcome, limit);
+  const envelope = { ok, command, cliVersion, diagnostics, result, truncated };
   if (options.json) process.stdout.write(`${JSON.stringify(envelope)}\n`);
   else {
     if (outcome.result !== undefined)
@@ -53,9 +66,37 @@ function emit(command: string, outcome: Outcome, options: Global): number {
       process.stderr.write(
         `${process.stderr.isTTY && !process.env.NO_COLOR ? (diagnostic.severity === 'error' ? '\x1b[31m' : '\x1b[33m') : ''}${diagnostic.severity.toUpperCase()} ${diagnostic.code}${process.stderr.isTTY && !process.env.NO_COLOR ? '\x1b[0m' : ''} ${diagnostic.artifact}:${diagnostic.path.join('.')} ${diagnostic.message} Remedy: ${diagnostic.remedy}\n`,
       );
+    if (truncated) process.stderr.write(`Output limited to ${limit} entries; raise --limit.\n`);
   }
   return ok ? 0 : 1;
 }
+const contentTypes: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.geojson': 'application/geo+json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.svg': 'image/svg+xml',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+};
+/** Watch events from generated output or VCS metadata do not trigger rebuilds. */
+const ignoredChange = (file: string, output: string): boolean => {
+  const first = file.split(/[\\/]/)[0]!;
+  return (
+    first.startsWith(output) ||
+    first === '.git' ||
+    first === 'node_modules' ||
+    file === 'mapbard.lock.json'
+  );
+};
 async function preview(root: string, port: number, open: boolean): Promise<Outcome> {
   const output = '.mapbard-preview';
   const rebuilt = await build(root, output, false);
@@ -65,11 +106,19 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
   const server = createServer(async (request, response) => {
     if (request.url === '/__mapbard_events') {
       response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
+      response.write(': connected\n\n');
       clients.add(response);
       request.on('close', () => clients.delete(response));
       return;
     }
-    const pathname = decodeURIComponent((request.url ?? '/').split('?')[0]!);
+    let pathname: string;
+    try {
+      pathname = decodeURIComponent((request.url ?? '/').split('?')[0]!);
+    } catch {
+      response.writeHead(400);
+      response.end();
+      return;
+    }
     const file = resolve(directory, `.${pathname === '/' ? '/index.html' : pathname}`);
     if (
       !(file === directory || file.startsWith(`${directory}\\`) || file.startsWith(`${directory}/`))
@@ -91,16 +140,9 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
         );
       response.setHeader(
         'Content-Type',
-        file.endsWith('.html')
-          ? 'text/html'
-          : file.endsWith('.js')
-            ? 'text/javascript'
-            : file.endsWith('.css')
-              ? 'text/css'
-              : file.endsWith('.json')
-                ? 'application/json'
-                : 'application/octet-stream',
+        contentTypes[extname(file).toLowerCase()] ?? 'application/octet-stream',
       );
+      response.setHeader('Cache-Control', 'no-store');
       response.end(bytes);
     } catch {
       response.writeHead(404);
@@ -109,16 +151,26 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
   });
   await new Promise<void>((ready) => server.listen(port, '127.0.0.1', ready));
   let pending: NodeJS.Timeout | undefined;
+  // Rebuilds run one at a time: two concurrent builds would race on the output rename.
+  let building = Promise.resolve();
+  const rebuild = async (): Promise<void> => {
+    const next = await build(root, output, false).catch(
+      (error: unknown): Outcome => ({
+        diagnostics: [
+          issue('VALUE_INVALID', 'export', [], String(error), 'Fix the project and save again.'),
+        ],
+      }),
+    );
+    for (const client of clients)
+      client.write(
+        `data: ${JSON.stringify({ ok: !next.diagnostics.some((entry) => entry.severity === 'error'), diagnostics: next.diagnostics })}\n\n`,
+      );
+  };
   const watcher = watch(root, { recursive: true }, (_event, file) => {
-    if (!file || String(file).startsWith(output) || String(file).startsWith('mapbard.lock.json'))
-      return;
+    if (!file || ignoredChange(String(file), output)) return;
     clearTimeout(pending);
-    pending = setTimeout(async () => {
-      const next = await build(root, output, false);
-      for (const client of clients)
-        client.write(
-          `data: ${JSON.stringify({ ok: !next.diagnostics.some((entry) => entry.severity === 'error'), diagnostics: next.diagnostics })}\n\n`,
-        );
+    pending = setTimeout(() => {
+      building = building.then(rebuild);
     }, 180);
   });
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/`;
@@ -129,10 +181,16 @@ async function preview(root: string, port: number, open: boolean): Promise<Outco
     const args = process.platform === 'win32' ? ['/c', 'start', '', url] : [url];
     spawn(command, args, { detached: true, stdio: 'ignore', windowsHide: true }).unref();
   }
-  process.once('SIGINT', () => {
+  // Open live-reload streams would otherwise keep the process alive after Ctrl+C.
+  const stop = (): void => {
+    clearTimeout(pending);
     watcher.close();
+    for (const client of clients) client.end();
     server.close();
-  });
+    server.closeAllConnections();
+  };
+  process.once('SIGINT', stop);
+  process.once('SIGTERM', stop);
   return { result: { url, directory }, diagnostics: rebuilt.diagnostics };
 }
 
@@ -184,11 +242,16 @@ export async function run(argv: string[] = process.argv): Promise<number> {
     .command('add <files...>')
     .option('--id <id>')
     .option('--attribution <text>')
+    .option('--feature-id <property>', 'Property holding a unique feature ID')
     .action(
-      async (files: string[], local: { id?: string; attribution?: string }, command: Command) => {
+      async (
+        files: string[],
+        local: { id?: string; attribution?: string; featureId?: string },
+        command: Command,
+      ) => {
         const options = command.optsWithGlobals() as Global;
         await execute('add', options, () =>
-          add(rootOf(options), files, local.id, local.attribution),
+          add(rootOf(options), files, local.id, local.attribution, local.featureId),
         );
       },
     );

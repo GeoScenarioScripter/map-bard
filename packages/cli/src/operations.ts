@@ -128,17 +128,50 @@ export async function installSkill(
         `${previous}${previous.endsWith('\n') || !previous ? '' : '\n'}${marker}\n`,
       );
   }
-  return { result: { directory: destination, version: '0.1.0' }, diagnostics: [] };
+  const version = /^version:\s*(\S+)/m.exec(await readFile(join(source, 'SKILL.md'), 'utf8'))?.[1];
+  return { result: { directory: destination, version }, diagnostics: [] };
 }
+
+const uniqueKeys = (values: unknown[]): boolean =>
+  values.every((value) => typeof value === 'string' || typeof value === 'number') &&
+  new Set(values).size === values.length;
 
 export async function add(
   root: string,
   files: string[],
   requestedId?: string,
   attribution?: string,
+  featureProperty?: string,
 ): Promise<Outcome> {
   const manifestPath = join(root, 'mapbard.json');
-  const manifest = await jsonFile<ProjectV2>(manifestPath);
+  let manifest: ProjectV2;
+  try {
+    manifest = await jsonFile<ProjectV2>(manifestPath);
+  } catch {
+    return {
+      diagnostics: [
+        issue(
+          'RESOURCE_MISSING',
+          'project',
+          ['mapbard.json'],
+          `No readable mapbard.json in ${root}.`,
+          'Run mapbard init <dir>, or put --project <dir> before the command.',
+        ),
+      ],
+    };
+  }
+  if (requestedId && files.length > 1)
+    return {
+      diagnostics: [
+        issue(
+          'VALUE_INVALID',
+          'project',
+          ['--id'],
+          '--id names a single resource but several files were given.',
+          'Add the files one at a time, each with its own --id.',
+        ),
+      ],
+    };
   const added: string[] = [];
   const diagnostics: Diagnostic[] = [];
   for (const file of files) {
@@ -161,8 +194,14 @@ export async function add(
       );
       continue;
     }
+    const target = join(root, media ? 'media' : 'data', basename(source));
+    const path = relative(root, target).replaceAll('\\', '/');
+    // A copy made for a file that then fails registration is removed, so a retry can succeed.
+    let copied = false;
+    const discardCopy = async (): Promise<void> => {
+      if (copied) await rm(target, { force: true });
+    };
     try {
-      const target = join(root, media ? 'media' : 'data', basename(source));
       if (resolve(target) !== source) {
         await mkdir(resolve(target, '..'), { recursive: true });
         if (
@@ -170,23 +209,22 @@ export async function add(
             () => true,
             () => false,
           )
-        )
-          throw new Error('Target file already exists.');
+        ) {
+          diagnostics.push(
+            issue(
+              'ASSET_COLLISION',
+              media ? 'media' : 'data',
+              ['resources', id, 'path'],
+              `${path} already exists in the project.`,
+              'Rename the source file, or remove the unregistered copy and retry.',
+            ),
+          );
+          continue;
+        }
         await copyFile(source, target);
+        copied = true;
       }
-      const path = relative(root, target).replaceAll('\\', '/');
       const credit = attribution ?? 'Attribution pending';
-      if (!attribution)
-        diagnostics.push(
-          issue(
-            'VALUE_INVALID',
-            media ? 'media' : 'data',
-            ['resources', id, 'attribution'],
-            `Attribution is missing for ${id}.`,
-            'Add a real attribution label before publishing.',
-            'warning',
-          ),
-        );
       if (media) {
         const info = await registerMedia({ path: target, id });
         manifest.resources.media.push({
@@ -202,29 +240,37 @@ export async function add(
       } else {
         const info = await ingestDataFile(target, { id, path });
         const features = info.data.features;
-        const ids = features.map((feature) => (feature as { id?: unknown }).id);
-        const useIds =
-          ids.every((value) => typeof value === 'string' || typeof value === 'number') &&
-          new Set(ids).size === ids.length;
-        const candidate = info.dataSource.profile.attributes.find(
-          (attr) =>
-            attr.name === 'id' && features.every((feature) => feature.properties?.id != null),
-        );
-        const featureId = useIds
-          ? { method: 'geojson-id' as const, scope: 'source' as const }
-          : candidate
-            ? { method: 'property' as const, property: 'id', scope: 'source' as const }
-            : undefined;
+        const propertyKeys = (name: string): unknown[] =>
+          features.map((feature) => feature.properties?.[name]);
+        const byProperty = (property: string) =>
+          ({ method: 'property', property, scope: 'source' }) as const;
+        const featureId = featureProperty
+          ? uniqueKeys(propertyKeys(featureProperty))
+            ? byProperty(featureProperty)
+            : undefined
+          : uniqueKeys(features.map((feature) => (feature as { id?: unknown }).id))
+            ? ({ method: 'geojson-id', scope: 'source' } as const)
+            : uniqueKeys(propertyKeys('id'))
+              ? byProperty('id')
+              : undefined;
         if (!featureId) {
+          const candidates = info.dataSource.profile.attributes
+            .map((attr) => attr.name)
+            .filter((name) => uniqueKeys(propertyKeys(name)));
           diagnostics.push(
             issue(
               'VALUE_INVALID',
               'data',
               ['resources', id, 'featureId'],
-              'No unique feature ID was found.',
-              'Add unique GeoJSON feature IDs or an id property.',
+              featureProperty
+                ? `Property ${featureProperty} is missing or repeated in ${id}.`
+                : `No unique feature ID was found in ${id}.`,
+              candidates.length
+                ? `Pass --feature-id with a unique property: ${candidates.join(', ')}.`
+                : 'Add unique GeoJSON feature IDs or a unique property, then pass --feature-id.',
             ),
           );
+          await discardCopy();
           continue;
         }
         manifest.resources.data.push({
@@ -251,7 +297,19 @@ export async function add(
         });
       }
       added.push(id);
+      if (!attribution)
+        diagnostics.push(
+          issue(
+            'VALUE_INVALID',
+            media ? 'media' : 'data',
+            ['resources', id, 'attribution'],
+            `Attribution is missing for ${id}.`,
+            'Add a real attribution label before publishing.',
+            'warning',
+          ),
+        );
     } catch (error) {
+      await discardCopy().catch(() => undefined);
       diagnostics.push(
         issue(
           'VALUE_INVALID',
@@ -381,9 +439,10 @@ export async function prepare(root: string, offline: boolean, refresh: boolean) 
         'Replace the placeholder with the source credit.',
       ),
     );
-  if (attribution.length) return { diagnostics: attribution };
+  // Placeholder credits block publishing, but compile anyway so every problem is reported at once.
   const compiled = compileProject(loaded.value, STAGE1_CAPABILITIES, { offline });
-  if (!compiled.ok) return { diagnostics: compiled.diagnostics };
+  if (!compiled.ok || attribution.length)
+    return { diagnostics: [...attribution, ...compiled.diagnostics] };
   return { loaded: loaded.value, compiled: compiled.value, diagnostics: compiled.diagnostics };
 }
 

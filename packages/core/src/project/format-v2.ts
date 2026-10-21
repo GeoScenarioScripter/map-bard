@@ -385,26 +385,34 @@ export async function loadProjectV2(root: string): Promise<Result<LoadedProject>
     );
   const sourceIds = new Set(manifest.resources.data.map((resource) => resource.id));
   const assetIds = new Set(manifest.resources.media.map((resource) => resource.id));
+  const missing: Diagnostic[] = [];
   for (const [sceneIndex, scene] of story.scenes.entries()) {
     for (const [layerIndex, layer] of scene.layers.entries())
       if (!sourceIds.has(layer.sourceId))
-        return problem(
-          'REFERENCE_MISSING',
-          'narrative',
-          ['scenes', sceneIndex, 'layers', layerIndex, 'sourceId'],
-          `Layer source ${layer.sourceId} is not registered.`,
-          'Register the data resource or correct sourceId.',
+        missing.push(
+          failure(
+            'REFERENCE_MISSING',
+            'narrative',
+            ['scenes', sceneIndex, 'layers', layerIndex, 'sourceId'],
+            `Layer source ${layer.sourceId} is not registered.`,
+            'Register the data resource or correct sourceId.',
+            { sceneId: scene.id, layerId: layer.id, sourceId: layer.sourceId },
+          ),
         );
     for (const [mediaIndex, media] of (scene.media ?? []).entries())
       if (!assetIds.has(media.assetId))
-        return problem(
-          'REFERENCE_MISSING',
-          'narrative',
-          ['scenes', sceneIndex, 'media', mediaIndex, 'assetId'],
-          `Media ${media.assetId} is not registered.`,
-          'Register the media resource or correct assetId.',
+        missing.push(
+          failure(
+            'REFERENCE_MISSING',
+            'narrative',
+            ['scenes', sceneIndex, 'media', mediaIndex, 'assetId'],
+            `Media ${media.assetId} is not registered.`,
+            'Register the media resource or correct assetId.',
+            { sceneId: scene.id, assetId: media.assetId },
+          ),
         );
   }
+  if (missing.length) return { ok: false, diagnostics: missing };
   const oldProject: LoadedProject['project'] = {
     projectVersion: '0.1.0',
     id: manifest.id,

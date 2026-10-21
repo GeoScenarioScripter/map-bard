@@ -1,6 +1,6 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -85,6 +85,104 @@ describe('CLI binary', () => {
     const skill = await cli('--project', root, 'skill', 'install', '--codex');
     expect(skill.code).toBe(0);
     expect(await readFile(join(root, 'AGENTS.md'), 'utf8')).toContain('skills/mapbard/SKILL.md');
+  });
+  it('keeps failed adds retryable and reports every blocking problem', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    const root = join(scratch, 'project');
+    const outside = await cli('--project', root, 'add', 'missing.geojson');
+    expect(outside.code).toBe(1);
+    expect(outside.envelope.diagnostics[0].code).toBe('RESOURCE_MISSING');
+    await cli('init', root);
+    const data = join(scratch, 'stations.geojson');
+    await writeFile(
+      data,
+      JSON.stringify({
+        type: 'FeatureCollection',
+        features: ['North', 'South'].map((name) => ({
+          type: 'Feature',
+          properties: { name, depth: 4 },
+          geometry: { type: 'Point', coordinates: [0, 0] },
+        })),
+      }),
+    );
+    const unkeyed = await cli('--project', root, 'add', data, '--attribution', 'Survey');
+    expect(unkeyed.envelope.result.added).toEqual([]);
+    expect(unkeyed.envelope.diagnostics).toHaveLength(1);
+    expect(unkeyed.envelope.diagnostics[0].remedy).toContain(
+      '--feature-id with a unique property: name',
+    );
+    await expect(readFile(join(root, 'data', 'stations.geojson'))).rejects.toThrow();
+    const repeated = await cli('--project', root, 'add', data, '--feature-id', 'depth');
+    expect(repeated.envelope.diagnostics[0].message).toContain('depth is missing or repeated');
+    const keyed = await cli('--project', root, 'add', data, '--feature-id', 'name');
+    expect(keyed.envelope.result.added).toEqual(['stations']);
+    const manifest = JSON.parse(await readFile(join(root, 'mapbard.json'), 'utf8'));
+    expect(manifest.resources.data[0].featureId).toEqual({
+      method: 'property',
+      property: 'name',
+      scope: 'source',
+    });
+    const storyPath = join(root, 'story.json');
+    const story = JSON.parse(await readFile(storyPath, 'utf8'));
+    story.scenes[0].layers = [
+      { id: 'a', sourceId: 'nowhere', technique: 'point' },
+      { id: 'b', sourceId: 'elsewhere', technique: 'point' },
+    ];
+    await writeFile(storyPath, JSON.stringify(story));
+    await cli('--project', root, 'lock');
+    const references = await cli('--project', root, 'check');
+    expect(references.envelope.diagnostics.map((entry: { code: string }) => entry.code)).toEqual([
+      'REFERENCE_MISSING',
+      'REFERENCE_MISSING',
+    ]);
+    story.scenes[0].layers = [{ id: 'a', sourceId: 'stations', technique: 'heatmap' }];
+    await writeFile(storyPath, JSON.stringify(story));
+    await cli('--project', root, 'lock');
+    const blocked = await cli('--project', root, 'check');
+    expect(blocked.envelope.diagnostics.map((entry: { code: string }) => entry.code)).toEqual(
+      expect.arrayContaining(['VALUE_INVALID', 'CAPABILITY_UNSUPPORTED']),
+    );
+    const limited = await cli('--limit', '1', 'schema', 'story.json');
+    expect(limited.envelope.truncated).toBe(false);
+    expect(JSON.stringify(limited.envelope.result)).toContain(
+      '"required":["narrativeRole","emphasis","readerAgency"]',
+    );
+    const capabilities = await cli('--limit', '1', 'capabilities');
+    expect(capabilities.envelope.result.techniques).toHaveLength(1);
+    expect(capabilities.envelope.truncated).toBe(true);
+  });
+  it('serves preview assets with real types and survives malformed URLs', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    const root = join(scratch, 'project');
+    await cli('init', root);
+    const photo = fileURLToPath(
+      new URL('../../../fixtures/ingest/media/skyline.png', import.meta.url),
+    );
+    await cli('--project', root, 'add', photo, '--attribution', 'Fixture');
+    const story = JSON.parse(await readFile(join(root, 'story.json'), 'utf8'));
+    story.scenes[0].media = [{ assetId: 'skyline' }];
+    await writeFile(join(root, 'story.json'), JSON.stringify(story));
+    const server = spawn(process.execPath, [binary, '--json', '--project', root, 'preview']);
+    try {
+      const line = await new Promise<string>((ready, fail) => {
+        let text = '';
+        server.stdout.on('data', (chunk) => {
+          text += chunk;
+          if (text.includes('\n')) ready(text);
+        });
+        server.once('exit', () => fail(new Error(`preview exited: ${text}`)));
+      });
+      const { url, directory } = JSON.parse(line).result as { url: string; directory: string };
+      expect((await fetch(`${url}%E0%A4%A`)).status).toBe(400);
+      const index = await fetch(url);
+      expect(index.headers.get('content-type')).toBe('text/html; charset=utf-8');
+      const [image] = await readdir(join(directory, 'media'));
+      expect((await fetch(`${url}media/${image}`)).headers.get('content-type')).toBe('image/png');
+    } finally {
+      server.kill();
+    }
   });
   it('returns usage code 2 in JSON mode', async () => {
     const usage = await cli('build', '--bogus');

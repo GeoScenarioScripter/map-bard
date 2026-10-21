@@ -28,10 +28,10 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
   built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.0 are
+- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.1 are
   published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
-  workflow are configured. The public `mapbard@0.1.0` CLI ran via `npm exec`.
+  workflow are configured. The public `mapbard` CLI ran via `npm exec`.
 - Checks: 108 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
   root integration 3, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
@@ -56,6 +56,10 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Expanded the five npm package READMEs with install and usage
+  guidance, added descriptions and discovery metadata, and published 0.1.1.
+  Build, 108 tests, lint and tarball install smoke passed locally; three-OS CI
+  and release verification passed. Next: M2 visual engine.
 - 2026-10-21: Three-OS CI and release verification passed. Published all five
   0.1.0 packages to npm using the GitHub `npm` environment secret; the four
   scoped libraries published first, then `mapbard` after the secret was updated.

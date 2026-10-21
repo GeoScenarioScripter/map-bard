@@ -6,7 +6,7 @@ Repository instructions for coding agents. Updated 2026-10-21.
 
 1. [docs/STATUS.md](docs/STATUS.md): current state, known issues, recent log.
 2. [docs/ROADMAP.md](docs/ROADMAP.md): product, principles, milestones.
-3. The next milestone plan, currently [docs/visual-engine.md](docs/visual-engine.md).
+3. The active milestone plan, currently [docs/m2-visual.md](docs/m2-visual.md).
 4. [docs/visual-engine.md](docs/visual-engine.md) before touching rendering,
    the player, themes or techniques.
 

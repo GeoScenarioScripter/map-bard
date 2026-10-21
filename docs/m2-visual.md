@@ -1,6 +1,6 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-21. Status: **active**, Wave 1 in progress. Part of the
+Updated 2026-10-21. Status: **active**. Wave 1 is complete; Wave 2 is next. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.

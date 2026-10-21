@@ -1,7 +1,8 @@
 # M2 — Visual Engine
 
-Updated 2026-10-20. Status: **planned** (starts after M1's basemap and format
-work). Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-21. Status: **active**. This is the design reference; the
+order of work is in [m2-visual.md](m2-visual.md). Part of the
+[roadmap](ROADMAP.md).
 
 The goal is to take MapBard's published stories from "correct but plain" to
 newsroom-grade: a real basemap, terrain and depth, cinematic camera motion,

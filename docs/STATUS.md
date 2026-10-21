@@ -1,46 +1,60 @@
 # MapBard — Status
 
-**Updated 2026-10-21. [M1 — CLI and foundation](m1-cli.md) is complete.
-Next: [M2 — Visual Engine](visual-engine.md).** The owner deferred the fresh
-Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
+**Updated 2026-10-21. [M2 — Visual Engine](visual-engine.md) is active; its
+execution plan is [m2-visual.md](m2-visual.md). Wave 1 is complete; next is
+Wave 2.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
 
 - `@mapbard/schema`: strict Zod contracts for project 0.1, GeoNarrative 0.1,
   design, compiled spec and diagnostics.
 - `@mapbard/core`: load and validate a project with source hashes; compile it
-  to a resolved spec (shared/equal-interval scales, category and size scales,
-  annotations, controls, capability diagnostics); ingest/profiling helpers in
+  to a resolved spec (equal-interval, quantile, natural-breaks and manual
+  color classes; category and size scales; shared color and size scales;
+  legend titles and display units; annotations, controls, capability
+  diagnostics); ingest/profiling helpers in
   `inspect/`. Format 0.2 loads from `mapbard.json` and `story.json`, with text
   hashes and profiles in `mapbard.lock.json`; 0.1 projects migrate into a new
   directory without changing the source.
 - `@mapbard/renderer`: compiled publication (MapLibre 6.1 player and local IIFE
   worker) that runs from `file://`, with stale-input rejection, safe asset
   paths, online style fallback, terrain and offline mode.
-- `@mapbard/knowledge`: capability list, encoding prerequisites and provider
-  catalog for OpenFreeMap, VersaTiles, Mapterhorn and AWS Terrarium.
+- `@mapbard/knowledge`: capability list, encoding prerequisites, display
+  formatters (units, numbers, titles) and provider catalog for OpenFreeMap,
+  VersaTiles, Mapterhorn and AWS Terrarium.
+- Visual QA: `node scripts/visual-qa.mjs <publication> <out>` captures each
+  scene at desktop and phone sizes, writes a contact sheet, and reports
+  console errors, remote requests and occlusion findings. The compiled page
+  exposes `data-mb-state` and a read-only `window.MapBardStory` hook.
 - `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
-- Example: `examples/projects/potomac` (format 0.2, Potomac, three scenes),
-  built with `mapbard build` in online and offline modes. The format 0.1
+- Example: `examples/projects/potomac` (format 0.2, Potomac, three scenes,
+  gauges as graduated symbols on one shared size scale), built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
 - Release packages: `mapbard` and `@mapbard/core` at 0.1.2, and `schema`,
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 112 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 6,
-  root integration 3, browser smoke 1), lint and Windows tarball install smoke
+- Checks: 121 routine tests (schema 24, knowledge 5, core 56, renderer 24, CLI 6,
+  root integration 5, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
 ## Known issues
 
 - Visual quality is below the bar (<60/100). The defects are listed in
-  [visual-engine.md](visual-engine.md#why-the-current-output) (M2).
+  [visual-engine.md](visual-engine.md#why-the-current-output) (M2). Fixed
+  in Wave 1: raw legend IDs, caret units, and the encoding that hid the 2025
+  drop. Open: the visual QA report on Potomac still has 6 layout findings:
+  on desktop the card covers Hancock and the legend overlaps the card in
+  `limits`; on phone the card covers Point of Rocks and overlaps the media
+  panel and legend (Wave 2, item E). Annotation marker buttons sit on top of
+  small 2025 symbols (Wave 3, item I). The largest symbol radius is 16 px.
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
@@ -55,6 +69,16 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-21: Wrote the M2 execution plan (docs/m2-visual.md, four waves) and
+  ran Wave 1. A: visual QA capture script, readiness hook and occlusion
+  geometry; the baseline on the old Potomac flagged the known card/legend
+  collisions (6 findings). B: compiled legend titles, display units (ft³/s)
+  and en-US class labels with exact-edge fallback. C: quantile,
+  natural-breaks and manual classes, plus shared size scales; Potomac now
+  uses graduated symbols on one shared size scale. Build, 121 tests, lint and
+  browser smoke pass; QA ran on stub-online and offline builds, and the
+  contact sheet and zoomed gauge crops were inspected. Next: Wave 2 (D–G).
 
 - 2026-10-21: Owner follow-up to the M1 review. `preview` keeps serving when the
   first build fails and shows the diagnostics panel until a saved fix builds

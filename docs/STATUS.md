@@ -28,8 +28,8 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
   built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.1 are
-  published on npm, each with a README, MIT license, explicit published files,
+- Release packages: `mapbard` and `@mapbard/core` at 0.1.2, and `schema`,
+  `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
 - Checks: 112 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 6,
@@ -61,7 +61,9 @@ next step. Details belong in commit messages.
   (checked in headless Chrome with screenshots). `init` and `add` reject
   non-ASCII names and IDs. Removed the worldwide-audience records. The root
   `test` script now runs through `scripts/test.mjs` with the invoking pnpm.
-  Versioned `mapbard` and `@mapbard/core` 0.1.2. Next: publish 0.1.2, then M2.
+  Published `mapbard` and `@mapbard/core` 0.1.2 (`latest`) after three-OS
+  release verification; `npm exec mapbard@0.1.2` reported 0.1.2 and rejected a
+  non-ASCII `init`. Next: M2.
 - 2026-10-21: M1 review fixes. `preview` no longer crashes on a malformed URL,
   serves media with real content types, serializes rebuilds and closes
   live-reload streams on Ctrl+C. A failed `add` removes its copied file, `add

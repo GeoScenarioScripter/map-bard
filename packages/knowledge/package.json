@@ -1,7 +1,16 @@
 {
   "name": "@mapbard/knowledge",
-  "version": "0.1.0",
-  "description": "MapBard capability catalog and basemap provider metadata",
+  "version": "0.1.1",
+  "description": "Map technique capability rules and keyless basemap and terrain catalogs for MapBard",
+  "keywords": [
+    "mapbard",
+    "cartography",
+    "basemap",
+    "terrain",
+    "geospatial"
+  ],
+  "homepage": "https://github.com/GeoScenarioScripter/map-bard/tree/main/packages/knowledge#readme",
+  "bugs": "https://github.com/GeoScenarioScripter/map-bard/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

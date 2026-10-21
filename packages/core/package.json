@@ -1,7 +1,16 @@
 {
   "name": "@mapbard/core",
-  "version": "0.1.0",
-  "description": "Project loading, validation, compilation, and source profiling for MapBard",
+  "version": "0.1.1",
+  "description": "Deterministic project loading, source profiling, validation, and story compilation for MapBard",
+  "keywords": [
+    "mapbard",
+    "geospatial",
+    "geojson",
+    "validation",
+    "compiler"
+  ],
+  "homepage": "https://github.com/GeoScenarioScripter/map-bard/tree/main/packages/core#readme",
+  "bugs": "https://github.com/GeoScenarioScripter/map-bard/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,7 +1,16 @@
 {
   "name": "@mapbard/schema",
-  "version": "0.1.0",
-  "description": "Versioned MapBard project and publication contracts",
+  "version": "0.1.1",
+  "description": "Versioned Zod and JSON Schema contracts for MapBard projects, stories, and publications",
+  "keywords": [
+    "mapbard",
+    "zod",
+    "json-schema",
+    "geospatial",
+    "validation"
+  ],
+  "homepage": "https://github.com/GeoScenarioScripter/map-bard/tree/main/packages/schema#readme",
+  "bugs": "https://github.com/GeoScenarioScripter/map-bard/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -61,11 +61,17 @@ test(
       );
 
       const installed = join(consumer, 'node_modules');
+      let cliVersion;
       for (const name of ['mapbard', ...packages.slice(0, -1).map((item) => `@mapbard/${item}`)]) {
         await access(join(installed, name, 'LICENSE'));
         await access(join(installed, name, 'README.md'));
         const manifest = JSON.parse(await readFile(join(installed, name, 'package.json'), 'utf8'));
-        assert.equal(manifest.version, '0.1.0');
+        const sourceDirectory = name === 'mapbard' ? 'cli' : name.split('/')[1];
+        const source = JSON.parse(
+          await readFile(join(repository, 'packages', sourceDirectory, 'package.json'), 'utf8'),
+        );
+        assert.equal(manifest.version, source.version);
+        if (name === 'mapbard') cliVersion = source.version;
         assert(
           !Object.values(manifest.dependencies ?? {}).some((value) =>
             value.startsWith('workspace:'),
@@ -91,7 +97,7 @@ test(
         ),
       );
       assert.equal(build.ok, true, JSON.stringify(build.diagnostics));
-      assert.equal(build.cliVersion, '0.1.0');
+      assert.equal(build.cliVersion, cliVersion);
       await access(join(project, 'out', 'index.html'));
       const verification = JSON.parse(
         await readFile(join(project, 'out', 'verification.json'), 'utf8'),

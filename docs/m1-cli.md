@@ -189,8 +189,8 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
 - **CI and release:** `.github/workflows/ci.yml` builds, tests, lints and
   checks tarballs on Windows, macOS and Linux. The manual release workflow
   repeats those checks for the chosen ref and publishes through Changesets
-  using the owner's `NPM_TOKEN` secret. npm provenance is unavailable while
-  the GitHub source repository is private. The PNG fixture normalization found
+  using the owner's `NPM_TOKEN` secret. The 0.1.0 release did not include npm
+  provenance. The PNG fixture normalization found
   in the first CI run was corrected. Three-OS CI and release verification then
   passed, and the publish job succeeded.
 - **Pre-release check:** `pnpm pack` rewrites workspace dependency ranges in

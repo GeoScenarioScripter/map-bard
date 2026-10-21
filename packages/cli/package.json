@@ -1,7 +1,17 @@
 {
   "name": "mapbard",
-  "version": "0.1.0",
-  "description": "Command-line authoring and publishing for traceable map stories",
+  "version": "0.1.1",
+  "description": "CLI for validating plain-file map projects and publishing traceable static map stories",
+  "keywords": [
+    "map",
+    "storytelling",
+    "geospatial",
+    "geojson",
+    "cli",
+    "visualization"
+  ],
+  "homepage": "https://github.com/GeoScenarioScripter/map-bard#readme",
+  "bugs": "https://github.com/GeoScenarioScripter/map-bard/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,6 +1,9 @@
 # MapBard
 
-MapBard turns plain project files into a static, scrollable map story. A coding agent or a human writes the story; the deterministic CLI validates it, resolves sources, and publishes the page. The current format is 0.2.0. The npm release is still planned, so these commands run the CLI from this repository.
+MapBard turns plain project files into a static, scrollable map story. A coding agent or a human writes the story; the deterministic CLI validates it, resolves sources, and publishes the page. The current format is 0.2.0. The CLI is published on npm as [`mapbard`](https://www.npmjs.com/package/mapbard).
+
+Requires Node.js 20 or later. Run `npx mapbard --help` without installing, or
+install the command with `npm install --global mapbard`.
 
 ## Five-minute quickstart
 
@@ -66,18 +69,12 @@ corepack pnpm lint
 
 The test suite includes a headless Chrome smoke test. Set `MAPBARD_CHROME_PATH` if Chromium or Chrome is not discoverable. The routine test stubs the online basemap style so it does not depend on public tile availability. Run `corepack pnpm test:basemap:live` for a live OpenFreeMap check and screenshot, and `corepack pnpm test:pack` to pack every publishable package, install the tarballs outside the workspace, and run `init` → `build`. `playwright-core` 1.64.1 is an Apache-2.0 development dependency.
 
-## Release preparation
+## Packages and releases
 
-The CLI publishes as `mapbard`; the four libraries publish under `@mapbard`.
-All five packages are prepared at `0.1.0`. Changesets 2.29.7 (MIT) handles
-future versions and changelogs. [CI](.github/workflows/ci.yml) checks Windows,
-macOS and Linux. The [manual release workflow](.github/workflows/release.yml)
-repeats those checks before publishing. npm provenance is unavailable while the
-GitHub source repository is private.
-
-The owner has created the npm `@mapbard` organization. The first release still
-requires a fresh `NPM_TOKEN` secret in the GitHub `npm` environment. The release
-workflow has not run yet; this checkout has no npm login. After CI passes on the
-release ref, run the workflow with the `latest` dist tag for `0.1.0`.
+The CLI publishes as [`mapbard`](https://www.npmjs.com/package/mapbard); the four
+libraries publish under [`@mapbard`](https://www.npmjs.com/org/mapbard).
+Changesets 2.29.7 (MIT) manages versions and changelogs. [CI](.github/workflows/ci.yml)
+checks Windows, macOS and Linux. The [manual release workflow](.github/workflows/release.yml)
+repeats those checks before publishing with the GitHub `npm` environment secret.
 
 Current work and known limitations are in [STATUS.md](docs/STATUS.md); the [roadmap](docs/ROADMAP.md) and [M1 plan](docs/m1-cli.md) describe the next steps.

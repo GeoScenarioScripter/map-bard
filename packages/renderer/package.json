@@ -1,7 +1,16 @@
 {
   "name": "@mapbard/renderer",
-  "version": "0.1.0",
-  "description": "Static MapBard publication renderer and browser player",
+  "version": "0.1.1",
+  "description": "Static map-story renderer with a bundled MapLibre browser player for MapBard",
+  "keywords": [
+    "mapbard",
+    "maplibre",
+    "geospatial",
+    "storytelling",
+    "renderer"
+  ],
+  "homepage": "https://github.com/GeoScenarioScripter/map-bard/tree/main/packages/renderer#readme",
+  "bugs": "https://github.com/GeoScenarioScripter/map-bard/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -45,9 +45,8 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
   remains network independent. The separate live check passed on 2026-10-21.
-- npm provenance is unavailable while the GitHub repository is private. The
-  release used the GitHub `npm` environment secret; this machine has no npm
-  login (`ENEEDAUTH`).
+- The 0.1.0 npm release did not include provenance. Releases use the GitHub
+  `npm` environment secret; this machine has no npm login (`ENEEDAUTH`).
 - The fresh Claude Code agent trial could not start because its API connection
   was refused before any tokens or tool calls. The owner deferred that trial
   beyond M1 on 2026-10-21. The direct CLI trial passed.

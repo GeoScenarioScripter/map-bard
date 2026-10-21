@@ -7,7 +7,7 @@ import process from 'node:process';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { URL, fileURLToPath, pathToFileURL } from 'node:url';
-import { chromium } from 'playwright-core';
+import { EMPTY_STYLE, launchBrowser } from './browser.mjs';
 
 const runFile = promisify(execFile);
 const repository = fileURLToPath(new URL('../', import.meta.url));
@@ -55,7 +55,7 @@ async function openStory(browser, file, online) {
         status: 200,
         contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
-        body: JSON.stringify({ version: 8, sources: {}, layers: [] }),
+        body: EMPTY_STYLE,
       });
     else await route.abort();
   });
@@ -90,20 +90,7 @@ test(
       const offline = await build(project, 'offline', true);
       assert(online.requiredHosts.includes('tiles.openfreemap.org'));
       assert.deepEqual(offline.requiredNetwork, []);
-      const launchOptions = {
-        headless: true,
-        args: ['--allow-file-access-from-files'],
-        ...(process.env.MAPBARD_CHROME_PATH
-          ? { executablePath: process.env.MAPBARD_CHROME_PATH }
-          : {}),
-      };
-      try {
-        browser = await chromium.launch(launchOptions);
-      } catch (error) {
-        if (process.env.MAPBARD_CHROME_PATH || !String(error).includes('Executable doesn'))
-          throw error;
-        browser = await chromium.launch({ ...launchOptions, channel: 'chrome' });
-      }
+      browser = await launchBrowser();
       const onlineRequests = await openStory(browser, join(project, 'online', 'index.html'), true);
       assert(onlineRequests.some((url) => url.startsWith('https://tiles.openfreemap.org/')));
       const offlineRequests = await openStory(

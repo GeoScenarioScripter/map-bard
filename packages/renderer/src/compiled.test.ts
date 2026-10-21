@@ -38,6 +38,8 @@ describe('compiled publication', () => {
     expect(result.value.files['index.html']).toContain('mb-legend-host');
     expect(result.value.files['compiled-app.js']).toContain('createMapLibreAdapter');
     expect(result.value.files['compiled-app.js']).toContain('map.scrollZoom.disable()');
+    expect(result.value.files['compiled-app.js']).toContain('window.MapBardStory = {');
+    expect(result.value.files['compiled-app.js']).toContain("root.dataset.mbState = 'ready'");
     expect(result.value.files['compiled-data.js']).toContain('"period-a"');
     expect(result.value.files['compiled-data.js']).not.toContain('</script>');
     expect(() => new Script(result.value.files['compiled-data.js']!)).not.toThrow();

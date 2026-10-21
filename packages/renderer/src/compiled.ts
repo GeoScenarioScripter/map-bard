@@ -91,7 +91,10 @@ const app = `(() => {
   const payload = window.MAPBARD_COMPILED;
   const api = window.MapBardCompiledPlayer;
   const scenes = [...document.querySelectorAll('[data-scene-id]')];
+  const root = document.documentElement;
+  root.dataset.mbState = 'loading';
   const showError = (error) => {
+    root.dataset.mbState = 'error';
     const panel = document.createElement('p');
     panel.setAttribute('role', 'alert');
     panel.textContent = 'Story playback failed: ' + String(error);
@@ -124,6 +127,7 @@ const app = `(() => {
       switching = true;
       clearTimeout(timer);
       if (cleanup) { cleanup(); cleanup = undefined; }
+      root.dataset.mbState = 'loading';
       if (attribution) { map.removeControl(attribution); attribution = undefined; }
       ready = false;
       styleIndex++;
@@ -155,8 +159,15 @@ const app = `(() => {
         const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches });
         player.enter(first.id);
         const disconnect = api.observeScenes(player, scenes);
-        cleanup = () => { disconnect(); player.dispose(); };
+        // Readiness hook for visual QA and the workbench; reading it never changes playback.
+        window.MapBardStory = {
+          sceneIds: payload.story.scenes.map((scene) => scene.id),
+          activeSceneId: () => player.activeSceneId(),
+          whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }),
+        };
+        cleanup = () => { disconnect(); player.dispose(); delete window.MapBardStory; };
         switching = false;
+        root.dataset.mbState = 'ready';
       } catch (error) { showError(error); map.remove(); }
     });
     map.on('error', (event) => { if (styles.length && styleIndex < styles.length) failStyle(); else if (ready) console.error(event.error || 'Map error'); });

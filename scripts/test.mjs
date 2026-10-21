@@ -7,7 +7,15 @@ const steps = [
   pnpm && /\.c?js$/.test(pnpm)
     ? [process.execPath, [pnpm, '-r', 'test']]
     : [pnpm ?? 'pnpm', ['-r', 'test']],
-  [process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'tests/g3.integration.test.mjs']],
+  [
+    process.execPath,
+    [
+      'node_modules/vitest/vitest.mjs',
+      'run',
+      'tests/g3.integration.test.mjs',
+      'tests/occlusion.test.mjs',
+    ],
+  ],
   [process.execPath, ['tests/browser.smoke.mjs']],
 ];
 for (const [command, args] of steps) {

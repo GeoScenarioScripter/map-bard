@@ -1,0 +1,66 @@
+name: Release to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git tag or commit to publish after CI passes
+        required: true
+        type: string
+      dist_tag:
+        description: npm distribution tag
+        required: true
+        default: next
+        type: choice
+        options: [next, latest]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node node_modules/playwright-core/cli.js install chromium
+      - run: pnpm -r build
+      - run: pnpm test
+      - run: pnpm lint
+      - run: pnpm test:pack
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r build
+      - run: pnpm exec changeset publish --tag "${{ inputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

@@ -1,8 +1,8 @@
 # MapBard — Status
 
-**Updated 2026-10-20. Active milestone: [M1 — CLI and foundation](m1-cli.md),
-in progress. M1-A through M1-D and M1-F implemented; M1-E pack expanded with
-the fresh-agent trial pending. Next: finish M1-E and M1-G.** See the
+**Updated 2026-10-21. Active milestone: [M1 — CLI and foundation](m1-cli.md),
+release ready locally. The owner deferred the fresh Claude Code trial. M1 closes
+after cross-platform CI and npm publication.** See the
 [roadmap](ROADMAP.md).
 
 ## What works today
@@ -20,7 +20,7 @@ the fresh-agent trial pending. Next: finish M1-E and M1-G.** See the
   paths, online style fallback, terrain and offline mode.
 - `@mapbard/knowledge`: capability list, encoding prerequisites and provider
   catalog for OpenFreeMap, VersaTiles, Mapterhorn and AWS Terrarium.
-- `@mapbard/cli`: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
+- `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
@@ -29,8 +29,13 @@ the fresh-agent trial pending. Next: finish M1-E and M1-G.** See the
   built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Checks: 108 tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
-  root integration 3, browser smoke 1) and lint pass.
+- Release packages: `mapbard` plus four `@mapbard/*` libraries at 0.1.0, each
+  with a README, MIT license, explicit published files, exports and Node engine.
+  Changesets, three-OS CI and a manual npm release workflow are configured.
+- Checks: 108 routine tests (schema 24, knowledge 2, core 52, renderer 24, CLI 2,
+  root integration 3, browser smoke 1), lint and Windows tarball install smoke
+  pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
+  Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
 ## Known issues
 
@@ -38,22 +43,26 @@ the fresh-agent trial pending. Next: finish M1-E and M1-G.** See the
   [visual-engine.md](visual-engine.md#why-the-current-output) (M2).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
-- The sandboxed headless browser could not reach the public tile hosts, so an
-  actual OpenFreeMap/VersaTiles tile load has not been visually verified. A
-  custom HTTP style loaded and displayed in headless Chrome; the offline
-  publication also loaded from `file://`.
-- M1-F's headless Chrome smoke test uses a stubbed online style, so a real
-  OpenFreeMap/VersaTiles tile load is still unverified in this environment.
-  M1-G covers npm release packaging and CI.
-- A fresh Claude Code agent trial for M1-E could not start in this environment:
-  its API connection was refused before any tokens or tool calls. The direct
-  CLI trial passed, but it does not satisfy the agent-trial acceptance item.
+- The routine headless browser smoke test still stubs the online style so it
+  remains network independent. The separate live check passed on 2026-10-21.
+- Three-OS GitHub CI has not executed because these changes have not been
+  pushed. npm publication is pending owner control of the `@mapbard` scope and
+  the release secret; this machine has no npm login (`ENEEDAUTH`).
+- The fresh Claude Code agent trial could not start because its API connection
+  was refused before any tokens or tool calls. The owner deferred that trial
+  beyond M1 on 2026-10-21. The direct CLI trial passed.
 
 ## Log
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Deferred the fresh Claude Code trial by owner direction. Prepared
+  five public 0.1.0 packages, Changesets, three-OS CI, release workflow and
+  external tarball install smoke; live OpenFreeMap style and vector tiles loaded
+  in headless Chrome with an inspected screenshot. Build, 108 routine tests,
+  lint and Windows pack smoke pass. Next: push for CI, configure npm ownership
+  and secret, then publish 0.1.0.
 - 2026-10-20: M1-E expanded the skill pack with a tested project-root workflow,
   format example, technique limits and diagnostic remedies. A direct CLI trial
   from raw Potomac files completed `init` → `add` → `inspect` → `lock` →

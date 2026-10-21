@@ -1,5 +1,5 @@
 {
-  "name": "mapbard",
+  "name": "mapbard-workspace",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,10 +11,15 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test && node node_modules/vitest/vitest.mjs run tests/g3.integration.test.mjs && node tests/browser.smoke.mjs",
     "test:browser": "node tests/browser.smoke.mjs",
+    "test:basemap:live": "node tests/basemap.live.mjs",
+    "test:pack": "node tests/package.smoke.mjs",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
   },
   "devDependencies": {
+    "@changesets/cli": "2.29.7",
     "@eslint/js": "^9.17.0",
     "@mapbard/core": "workspace:*",
     "@mapbard/knowledge": "workspace:*",

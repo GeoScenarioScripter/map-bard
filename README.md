@@ -64,6 +64,19 @@ corepack pnpm test
 corepack pnpm lint
 ```
 
-The test suite includes a headless Chrome smoke test. Set `MAPBARD_CHROME_PATH` if Chrome is not discoverable through Playwright's `chrome` channel. The test stubs the online basemap style, so it checks the host request and player behavior without depending on public tile availability. `playwright-core` 1.64.1 is an Apache-2.0 development dependency.
+The test suite includes a headless Chrome smoke test. Set `MAPBARD_CHROME_PATH` if Chromium or Chrome is not discoverable. The routine test stubs the online basemap style so it does not depend on public tile availability. Run `corepack pnpm test:basemap:live` for a live OpenFreeMap check and screenshot, and `corepack pnpm test:pack` to pack every publishable package, install the tarballs outside the workspace, and run `init` → `build`. `playwright-core` 1.64.1 is an Apache-2.0 development dependency.
+
+## Release preparation
+
+The CLI publishes as `mapbard`; the four libraries publish under `@mapbard`.
+All five packages are prepared at `0.1.0`. Changesets 2.29.7 (MIT) handles
+future versions and changelogs. [CI](.github/workflows/ci.yml) checks Windows,
+macOS and Linux. The [manual release workflow](.github/workflows/release.yml)
+repeats those checks before publishing with npm provenance.
+
+The first release requires control of the npm `@mapbard` scope and an `NPM_TOKEN`
+secret in the GitHub `npm` environment. The release workflow has not run yet;
+this checkout has no npm login. After CI passes on the release ref, run the
+workflow with the `latest` dist tag for `0.1.0`.
 
 Current work and known limitations are in [STATUS.md](docs/STATUS.md); the [roadmap](docs/ROADMAP.md) and [M1 plan](docs/m1-cli.md) describe the next steps.

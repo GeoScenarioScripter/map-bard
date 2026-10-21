@@ -1,10 +1,25 @@
 {
   "name": "@mapbard/schema",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Versioned MapBard project and publication contracts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeoScenarioScripter/map-bard.git",
+    "directory": "packages/schema"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

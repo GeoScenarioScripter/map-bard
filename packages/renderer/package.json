@@ -1,7 +1,19 @@
 {
   "name": "@mapbard/renderer",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Static MapBard publication renderer and browser player",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeoScenarioScripter/map-bard.git",
+    "directory": "packages/renderer"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

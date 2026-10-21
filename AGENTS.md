@@ -1,6 +1,6 @@
 # AGENTS.md — MapBard
 
-Repository instructions for coding agents. Updated 2026-10-20 (process reset).
+Repository instructions for coding agents. Updated 2026-10-21.
 
 ## Read first
 
@@ -21,7 +21,7 @@ assuming that a planned capability exists.
 | `@mapbard/core`      | Project load/validate, compiler, ingest/profiling                       | Lockfile, migrate, M3 analysis and bindings                        |
 | `@mapbard/knowledge` | Capability IDs and encoding prerequisites                               | Technique catalog, critic rules, basemap provider registry         |
 | `@mapbard/renderer`  | Compiled publication + TypeScript player (MapLibre)                     | Multi-tier player (MapLibre + deck.gl + three.js), layouts, themes |
-| `@mapbard/cli`       | Stub                                                                    | The `mapbard` command (M1)                                         |
+| `mapbard`            | CLI with project, build, preview, schema and skill commands             | npm release, then agent authoring trial                            |
 
 Fixtures live in `fixtures/`; examples in `examples/projects/`.
 

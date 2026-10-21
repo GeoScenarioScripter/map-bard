@@ -90,13 +90,20 @@ test(
       const offline = await build(project, 'offline', true);
       assert(online.requiredHosts.includes('tiles.openfreemap.org'));
       assert.deepEqual(offline.requiredNetwork, []);
-      browser = await chromium.launch({
+      const launchOptions = {
         headless: true,
         args: ['--allow-file-access-from-files'],
         ...(process.env.MAPBARD_CHROME_PATH
           ? { executablePath: process.env.MAPBARD_CHROME_PATH }
-          : { channel: 'chrome' }),
-      });
+          : {}),
+      };
+      try {
+        browser = await chromium.launch(launchOptions);
+      } catch (error) {
+        if (process.env.MAPBARD_CHROME_PATH || !String(error).includes('Executable doesn'))
+          throw error;
+        browser = await chromium.launch({ ...launchOptions, channel: 'chrome' });
+      }
       const onlineRequests = await openStory(browser, join(project, 'online', 'index.html'), true);
       assert(onlineRequests.some((url) => url.startsWith('https://tiles.openfreemap.org/')));
       const offlineRequests = await openStory(

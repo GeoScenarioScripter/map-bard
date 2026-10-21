@@ -1,7 +1,8 @@
 # M1 — CLI and Foundation
 
-Updated 2026-10-20. Status: **in progress; A–D and F implemented, E pack
-expanded with the fresh-agent trial pending**. Part of the [roadmap](ROADMAP.md).
+Updated 2026-10-21. Status: **code complete; npm publication and cross-platform
+CI execution pending**. The owner deferred the fresh Claude Code trial beyond
+M1. Part of the [roadmap](ROADMAP.md).
 
 ## Outcome
 
@@ -65,7 +66,7 @@ scales). Format 0.2:
   Existing compiler behaviour and tests carry over: scales, diagnostics and
   capability checks.
 
-### C. The `mapbard` CLI (`@mapbard/cli`, bin `mapbard`)
+### C. The `mapbard` CLI (`mapbard`, bin `mapbard`)
 
 | Command                             | Does                                                                                                       |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -119,8 +120,9 @@ init` or `npm i -g mapbard` (see item G).
   notice, and Terrarium/Mapterhorn attribution requirements.
 - Provider URLs and attribution references are recorded in
   [basemap provider notes](basemap-providers.md). A local HTTP custom style was
-  checked in headless Chrome; public tile loading still needs a browser run
-  with access to those hosts.
+  checked in headless Chrome. On 2026-10-21 headless Chrome also loaded the
+  live OpenFreeMap Positron style and multiple vector map tiles (HTTP 200, no
+  failed requests); see `pnpm test:basemap:live`. The screenshot was inspected.
 - Theming and tinting of provider styles belong to M2.
 
 ### E. Agent skill pack
@@ -141,9 +143,10 @@ it.
 
 The expanded pack was exercised through the CLI from raw Potomac files on
 2026-10-20. A fresh Claude Code invocation could not reach its API
-(`ECONNREFUSED`, zero tokens and tool calls), so the agent-trial acceptance item
-remains open. The direct trial also led to a concise `lock` command response;
-the full profiles remain in the written lockfile.
+(`ECONNREFUSED`, zero tokens and tool calls). On 2026-10-21 the owner explicitly
+deferred that agent trial beyond M1; it is not an M1 release gate. The direct
+trial led to a concise `lock` command response; full profiles remain in the
+written lockfile.
 
 ### F. Example, tests and quickstart
 
@@ -153,7 +156,7 @@ online and offline modes. The root README has a human and agent quickstart, and
 the CLI binary test authors a point layer before checking and building. The
 Playwright smoke uses headless Chrome with a stubbed online style to check
 `file://` playback, scroll navigation, console errors, online host requests and
-zero offline requests. A live public tile load is still unverified.
+zero offline requests. A separate live tile check passed on 2026-10-21.
 
 - Migrate the Potomac project to 0.2 and rebuild it through the CLI only.
   Visual redesign is M2.
@@ -172,21 +175,29 @@ zero offline requests. A live public tile load is still unverified.
   `core`, `knowledge`, `renderer`), and `@mapbard/assets-starter` follows in
   M2. `mapbard` depends on them with normal semver ranges, and `workspace:*` is
   rewritten at publish time.
-- **Name status:** on 2026-10-20 the `mapbard` package and the `@mapbard/cli`
-  name were both unclaimed on npm. The product owner needs to create the npm
-  account or organization (`mapbard`) and claim the names early. Publishing uses
-  the owner's credentials; agents never handle npm tokens.
+- **Name status:** the npm registry returned 404 for `mapbard` and
+  `@mapbard/schema` on 2026-10-21. The product owner needs to control the
+  `@mapbard` npm scope and configure the `npm` GitHub environment with an
+  `NPM_TOKEN` secret. This checkout has no npm login (`npm whoami` returned
+  `ENEEDAUTH`). Agents never handle npm tokens.
 - **Package hygiene:** `files` allowlists, an `exports` map, a `bin` entry with
   a shebang, `engines.node >= 20`, an MIT `LICENSE` and a README per package.
   The published player bundle and vendored MapLibre are included in
   `@mapbard/renderer`.
-- **Versioning:** Changesets (MIT) for versions and changelogs. A GitHub
-  Actions release workflow runs build, tests and lint, then publishes with npm
-  provenance using a repository secret the owner adds.
-- **Pre-release check:** `npm pack` each package, install the tarballs in a
-  temp folder, and run `npx mapbard init && mapbard build` on Windows, macOS
-  and Linux in CI. The first public release is `0.1.0` once acceptance below
-  passes. Earlier builds go out under the `next` tag only.
+- **Versioning:** Changesets 2.29.7 (MIT) manages future versions and
+  changelogs while retaining Node 20 and pnpm 9 support. All five publishable
+  packages are prepared at 0.1.0. The private workspace root is not published.
+- **CI and release:** `.github/workflows/ci.yml` builds, tests, lints and
+  checks tarballs on Windows, macOS and Linux. The manual release workflow
+  repeats those checks for the chosen ref and publishes through Changesets
+  with npm provenance, using the owner's `NPM_TOKEN` secret. It has not run on
+  GitHub because these commits have not been pushed.
+- **Pre-release check:** `pnpm pack` rewrites workspace dependency ranges in
+  each tarball. `pnpm test:pack` installs all five tarballs in a temporary
+  consumer outside the workspace and runs `mapbard init` → an offline build.
+  This passed on Windows. The first public release is `0.1.0` after
+  the owner configures npm access and the cross-platform CI jobs pass; use the
+  `next` tag for earlier builds.
 
 ## Acceptance
 
@@ -196,13 +207,14 @@ zero offline requests. A live public tile load is still unverified.
    don't mention them as current.
 3. The Potomac story is built with `mapbard build`, shows an OpenFreeMap
    basemap online, and makes zero network requests with `--offline`.
-4. **Agent trial:** a fresh Claude Code session in an empty folder gets the raw
-   Potomac GeoJSON, the photo, the intent and the skill pack. It reaches a
-   successful `mapbard build` with no human file edits. Friction found in the
-   transcript becomes skill or CLI fixes, recorded in STATUS.md.
+4. **Deferred by owner:** a fresh Claude Code session in an empty folder gets
+   the raw Potomac GeoJSON, photo, intent and skill pack. It should reach a
+   successful `mapbard build` with no human file edits. Record friction and
+   fixes when this trial resumes; it does not block M1.
 5. Packed tarballs install and run `init` → `build` on Windows, macOS and
    Linux in CI, and `mapbard@0.1.0` is published once the owner has claimed the
-   npm names.
+   npm names and configured the release secret. Windows passed locally;
+   cross-platform CI and publication remain open.
 
 ## Out of scope for M1
 

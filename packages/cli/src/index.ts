@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { watch } from 'node:fs';
+import { readFileSync, watch } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Command, CommanderError } from 'commander';
@@ -18,7 +18,11 @@ import {
   type Outcome,
 } from './operations.js';
 
-const cliVersion = '0.0.0';
+const cliVersion = (
+  JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+    version: string;
+  }
+).version;
 type Global = { json?: boolean; limit?: string; project?: string };
 const rootOf = (options: Global): string => resolve(options.project ?? '.');
 function bounded(value: unknown, limit: number): unknown {

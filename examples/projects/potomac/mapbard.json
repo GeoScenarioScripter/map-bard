@@ -88,7 +88,8 @@
             "inferredLevel": "ratio",
             "role": "quantity",
             "level": "ratio",
-            "unit": "ft^3/s"
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
           }
         ],
         "attribution": {
@@ -124,7 +125,8 @@
             "inferredLevel": "ratio",
             "role": "quantity",
             "level": "ratio",
-            "unit": "ft^3/s"
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
           }
         ],
         "attribution": {

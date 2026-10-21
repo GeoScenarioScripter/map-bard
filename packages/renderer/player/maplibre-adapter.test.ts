@@ -57,7 +57,9 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
         scalePaint(scale, 'value'),
       );
       const legend = legendMarkup(scene, story);
-      expect(legend).toContain('[40, 80) index points');
+      expect(legend).toContain('<span>40–80</span>');
+      expect(legend).toContain('<h3>Value <span class="mb-legend-unit">(index points)</span></h3>');
+      expect(legend).not.toContain(scale.id);
       expect(legend).toContain('No data');
     }
   });
@@ -133,7 +135,7 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
         { ...story.scenes[0]!, layers: [{ ...base, scaleId: 'area-size' }] },
         { ...story, scales: [size] },
       ),
-    ).toContain('25 test units');
+    ).toMatch(/\(test units\).*<span>25<\/span>/);
   });
 
   it('binds scene-local IDs, applies controls, and removes annotations and sources on revisit', () => {

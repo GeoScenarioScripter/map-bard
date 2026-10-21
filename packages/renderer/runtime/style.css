@@ -214,6 +214,10 @@ body {
   margin: 0 0 6px;
   font-size: 0.8rem;
 }
+.mb-legend-unit {
+  font-weight: 400;
+  color: var(--mb-muted);
+}
 .mb-legend ul {
   list-style: none;
   padding: 0;

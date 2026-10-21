@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
+import {
+  AnnotationSchema,
+  LayerConstantSchema,
+  SharedScaleSchema,
+  TypedFilterSchema,
+} from './design.js';
 import {
   CameraSchema,
   ContentDimensionsSchema,
@@ -160,28 +165,7 @@ export const StorySceneSchema = z
   })
   .strict();
 
-export const SharedScaleV2Schema = z
-  .object({
-    id: IdSchema,
-    members: z
-      .array(
-        z
-          .object({
-            sceneId: IdSchema,
-            layerId: IdSchema,
-            sourceId: IdSchema,
-            observationLabel: z.string().min(1),
-          })
-          .strict(),
-      )
-      .min(2),
-    visualVariable: z.literal('color'),
-    method: z.literal('equal-interval'),
-    classes: z.number().int().min(2).max(9),
-    palette: z.array(z.string()).min(2),
-    domain: z.tuple([z.number().finite(), z.number().finite()]).optional(),
-  })
-  .strict();
+export const SharedScaleV2Schema = SharedScaleSchema;
 
 export const StoryV2Schema = z
   .object({

@@ -1,8 +1,11 @@
+import { formatNumber, formatUnit } from '@mapbard/knowledge';
 import type { Diagnostic, ResolvedScale } from '@mapbard/schema';
 
 export type ScaleKey = { sceneId: string; layerId: string; sourceId: string };
 export type ScaleInput = {
   id: string;
+  /** Reader-facing legend title, resolved by the compiler. */
+  title: string;
   memberKeys: ScaleKey[];
   unit: string | null;
   values: unknown[];
@@ -67,6 +70,8 @@ function base(input: ScaleInput, counts: { valid: number; missing: number; inval
     id: input.id,
     memberKeys: input.memberKeys,
     unit: input.unit,
+    title: input.title,
+    unitLabel: input.unit === null ? null : formatUnit(input.unit),
     noDataLabel: NO_DATA_LABEL,
     noDataColor: NO_DATA_COLOR,
     counts,
@@ -154,7 +159,6 @@ export function numericColorScale(input: ScaleInput): {
   }
   const effectiveClasses = min === max ? 1 : edges.length - 1;
   const colors = lowerPaletteIndices.map((index) => input.palette[index]!);
-  const suffix = input.unit === null ? '' : ` ${input.unit}`;
   const integerRanges = edges
     .slice(0, -1)
     .map((edge, index): [number, number] => [
@@ -170,20 +174,22 @@ export function numericColorScale(input: ScaleInput): {
       ([lower, upper]) =>
         Number.isSafeInteger(lower) && Number.isSafeInteger(upper) && lower <= upper,
     );
-  const displayInteger = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  // Units appear once, in the legend title; exact edges stay machine-readable in `edges`.
+  const ranges: [number, number][] = useIntegerRanges
+    ? integerRanges
+    : Array.from({ length: effectiveClasses }, (_, index) => [edges[index]!, edges[index + 1]!]);
+  const rounded = ranges.map(([lower, upper]) => [formatNumber(lower), formatNumber(upper)]);
+  // Rounding must never make a class look empty or two classes look alike; then show exact edges.
+  const ambiguous =
+    rounded.some(
+      ([lower, upper], index) => lower === upper && ranges[index]![0] !== ranges[index]![1],
+    ) || new Set(rounded.map((pair) => pair.join())).size !== rounded.length;
   const labels =
     min === max
-      ? [`${min}${suffix}`]
-      : useIntegerRanges
-        ? integerRanges.map(
-            ([lower, upper]) =>
-              `${displayInteger.format(lower)}–${displayInteger.format(upper)}${suffix}`,
-          )
-        : Array.from(
-            { length: effectiveClasses },
-            (_, index) =>
-              `[${edges[index]}, ${edges[index + 1]}${index === effectiveClasses - 1 ? ']' : ')'}${suffix}`,
-          );
+      ? [formatNumber(min)]
+      : ambiguous
+        ? ranges.map(([lower, upper]) => `${lower}–${upper}`)
+        : rounded.map(([lower, upper]) => `${lower}–${upper}`);
   return {
     scale: {
       ...base(input, resolvedCounts),
@@ -218,6 +224,7 @@ export function categoryColorScale(input: ScaleInput): {
       y = String(b);
     return x < y ? -1 : x > y ? 1 : 0;
   });
+  const typedLabels = new Set(ordered.map(String)).size !== ordered.length;
   const diagnostics: Diagnostic[] = [];
   if (counts.invalid)
     diagnostics.push(
@@ -253,7 +260,8 @@ export function categoryColorScale(input: ScaleInput): {
       kind: 'category-color',
       categories: ordered.map((value, index) => ({
         value,
-        label: `${String(value)} (${typeof value})`,
+        // Types are shown only when two typed values (1 and "1") would otherwise read the same.
+        label: typedLabels ? `${String(value)} (${typeof value})` : String(value),
         color: input.palette[index] ?? input.palette[0]!,
       })),
     },
@@ -313,7 +321,6 @@ export function numericSizeScale(input: ScaleInput): {
   const domain: [number, number] = min === max ? [min, max] : [0, max];
   const radiusRange: [number, number] = min === max ? (max === 0 ? [0, 0] : [8, 8]) : [0, 16];
   const examples = min === max ? [max] : [0, max / 4, max];
-  const suffix = input.unit === null ? '' : ` ${input.unit}`;
   return {
     scale: {
       ...base(input, resolvedCounts),
@@ -325,7 +332,7 @@ export function numericSizeScale(input: ScaleInput): {
       legend: examples.map((value) => ({
         value,
         radius: min === max ? radiusRange[0] : 16 * Math.sqrt(value / max),
-        label: `${value}${suffix}${max === 0 ? ' (zero area)' : ''}`,
+        label: `${formatNumber(value)}${max === 0 ? ' (zero area)' : ''}`,
       })),
     },
     diagnostics: [],

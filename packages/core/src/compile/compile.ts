@@ -15,6 +15,7 @@ import {
 import {
   graduatedSizePrerequisite,
   hasCapability,
+  humanizeId,
   numericColorPrerequisite,
   resolveBasemap,
   techniqueGeometry,
@@ -87,6 +88,11 @@ function runtimeId(sceneId: string, layerId: string): string {
 function localScaleId(sceneId: string, layerId: string): string {
   return `mb-scale:${key(sceneId, layerId)}`;
 }
+/** Legend titles never show a raw column name when the author declared a label. */
+function scaleTitle(declaration: { label?: string } | undefined, attribute: string): string {
+  return declaration?.label ?? humanizeId(attribute);
+}
+
 function hash(bytes: Uint8Array): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 }
@@ -923,14 +929,16 @@ export function compileProject(
       scaleId: scale.id,
     });
     const values = members.flatMap((member) => valuesFor(member, diagnostics, true));
+    const firstDeclaration = first.resource.attributes.find(
+      (entry) => entry.name === first.layer.encode?.attribute,
+    );
     const input: ScaleInput = {
       id: scale.id,
+      title: scale.title ?? scaleTitle(firstDeclaration, first.layer.encode?.attribute ?? scale.id),
       memberKeys: scale.members.map(
         ({ sceneId, layerId, sourceId }): ScaleKey => ({ sceneId, layerId, sourceId }),
       ),
-      unit:
-        first.resource.attributes.find((entry) => entry.name === first.layer.encode?.attribute)
-          ?.unit ?? null,
+      unit: firstDeclaration?.unit ?? null,
       values,
       palette: scale.palette,
       classes: scale.classes,
@@ -1017,6 +1025,7 @@ export function compileProject(
     );
     const input: ScaleInput = {
       id: scaleId,
+      title: scaleTitle(declaration, layer.encode.attribute),
       memberKeys: [{ sceneId: context.sceneId, layerId: layer.id, sourceId: resource.id }],
       unit: declaration.unit,
       values: valuesFor(context, diagnostics, kind !== 'category-color'),

@@ -50,6 +50,8 @@ export const AttributeDeclarationSchema = z
     role: z.enum(['identifier', 'category', 'quantity']),
     level: z.enum(['nominal', 'ordinal', 'interval', 'ratio']),
     unit: z.string().min(1).nullable(),
+    /** Reader-facing name, for example "Daily mean discharge"; `name` stays the column. */
+    label: z.string().min(1).optional(),
     denominator: z
       .object({ sourceId: IdSchema, attribute: IdSchema, unit: z.string().min(1) })
       .strict()

@@ -25,7 +25,9 @@ visual QA run passes in CI.
   change.
 - **The compiled spec moves to 0.3.0 when motion lands (Wave 3),** because the
   player contract changes from step scenes to progress tracks. Before that,
-  compiled additions are optional fields.
+  additive compiled fields (such as scale `title`) keep 0.2.0: the compiled
+  spec is regenerated on every build and never read back, so it needs no
+  migration.
 - **Display text is compiled, not guessed by the player.** The compiler emits
   legend titles, unit labels and formatted class labels; the player only
   renders them.

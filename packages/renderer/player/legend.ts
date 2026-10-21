@@ -34,5 +34,8 @@ function oneLegend(scale: ResolvedScale): string {
       ? `width:${2 * scale.noDataRadius}px;height:${2 * scale.noDataRadius}px;`
       : '';
   const noData = `<li><span class="mb-legend-swatch" style="${size}" data-mb-color="${escapeHtml(scale.noDataColor)}"></span><span>${escapeHtml(scale.noDataLabel)}</span></li>`;
-  return `<section class="mb-legend" aria-label="${escapeHtml(scale.id)} legend"><h3>${escapeHtml(scale.id)}</h3><ul>${rows}${noData}</ul></section>`;
+  const unit = scale.unitLabel
+    ? ` <span class="mb-legend-unit">(${escapeHtml(scale.unitLabel)})</span>`
+    : '';
+  return `<section class="mb-legend" aria-label="${escapeHtml(scale.title)} legend"><h3>${escapeHtml(scale.title)}${unit}</h3><ul>${rows}${noData}</ul></section>`;
 }

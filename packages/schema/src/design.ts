@@ -28,6 +28,32 @@ export const TypedFilterSchema = z
   })
   .strict();
 
+/** One scale shared by layers that a story compares; format 0.1 design and 0.2 story agree. */
+export const SharedScaleSchema = z
+  .object({
+    id: IdSchema,
+    /** Reader-facing legend title; defaults to the encoded attribute's label. */
+    title: z.string().min(1).optional(),
+    members: z
+      .array(
+        z
+          .object({
+            sceneId: IdSchema,
+            layerId: IdSchema,
+            sourceId: IdSchema,
+            observationLabel: z.string().min(1),
+          })
+          .strict(),
+      )
+      .min(2),
+    visualVariable: z.literal('color'),
+    method: z.literal('equal-interval'),
+    classes: z.number().int().min(2).max(9),
+    palette: z.array(z.string()).min(2),
+    domain: z.tuple([z.number().finite(), z.number().finite()]).optional(),
+  })
+  .strict();
+
 export const LayerConstantSchema = z
   .object({
     color: z.string().optional(),
@@ -56,30 +82,7 @@ export const DesignSchema = z
         })
         .strict(),
     ),
-    sharedScales: z.array(
-      z
-        .object({
-          id: IdSchema,
-          members: z
-            .array(
-              z
-                .object({
-                  sceneId: IdSchema,
-                  layerId: IdSchema,
-                  sourceId: IdSchema,
-                  observationLabel: z.string().min(1),
-                })
-                .strict(),
-            )
-            .min(2),
-          visualVariable: z.literal('color'),
-          method: z.literal('equal-interval'),
-          classes: z.number().int().min(2).max(9),
-          palette: z.array(z.string()).min(2),
-          domain: z.tuple([z.number().finite(), z.number().finite()]).optional(),
-        })
-        .strict(),
-    ),
+    sharedScales: z.array(SharedScaleSchema),
     extensions: ExtensionsSchema.optional(),
   })
   .strict();

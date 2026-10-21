@@ -152,6 +152,8 @@
         }
       ],
       "unit": "index points",
+      "title": "Value",
+      "unitLabel": "index points",
       "noDataLabel": "No data",
       "noDataColor": "#9e9e9e",
       "counts": {
@@ -163,7 +165,7 @@
       "domain": [0, 120],
       "edges": [0, 40, 80, 120],
       "colors": ["#edf8fb", "#66c2a4", "#238b45"],
-      "labels": ["[0, 40) index points", "[40, 80) index points", "[80, 120] index points"],
+      "labels": ["0–40", "40–80", "80–120"],
       "effectiveClasses": 3
     }
   ],

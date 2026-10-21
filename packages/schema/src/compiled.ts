@@ -31,6 +31,9 @@ const ScaleBaseSchema = z.object({
     z.object({ sceneId: IdSchema, layerId: IdSchema, sourceId: IdSchema }).strict(),
   ),
   unit: z.string().nullable(),
+  /** Legend title and display unit are compiled so the player never shows IDs or carets. */
+  title: z.string().min(1),
+  unitLabel: z.string().min(1).nullable(),
   noDataLabel: z.string(),
   noDataColor: z.string(),
   counts: CountsSchema,

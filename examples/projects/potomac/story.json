@@ -4,7 +4,7 @@
     {
       "id": "context-2024",
       "title": "Three gauges, one published day",
-      "narration": "The U.S. Geological Survey reports daily mean discharge at three distinct Potomac gauges. On 2024-10-01, the published values were 5,580 ft^3/s at Hancock, 23,600 ft^3/s at Point of Rocks, and 17,300 ft^3/s at Little Falls. The three points mark stable station IDs, not equal drainage areas.\n\nThe photograph shows the river area at Whites Ferry as context. It is not a picture of a gauge measurement or of this day.",
+      "narration": "The U.S. Geological Survey reports daily mean discharge at three distinct Potomac gauges. On 2024-10-01, the published values were 5,580 ft³/s at Hancock, 23,600 ft³/s at Point of Rocks, and 17,300 ft³/s at Little Falls. The three points mark stable station IDs, not equal drainage areas.\n\nThe photograph shows the river area at Whites Ferry as context. It is not a picture of a gauge measurement or of this day.",
       "media": [
         {
           "assetId": "potomac-context",
@@ -66,7 +66,7 @@
       "annotations": [
         {
           "id": "hancock-2024",
-          "text": "Hancock: 5,580 ft^3/s on 2024-10-01",
+          "text": "Hancock: 5,580 ft³/s on 2024-10-01",
           "at": [-78.17788888888889, 39.69755555555555],
           "target": {
             "kind": "features",
@@ -76,7 +76,7 @@
         },
         {
           "id": "point-of-rocks-2024",
-          "text": "Point of Rocks: 23,600 ft^3/s on 2024-10-01",
+          "text": "Point of Rocks: 23,600 ft³/s on 2024-10-01",
           "at": [-77.5431111111111, 39.273583333333335],
           "target": {
             "kind": "features",
@@ -86,7 +86,7 @@
         },
         {
           "id": "little-falls-2024",
-          "text": "Little Falls: 17,300 ft^3/s on 2024-10-01",
+          "text": "Little Falls: 17,300 ft³/s on 2024-10-01",
           "at": [-77.12763888888888, 38.949777777777776],
           "target": {
             "kind": "features",
@@ -99,7 +99,7 @@
     {
       "id": "compare-2025",
       "title": "The same gauges, one year later",
-      "narration": "For 2025-10-01, the published daily means were 580 ft^3/s at Hancock, 2,020 ft^3/s at Point of Rocks, and 1,800 ft^3/s at Little Falls. The map keeps the same extent and color scale so each station can be compared across the two dates. These two daily snapshots do not establish a long-term trend or a cause for the differences.",
+      "narration": "For 2025-10-01, the published daily means were 580 ft³/s at Hancock, 2,020 ft³/s at Point of Rocks, and 1,800 ft³/s at Little Falls. The map keeps the same extent and color scale so each station can be compared across the two dates. These two daily snapshots do not establish a long-term trend or a cause for the differences.",
       "content": {
         "semantics": "Published daily mean discharge at the same stations on 2025-10-01.",
         "attribute": "daily_mean_discharge in ft^3/s",
@@ -154,7 +154,7 @@
       "annotations": [
         {
           "id": "point-of-rocks-2025",
-          "text": "Point of Rocks: 2,020 ft^3/s on 2025-10-01",
+          "text": "Point of Rocks: 2,020 ft³/s on 2025-10-01",
           "at": [-77.5431111111111, 39.273583333333335],
           "target": {
             "kind": "features",
@@ -259,7 +259,8 @@
       "visualVariable": "color",
       "method": "equal-interval",
       "classes": 3,
-      "palette": ["#d9f0f0", "#65a9bd", "#174b75"]
+      "palette": ["#d9f0f0", "#65a9bd", "#174b75"],
+      "title": "Daily mean discharge"
     }
   ]
 }

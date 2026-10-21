@@ -5,6 +5,7 @@ import {
   type DataResource,
   type LayerBinding,
 } from '@mapbard/schema';
+export { formatNumber, formatUnit, humanizeId } from './display.js';
 export {
   BASEMAP_PROVIDERS,
   TERRAIN_PROVIDERS,

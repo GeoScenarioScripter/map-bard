@@ -8,6 +8,7 @@ import {
 
 const common: ScaleInput = {
   id: 'test',
+  title: 'Test value',
   memberKeys: [{ sceneId: 'synthetic', layerId: 'sites', sourceId: 'invented' }],
   unit: 'test units',
   values: [],
@@ -31,6 +32,11 @@ describe('resolved scale oracles', () => {
         ],
       }),
     );
+    const plain = categoryColorScale({ ...common, values: ['b', 'a'] });
+    expect(plain.scale.kind === 'category-color' && plain.scale.categories).toEqual([
+      { value: 'a', label: 'a', color: '#111111' },
+      { value: 'b', label: 'b', color: '#777777' },
+    ]);
     const missing = categoryColorScale({ ...common, values: [null, '', undefined] });
     expect(missing.scale).toEqual(
       expect.objectContaining({ categories: [], counts: { valid: 0, missing: 3, invalid: 0 } }),
@@ -65,9 +71,9 @@ describe('resolved scale oracles', () => {
         domain: [0, 100],
         radiusRange: [0, 16],
         legend: [
-          { value: 0, radius: 0, label: '0 test units' },
-          { value: 25, radius: 8, label: '25 test units' },
-          { value: 100, radius: 16, label: '100 test units' },
+          { value: 0, radius: 0, label: '0' },
+          { value: 25, radius: 8, label: '25' },
+          { value: 100, radius: 16, label: '100' },
         ],
       }),
     );
@@ -78,7 +84,7 @@ describe('resolved scale oracles', () => {
       expect.objectContaining({
         domain: [0, 0],
         radiusRange: [0, 0],
-        legend: [{ value: 0, radius: 0, label: '0 test units (zero area)' }],
+        legend: [{ value: 0, radius: 0, label: '0 (zero area)' }],
       }),
     );
     const negative = numericSizeScale({ ...common, values: [-1, 4] });
@@ -100,7 +106,7 @@ describe('resolved scale oracles', () => {
         edges: [1, next],
         effectiveClasses: 1,
         colors: ['#111111'],
-        labels: [`[1, ${next}] test units`],
+        labels: [`1–${next}`],
       }),
     );
     const constant = numericColorScale({ ...common, values: [7, 7, 7], classes: 3 });
@@ -109,7 +115,7 @@ describe('resolved scale oracles', () => {
         domain: [7, 7],
         edges: [7],
         effectiveClasses: 1,
-        labels: ['7 test units'],
+        labels: ['7'],
       }),
     );
     const outside = numericColorScale({ ...common, values: [0, 10], domain: [1, 10] });
@@ -128,9 +134,18 @@ describe('resolved scale oracles', () => {
     if (result.scale?.kind !== 'numeric-color') return;
     expect(result.scale.edges[1]).toBeCloseTo(8253.333333);
     expect(result.scale.edges[2]).toBeCloseTo(15926.666667);
+    const fractional = numericColorScale({ ...common, values: [0.5, 1.25, 2.75], classes: 3 });
+    expect(fractional.scale?.kind === 'numeric-color' && fractional.scale.labels).toEqual([
+      '0.5–1.25',
+      '1.25–2',
+      '2–2.75',
+    ]);
     expect(result.scale).toEqual(
       expect.objectContaining({
-        labels: ['580–8,253 ft^3/s', '8,254–15,926 ft^3/s', '15,927–23,600 ft^3/s'],
+        title: 'Test value',
+        unit: 'ft^3/s',
+        unitLabel: 'ft³/s',
+        labels: ['580–8,253', '8,254–15,926', '15,927–23,600'],
       }),
     );
   });

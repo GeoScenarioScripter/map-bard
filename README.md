@@ -72,11 +72,12 @@ The CLI publishes as `mapbard`; the four libraries publish under `@mapbard`.
 All five packages are prepared at `0.1.0`. Changesets 2.29.7 (MIT) handles
 future versions and changelogs. [CI](.github/workflows/ci.yml) checks Windows,
 macOS and Linux. The [manual release workflow](.github/workflows/release.yml)
-repeats those checks before publishing with npm provenance.
+repeats those checks before publishing. npm provenance is unavailable while the
+GitHub source repository is private.
 
-The first release requires control of the npm `@mapbard` scope and an `NPM_TOKEN`
-secret in the GitHub `npm` environment. The release workflow has not run yet;
-this checkout has no npm login. After CI passes on the release ref, run the
-workflow with the `latest` dist tag for `0.1.0`.
+The owner has created the npm `@mapbard` organization. The first release still
+requires a fresh `NPM_TOKEN` secret in the GitHub `npm` environment. The release
+workflow has not run yet; this checkout has no npm login. After CI passes on the
+release ref, run the workflow with the `latest` dist tag for `0.1.0`.
 
 Current work and known limitations are in [STATUS.md](docs/STATUS.md); the [roadmap](docs/ROADMAP.md) and [M1 plan](docs/m1-cli.md) describe the next steps.

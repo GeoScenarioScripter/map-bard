@@ -45,9 +45,11 @@ after cross-platform CI and npm publication.** See the
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
   remains network independent. The separate live check passed on 2026-10-21.
-- Three-OS GitHub CI has not executed because these changes have not been
-  pushed. npm publication is pending owner control of the `@mapbard` scope and
-  the release secret; this machine has no npm login (`ENEEDAUTH`).
+- Three-OS GitHub CI was rejected before any job steps because of the GitHub
+  account's billing or spending limit. The `npm` release environment exists,
+  but its `NPM_TOKEN` secret is pending. The owner created the `@mapbard` npm
+  organization. npm provenance is unavailable while the GitHub repository is
+  private. This machine has no npm login (`ENEEDAUTH`).
 - The fresh Claude Code agent trial could not start because its API connection
   was refused before any tokens or tool calls. The owner deferred that trial
   beyond M1 on 2026-10-21. The direct CLI trial passed.
@@ -57,6 +59,11 @@ after cross-platform CI and npm publication.** See the
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Pushed release preparation to `main`; GitHub CI jobs were
+  rejected before steps because of billing or spending limits. Created the
+  `npm` GitHub environment and removed provenance from the private-repository
+  release workflow. Checked registry: `mapbard` and `@mapbard/schema` returned 404. Local build, 108 tests, lint and tarball install smoke passed. Next:
+  resolve GitHub billing, add a fresh npm secret, rerun CI, publish.
 - 2026-10-21: Deferred the fresh Claude Code trial by owner direction. Prepared
   five public 0.1.0 packages, Changesets, three-OS CI, release workflow and
   external tarball install smoke; live OpenFreeMap style and vector tiles loaded

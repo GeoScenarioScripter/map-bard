@@ -176,10 +176,10 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
   M2. `mapbard` depends on them with normal semver ranges, and `workspace:*` is
   rewritten at publish time.
 - **Name status:** the npm registry returned 404 for `mapbard` and
-  `@mapbard/schema` on 2026-10-21. The product owner needs to control the
-  `@mapbard` npm scope and configure the `npm` GitHub environment with an
-  `NPM_TOKEN` secret. This checkout has no npm login (`npm whoami` returned
-  `ENEEDAUTH`). Agents never handle npm tokens.
+  `@mapbard/schema` on 2026-10-21. The product owner created the `@mapbard`
+  npm organization, and the `npm` GitHub environment now exists. A fresh
+  `NPM_TOKEN` secret still needs to be added. This checkout has no npm login
+  (`npm whoami` returned `ENEEDAUTH`). Agents never handle npm tokens.
 - **Package hygiene:** `files` allowlists, an `exports` map, a `bin` entry with
   a shebang, `engines.node >= 20`, an MIT `LICENSE` and a README per package.
   The published player bundle and vendored MapLibre are included in
@@ -190,8 +190,10 @@ zero offline requests. A separate live tile check passed on 2026-10-21.
 - **CI and release:** `.github/workflows/ci.yml` builds, tests, lints and
   checks tarballs on Windows, macOS and Linux. The manual release workflow
   repeats those checks for the chosen ref and publishes through Changesets
-  with npm provenance, using the owner's `NPM_TOKEN` secret. It has not run on
-  GitHub because these commits have not been pushed.
+  using the owner's `NPM_TOKEN` secret. npm provenance is unavailable while
+  the GitHub source repository is private. The first CI run was rejected before
+  any job steps because of the GitHub account's billing or spending limit;
+  cross-platform execution remains pending.
 - **Pre-release check:** `pnpm pack` rewrites workspace dependency ranges in
   each tarball. `pnpm test:pack` installs all five tarballs in a temporary
   consumer outside the workspace and runs `mapbard init` → an offline build.

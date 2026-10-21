@@ -31,13 +31,29 @@ npx mapbard --project my-story build
 `verification.json`. Add `--offline` to `build` to remove online sources and
 make a publication with no network requests.
 
+## Use with a coding agent
+
+The npm package includes the versioned MapBard authoring skill. Install it into
+your project before asking your agent to edit the story:
+
+```sh
+npx mapbard --project my-story skill install --codex
+# Or, for Claude Code:
+npx mapbard --project my-story skill install --claude
+```
+
+`--codex` writes `my-story/skills/mapbard/` and adds a reference to
+`my-story/AGENTS.md`. `--claude` writes `my-story/.claude/skills/mapbard/`.
+Then give your agent the source data, attribution, and story intent; ask it to
+follow the installed skill and run `inspect`, `lock`, `check`, `preview`, and
+`build`. The CLI does not call an AI model.
+
 ## What is included
 
 - Commands to initialize projects, register and inspect sources, validate,
   preview, build, and migrate older projects.
 - JSON output with diagnostics for scripts and coding agents (`--json`).
-- A versioned authoring guide installed with `mapbard skill install --codex` or
-  `mapbard skill install --claude`.
+- A versioned authoring guide for coding agents.
 
 The current project format is 0.2.0. Programmatic integrations can use the
 separate [`@mapbard/schema`](https://www.npmjs.com/package/@mapbard/schema),

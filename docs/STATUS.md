@@ -56,6 +56,10 @@ Claude Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Documented npm CLI skill installation and its Codex/Claude output
+  paths in the package README. Confirmed the skill pack is bundled in `dist` and
+  the CLI test covers installation; next: publish the README update in a future
+  npm release.
 - 2026-10-21: Expanded the five npm package READMEs with install and usage
   guidance, added descriptions and discovery metadata, and published 0.1.1.
   Build, 108 tests, lint and tarball install smoke passed locally; three-OS CI

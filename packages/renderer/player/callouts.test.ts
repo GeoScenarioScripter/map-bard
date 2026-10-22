@@ -58,18 +58,35 @@ describe('callout frame inputs', () => {
     expect(apart!.anchorRadius).toBe(0);
   });
 
-  it('keeps nearby symbols that are not already callout targets', () => {
+  it('keeps symbols within reach of a label that are not already callout targets', () => {
+    const request = {
+      id: 'a',
+      priority: 0,
+      anchor: { x: 500, y: 400 },
+      anchorRadius: 5.7,
+      width: 100,
+      height: 20,
+      targets: [{ x: 500, y: 400, r: 5.7 }],
+    };
     const symbols = nearbySymbols(
       [
         { at: [5, 6], radius: 5.7 },
         { at: [5.5, 6], radius: 3.5 },
+        // On screen, but farther than anchor gap + longest leader + label size.
+        { at: [8, 6], radius: 3.5 },
+        { at: [5, 3.7], radius: 3.5 },
         { at: [40, 6], radius: 3.5 },
       ],
       project,
       { width: 1000, height: 800 },
-      [{ x: 500, y: 400, r: 5.7 }],
+      [request],
     );
     expect(symbols).toEqual([{ x: 550, y: 400, r: 3.5 }]);
+    expect(
+      nearbySymbols([{ at: [8, 6], radius: 3.5 }], project, { width: 1000, height: 800 }, [
+        { ...request, width: 250 },
+      ]),
+    ).toEqual([{ x: 800, y: 400, r: 3.5 }]);
   });
 });
 

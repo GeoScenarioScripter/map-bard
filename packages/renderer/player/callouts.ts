@@ -1,6 +1,7 @@
 // DOM overlay for annotation callouts: a label, a leader line and a halo around each target,
 // positioned from the map projection on every rendered frame.
 import {
+  LEADER_RINGS,
   placeCallouts,
   type Box,
   type CalloutPlacement,
@@ -60,13 +61,23 @@ export function calloutRequests(
   });
 }
 
-/** Projected symbols near the screen, minus the callout targets placement already avoids. */
+/** Farthest a label box can reach from its anchor: leader start, longest leader, label size. */
+const reachOf = (request: CalloutRequest) =>
+  request.anchorRadius + Math.max(...LEADER_RINGS) + 8 + request.width + request.height;
+
+/**
+ * Projected symbols a label could touch, minus the callout targets placement already avoids.
+ * Placement scores label boxes against symbols, so a symbol beyond every callout's reach
+ * cannot change the result; dropping it keeps dense point layers cheap on every frame.
+ */
 export function nearbySymbols(
   symbols: readonly SymbolPoint[],
   project: (at: readonly [number, number]) => Point,
   viewport: { width: number; height: number },
-  targets: readonly Circle[],
+  requests: readonly CalloutRequest[],
 ): Circle[] {
+  const targets = requests.flatMap((request) => request.targets);
+  const reaches = requests.map((request) => ({ ...request.anchor, reach: reachOf(request) }));
   const result: Circle[] = [];
   for (const symbol of symbols) {
     const point = project(symbol.at);
@@ -75,6 +86,14 @@ export function nearbySymbols(
       point.y < -SYMBOL_MARGIN ||
       point.x > viewport.width + SYMBOL_MARGIN ||
       point.y > viewport.height + SYMBOL_MARGIN
+    )
+      continue;
+    if (
+      !reaches.some(
+        (anchor) =>
+          Math.abs(anchor.x - point.x) <= anchor.reach + symbol.radius &&
+          Math.abs(anchor.y - point.y) <= anchor.reach + symbol.radius,
+      )
     )
       continue;
     if (
@@ -169,10 +188,9 @@ export function createCalloutOverlay(
         bottom: box.bottom - frame.top,
       }));
       const requests = calloutRequests(ordered, map.project, sizes);
-      const targets = requests.flatMap((request) => request.targets);
       const placements = placeCallouts(
         requests,
-        { viewport, panels, symbols: nearbySymbols(symbols(), map.project, viewport, targets) },
+        { viewport, panels, symbols: nearbySymbols(symbols(), map.project, viewport, requests) },
         previous,
       );
       previous = new Map(placements.map((item) => [item.id, item.position]));

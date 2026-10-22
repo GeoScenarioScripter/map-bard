@@ -115,6 +115,43 @@ export function circleTouchesBox(circle: Circle, box: Box): boolean {
 }
 
 /** Covered area of a circle, approximated by the box overlap of an equal-area square. */
+/** Grid cell size for the symbol index, in CSS pixels. */
+const CELL = 64;
+const cellKey = (column: number, row: number) => (column + 1e5) * 2e5 + (row + 1e5);
+
+/**
+ * Circles bucketed on a coarse grid, so a candidate box visits only the symbols near it
+ * instead of every symbol on screen. Hits come back in input order, so costs add up in the
+ * same order as a full scan and placement stays identical.
+ */
+function circleIndex(circles: readonly Circle[]): (box: Box) => readonly Circle[] {
+  const cells = new Map<number, number[]>();
+  circles.forEach((circle, index) => {
+    for (
+      let column = Math.floor((circle.x - circle.r) / CELL);
+      column <= Math.floor((circle.x + circle.r) / CELL);
+      column++
+    )
+      for (
+        let row = Math.floor((circle.y - circle.r) / CELL);
+        row <= Math.floor((circle.y + circle.r) / CELL);
+        row++
+      ) {
+        const key = cellKey(column, row);
+        const cell = cells.get(key);
+        if (cell) cell.push(index);
+        else cells.set(key, [index]);
+      }
+  });
+  return (box) => {
+    const hits = new Set<number>();
+    for (let column = Math.floor(box.left / CELL); column <= Math.floor(box.right / CELL); column++)
+      for (let row = Math.floor(box.top / CELL); row <= Math.floor(box.bottom / CELL); row++)
+        for (const index of cells.get(cellKey(column, row)) ?? []) hits.add(index);
+    return [...hits].sort((a, b) => a - b).map((index) => circles[index]!);
+  };
+}
+
 function circleOverlap(circle: Circle, box: Box): number {
   if (!circleTouchesBox(circle, box)) return 0;
   const half = (circle.r * Math.sqrt(Math.PI)) / 2;
@@ -264,7 +301,9 @@ export function placeCallouts(
   const targets = visible.flatMap((request) =>
     request.targets.map((circle) => ({ ...circle, r: circle.r + CLEARANCE.symbol })),
   );
-  const symbols = field.symbols.map((circle) => ({ ...circle, r: circle.r + CLEARANCE.symbol }));
+  const symbolsNear = circleIndex(
+    field.symbols.map((circle) => ({ ...circle, r: circle.r + CLEARANCE.symbol })),
+  );
   const options = new Map(visible.map((request) => [request.id, candidates(request, screen)]));
   type Cost = { cost: number; collisions: number };
   const charge = (total: Cost, weight: number, area: number) => {
@@ -283,7 +322,7 @@ export function placeCallouts(
       charge(total, SOFT, segmentCrossesBox(leader.from, leader.to, panel) ? 1 : 0);
     }
     for (const circle of targets) charge(total, HARD, circleOverlap(circle, box));
-    for (const circle of symbols) charge(total, SOFT, circleOverlap(circle, box));
+    for (const circle of symbolsNear(box)) charge(total, SOFT, circleOverlap(circle, box));
     return total;
   }
 

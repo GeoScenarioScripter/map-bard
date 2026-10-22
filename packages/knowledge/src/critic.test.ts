@@ -8,6 +8,7 @@ import {
   inconsistentScaleRule,
   paletteContrastRule,
   rawIdentifierRule,
+  textOverflowRule,
   type CriticFeature,
 } from './critic.js';
 
@@ -107,5 +108,26 @@ describe('critic', () => {
     expect(paletteContrastRule(compiled)[0]?.message).toMatch(/^#66c2a4 has 1\.\d\d:1/);
     scale.colors = ['#145a32', '#0b3d20', '#092913'];
     expect(paletteContrastRule(compiled)).toEqual([]);
+  });
+
+  it('warns when narration would scroll inside the phone sheet', () => {
+    const compiled = story();
+    expect(textOverflowRule(compiled)).toEqual([]);
+    const sentence = 'The gauge reported 5,580 ft³/s on 2024-10-01, a published daily mean. ';
+    // About 70 characters each: four fit the 42vh sheet, seven do not.
+    compiled.scenes[0]!.narration = sentence.repeat(4).trim();
+    expect(textOverflowRule(compiled)).toEqual([]);
+    compiled.scenes[0]!.narration = sentence.repeat(7).trim();
+    const [finding] = textOverflowRule(compiled);
+    expect(finding).toMatchObject({
+      code: 'TEXT_OVERFLOW_LIKELY',
+      severity: 'warning',
+      path: ['scenes', 0, 'narration'],
+      ids: { sceneId: 'a' },
+    });
+    expect(finding!.message).toMatch(/^Narration needs about \d+ lines on a 390 px wide phone/);
+    // A taller sheet holds more.
+    compiled.layout.phone.reserve = { edge: 'bottom', size: 70, unit: 'vh' };
+    expect(textOverflowRule(compiled)).toEqual([]);
   });
 });

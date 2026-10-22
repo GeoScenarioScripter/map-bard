@@ -6,17 +6,25 @@ import {
   type LayerBinding,
 } from '@mapbard/schema';
 export { formatNumber, formatUnit, humanizeId } from './display.js';
-export { contrastRatio, parseHexColor, relativeLuminance } from './color.js';
-export { BUNDLED_FONTS, THEME_PRESET_TOKENS, resolveTheme } from './themes.js';
+export { contrastRatio, parseHexColor, relativeLuminance, withContrast } from './color.js';
+export {
+  BUNDLED_FONTS,
+  CONTEXT_FILL_OPACITY,
+  THEME_PRESET_TOKENS,
+  contextPaint,
+  resolveTheme,
+} from './themes.js';
 export { LAYOUT_FRAMES, resolveLayout } from './layouts.js';
 export {
   MIN_MARK_CONTRAST,
+  REFERENCE_PHONE,
   caretUnitRule,
   critique,
   hiddenContrastRule,
   inconsistentScaleRule,
   paletteContrastRule,
   rawIdentifierRule,
+  textOverflowRule,
   type CriticFeature,
   type CriticInput,
 } from './critic.js';

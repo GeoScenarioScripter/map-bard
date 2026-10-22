@@ -304,6 +304,78 @@ export function paletteContrastRule(compiled: Compiled): Diagnostic[] {
   return findings;
 }
 
+/** The phone the estimate is for: the visual QA phone viewport, in CSS pixels. */
+export const REFERENCE_PHONE = { width: 390, height: 844 } as const;
+// Mirrors the phone `.scene-card` padding in the renderer's style.css.
+const SHEET_PADDING = { x: 18, y: 16 };
+/** Average advance per character, in ems, spaces included; measured on the bundled fonts. */
+const CHAR_EM = 0.52;
+/** Heading line height and its bottom margin (em), and the gap between paragraphs (em). */
+const HEADING = { lineHeight: 1.2, margin: 0.4 };
+const PARAGRAPH_GAP = 0.8;
+
+/** Lines a greedy word wrap takes for `text` in a column `columns` characters wide. */
+function wrappedLines(text: string, columns: number): number {
+  let lines = 0;
+  let used = 0;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const length = [...word].length;
+    if (used && used + 1 + length <= columns) used += 1 + length;
+    else {
+      lines += Math.max(1, Math.ceil(length / columns));
+      used = length > columns ? length % columns || columns : length;
+    }
+  }
+  return lines;
+}
+
+/**
+ * Narration that would scroll inside the phone sheet: the card's height is estimated from
+ * the layout's phone frame and the theme's type scale on the reference phone, with an
+ * average character width, so it flags likely overflow rather than measuring it.
+ */
+export function textOverflowRule(compiled: Compiled): Diagnostic[] {
+  const { phone } = compiled.layout;
+  const { type } = compiled.theme;
+  const reserve =
+    phone.reserve.unit === 'vh'
+      ? (phone.reserve.size * REFERENCE_PHONE.height) / 100
+      : phone.reserve.size;
+  const height = reserve - 2 * phone.gutter - 2 * SHEET_PADDING.y;
+  const width =
+    Math.min(phone.cardWidth, REFERENCE_PHONE.width - 2 * phone.gutter) - 2 * SHEET_PADDING.x;
+  const body = type.basePx;
+  const heading = type.basePx * type.ratio;
+  const bodyLine = body * type.lineHeight;
+  const findings: Diagnostic[] = [];
+  compiled.scenes.forEach((scene, index) => {
+    const titleLines = wrappedLines(scene.title, Math.floor(width / (heading * CHAR_EM)));
+    const paragraphs = scene.narration.split(/\n\s*\n/).filter((text) => text.trim());
+    const columns = Math.floor(width / (body * CHAR_EM));
+    const lines = paragraphs.reduce((sum, text) => sum + wrappedLines(text, columns), 0);
+    const needed =
+      titleLines * heading * HEADING.lineHeight +
+      heading * HEADING.margin +
+      lines * bodyLine +
+      Math.max(0, paragraphs.length - 1) * body * PARAGRAPH_GAP;
+    if (needed <= height) return;
+    const fits = Math.floor(
+      (height - titleLines * heading * HEADING.lineHeight - heading * HEADING.margin) / bodyLine,
+    );
+    findings.push(
+      warning(
+        'TEXT_OVERFLOW_LIKELY',
+        'narrative',
+        ['scenes', index, 'narration'],
+        `Narration needs about ${lines} lines on a ${REFERENCE_PHONE.width} px wide phone, but the ${compiled.layout.template} sheet shows about ${Math.max(0, fits)} before it scrolls.`,
+        'Tighten the narration or split the scene in two, keeping every value, date and qualification.',
+        { sceneId: scene.id },
+      ),
+    );
+  });
+  return findings;
+}
+
 /** Run every static critic rule, in a fixed order. */
 export function critique(input: CriticInput): Diagnostic[] {
   return [
@@ -312,5 +384,6 @@ export function critique(input: CriticInput): Diagnostic[] {
     ...hiddenContrastRule(input),
     ...inconsistentScaleRule(input.compiled),
     ...paletteContrastRule(input.compiled),
+    ...textOverflowRule(input.compiled),
   ];
 }

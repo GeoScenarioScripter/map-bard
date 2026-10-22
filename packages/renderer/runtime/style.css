@@ -331,30 +331,84 @@ h3 {
 .mb-marker.is-video {
   background: #b3261e;
 }
-.mb-marker,
-.mb-annotation-marker {
+.mb-marker {
   display: block;
   padding: 0;
 }
-.mb-annotation-marker {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--mb-card-bg);
-  border: 3px solid var(--mb-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-}
 .mb-marker:focus-visible,
-.mb-annotation-marker:focus-visible,
 .mb-control-input:focus-visible {
   outline: 3px solid var(--mb-ink);
   outline-offset: 3px;
 }
-.mb-annotation-text {
-  max-width: 30ch;
+
+/* Callouts: labels, leaders and halos drawn over the map canvas, below the map controls,
+   the story and the rail. The player positions them from the map projection every frame. */
+.mb-callouts {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mb-callout-graphics {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.mb-callout-leader,
+.mb-callout-leader-casing,
+.mb-callout-halo,
+.mb-callout-halo-casing {
+  fill: none;
+  stroke-linecap: round;
+}
+.mb-callout-leader-casing,
+.mb-callout-halo-casing {
+  stroke: var(--mb-card-bg);
+  stroke-width: 4.5px;
+}
+.mb-callout-leader {
+  stroke: var(--mb-ink);
+  stroke-width: 1.5px;
+}
+.mb-callout-halo {
+  stroke: var(--mb-accent);
+  stroke-width: 2px;
+}
+.mb-callout-dot {
+  fill: var(--mb-accent);
+  stroke: none;
+}
+.mb-callout-list {
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mb-callout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: 18rem;
+  padding: 4px 8px 5px;
+  font-family: var(--mb-body);
+  font-size: var(--mb-text-small);
+  line-height: 1.3;
   color: var(--mb-ink);
+  background: var(--mb-card-bg);
+  border: 1px solid var(--mb-rule);
+  border-left: 3px solid var(--mb-accent);
+  border-radius: min(var(--mb-card-radius), 6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+.mb-callout[hidden] {
+  display: none;
+}
+/* the intro and credits own the screen */
+[data-mb-bookend] .mb-callouts {
+  visibility: hidden;
 }
 .mb-popup .maplibregl-popup-close-button {
   color: var(--mb-ink);
@@ -460,6 +514,9 @@ h3 {
 @media (max-width: 640px) {
   .mb-intro-panel {
     padding: 24px;
+  }
+  .mb-callout {
+    max-width: 10.5rem;
   }
   .scene {
     align-items: flex-end;

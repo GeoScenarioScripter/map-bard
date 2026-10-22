@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveLayout } from '@mapbard/knowledge';
-import { cameraPadding, zoomOffset } from './layout.js';
+import { cameraPadding, reservedArea, zoomOffset } from './layout.js';
 
 const desktop = { width: 1440, height: 900 };
 const phone = { width: 390, height: 844 };
@@ -68,5 +68,25 @@ describe('zoomOffset', () => {
     const offset = zoomOffset(layout, phone, cameraPadding(layout, phone, phoneRail));
     // Free phone band 366 x 296 against the 672 x 852 reference: limited by height.
     expect(offset).toBeCloseTo(Math.log2(296 / 852), 2);
+  });
+});
+
+describe('reservedArea', () => {
+  it('returns the card column, caption band or bottom sheet that callouts avoid', () => {
+    expect(reservedArea(resolveLayout('sidecar'), desktop)).toEqual({
+      left: 0,
+      top: 0,
+      right: 440,
+      bottom: 900,
+    });
+    expect(reservedArea(resolveLayout('full-bleed'), desktop)).toEqual({
+      left: 0,
+      top: 612,
+      right: 1440,
+      bottom: 900,
+    });
+    const sheet = reservedArea(resolveLayout('sidecar'), phone);
+    expect(sheet).toMatchObject({ left: 0, right: 390, bottom: 844 });
+    expect(sheet.top).toBeCloseTo(844 * 0.58);
   });
 });

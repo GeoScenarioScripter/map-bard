@@ -41,8 +41,11 @@ function harness(reducedMotion = false) {
     bindLayer: vi.fn(),
     unbindLayer: vi.fn(),
     addMarker: vi.fn(() => ({ remove: vi.fn() })),
-    addAnnotation: vi.fn(() => ({ remove: vi.fn() })),
+    onFrame: vi.fn(() => vi.fn()),
+    project: vi.fn(() => ({ x: 0, y: 0 })),
     setControl: vi.fn(),
+    showCallouts: vi.fn(() => ({ remove: vi.fn() })),
+    bearing: vi.fn(() => 0),
   };
   const disposeView = vi.fn();
   const view: SceneView = { showScene: vi.fn(() => disposeView), clear: vi.fn() };
@@ -68,6 +71,8 @@ describe('G2 built classic-script IIFE (build first; not a browser check)', () =
     player.enter('a');
     expect(map.unbindLayer).toHaveBeenLastCalledWith('mb:1:b:5:sites');
     expect(map.setControl).toHaveBeenLastCalledWith('mb:1:a:5:sites', 'opacity', 0.8);
+    expect(map.showCallouts).toHaveBeenCalledTimes(3);
+    expect(map.showCallouts).toHaveBeenLastCalledWith(specimen.scenes[0]);
     expect(story).toEqual(specimen);
     player.dispose();
     expect(disposeView).toHaveBeenCalledTimes(3);

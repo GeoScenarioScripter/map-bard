@@ -90,7 +90,7 @@ export function createPlayer(
       for (const [index, anchor] of next.mediaAnchors.entries()) {
         markers.push(map.addMarker(anchor, anchorHtml[index]!));
       }
-      for (const annotation of next.annotations) markers.push(map.addAnnotation(annotation));
+      if (next.callouts.length) markers.push(map.showCallouts(next));
     } catch (error) {
       clearActive();
       view.clear();

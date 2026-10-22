@@ -15,6 +15,21 @@ export function activeFrame(layout: Layout, width: number) {
   return width <= layout.phoneMaxWidth ? layout.phone : layout.desktop;
 }
 
+/** Screen rectangle the active layout keeps for its card, column or sheet. */
+export function reservedArea(layout: Layout, viewport: { width: number; height: number }): Rect {
+  const frame = activeFrame(layout, viewport.width);
+  const size =
+    frame.reserve.unit === 'vh' ? (viewport.height * frame.reserve.size) / 100 : frame.reserve.size;
+  return frame.reserve.edge === 'left'
+    ? { left: 0, top: 0, right: Math.min(size, viewport.width), bottom: viewport.height }
+    : {
+        left: 0,
+        top: Math.max(0, viewport.height - size),
+        right: viewport.width,
+        bottom: viewport.height,
+      };
+}
+
 /**
  * Camera padding for the active layout frame: the reserved card edge, plus the
  * measured rail of legends, controls and media when it shows anything. The camera

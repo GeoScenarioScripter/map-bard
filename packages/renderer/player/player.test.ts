@@ -36,17 +36,18 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
       events.push('marker:add');
       return marker;
     },
-    addAnnotation: () => {
-      const marker = { remove: vi.fn(() => events.push('annotation:remove')) };
-      markers.push(marker);
-      events.push('annotation:add');
-      return marker;
-    },
     onFrame: () => () => {},
     project: ([lng, lat]) => ({ x: lng, y: lat }),
     setControl: (id, property, value) => {
       events.push(`control:${id}:${property}:${value}`);
     },
+    showCallouts: (scene) => {
+      const marker = { remove: vi.fn(() => events.push(`callouts:remove:${scene.id}`)) };
+      markers.push(marker);
+      events.push(`callouts:${scene.callouts.map((callout) => callout.id).join(',')}`);
+      return marker;
+    },
+    bearing: () => 0,
   };
   const view: SceneView = {
     showScene: (_scene, _media, onControl) => {
@@ -159,6 +160,22 @@ describe('compiled player foundation', () => {
     player.dispose();
     expect(events.at(-1)).toBe('view:clear');
     expect(player.activeSceneId()).toBeUndefined();
+  });
+
+  it('shows each scene callouts once and removes them before the next scene', () => {
+    const story = structuredClone(specimen);
+    story.scenes[1]!.callouts = [];
+    const { player, events } = harness(story);
+    player.enter('a');
+    player.enter('b');
+    player.enter('a');
+    player.dispose();
+    expect(events.filter((event) => event.startsWith('callouts'))).toEqual([
+      'callouts:where-one',
+      'callouts:remove:a',
+      'callouts:where-one',
+      'callouts:remove:a',
+    ]);
   });
 
   it('cuts all transitions when reduced motion is requested', () => {

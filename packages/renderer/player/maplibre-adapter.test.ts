@@ -4,8 +4,17 @@ import { parseCompiled } from '@mapbard/schema';
 import type { ResolvedScale } from '@mapbard/schema';
 import { createMapLibreAdapter } from './maplibre-adapter.js';
 import { createPlayer } from './player.js';
-import { layerStyle, scalePaint } from './resolved-style.js';
+import { POINT_SYMBOL_RADIUS, POINT_SYMBOL_STROKE, pointSymbolRadius } from '@mapbard/core';
+import {
+  POINT_RADIUS,
+  POINT_STROKE,
+  layerStyle,
+  matchesLayerFilter,
+  pointRadius,
+  scalePaint,
+} from './resolved-style.js';
 import { legendMarkup } from './legend.js';
+import { fakeContainer, fakeDocument } from './test-dom.js';
 import type { SceneView } from './types.js';
 
 const parsed = parseCompiled(
@@ -138,7 +147,7 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     ).toMatch(/\(test units\).*<span>25<\/span>/);
   });
 
-  it('binds scene-local IDs, applies controls, and removes annotations and sources on revisit', () => {
+  it('binds scene-local IDs, applies controls, and removes callouts and sources on revisit', () => {
     const events: string[] = [];
     const sources = new Set<string>();
     const layers = new Set<string>();
@@ -169,6 +178,10 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
       },
       setLayoutProperty: vi.fn(),
       setPaintProperty: vi.fn(),
+      getContainer: () => container,
+      on: vi.fn(),
+      off: vi.fn(),
+      project: ([lng, lat]: [number, number]) => ({ x: (lng + 78) * 400, y: (40 - lat) * 400 }),
     };
     class Popup {
       setHTML() {
@@ -197,15 +210,9 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
         events.push('marker:remove');
       }
     }
-    const buttons: { type: string; className: string; setAttribute: ReturnType<typeof vi.fn> }[] =
-      [];
-    vi.stubGlobal('document', {
-      createElement: () => {
-        const button = { type: '', className: '', setAttribute: vi.fn() };
-        buttons.push(button);
-        return button;
-      },
-    });
+    vi.stubGlobal('document', fakeDocument());
+    const container = fakeContainer(1000, 800);
+    const labels = () => container.byClass('mb-callout').map((label) => label.textContent);
     const adapter = createMapLibreAdapter(
       story,
       sourceData,
@@ -219,11 +226,8 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     const player = createPlayer(story, adapter, view);
     player.enter('a');
     expect(layers).toEqual(new Set(['mb:1:a:5:sites']));
-    expect(buttons[0]!.type).toBe('button');
-    expect(buttons[0]!.setAttribute).toHaveBeenCalledWith(
-      'aria-label',
-      'Annotation: Invented site One',
-    );
+    expect(labels()).toEqual(['Invented site One']);
+    expect(map.on).toHaveBeenCalledWith('render', expect.any(Function));
     player.setControl('opacity', 0.2);
     expect(map.setPaintProperty).toHaveBeenLastCalledWith('mb:1:a:5:sites', 'circle-opacity', 0.2);
     player.enter('b');
@@ -232,12 +236,14 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     expect(events.indexOf('remove-layer:mb:1:a:5:sites')).toBeLessThan(
       events.indexOf('layer:mb:1:b:5:sites:period-b'),
     );
+    expect(labels()).toEqual(['Compare with the same extent and scale']);
     player.enter('a');
     expect(map.setPaintProperty).toHaveBeenLastCalledWith('mb:1:a:5:sites', 'circle-opacity', 0.8);
     player.dispose();
     expect(sources.size).toBe(0);
     expect(layers.size).toBe(0);
-    expect(events.filter((item) => item === 'marker:remove')).toHaveLength(3);
+    expect(container.byClass('mb-callouts')).toEqual([]);
+    expect(map.off).toHaveBeenCalledTimes(3);
     expect(story).toEqual(parsed.value);
   });
 
@@ -268,5 +274,41 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     stop();
     expect(listeners.size).toBe(0);
     expect(adapter.project([1, 2])).toEqual({ x: 10, y: 40 });
+  });
+
+  it('sizes symbols for callout placement exactly as the compiler and the circle paint do', () => {
+    expect([POINT_RADIUS, POINT_STROKE]).toEqual([POINT_SYMBOL_RADIUS, POINT_SYMBOL_STROKE]);
+    const base = story.scenes[0]!.layers[0]!;
+    const style = layerStyle(base, story.scales[0]);
+    expect(style.paint['circle-radius']).toBe(POINT_RADIUS);
+    expect(style.paint['circle-stroke-width']).toBe(POINT_STROKE);
+    const size = variants.find((item) => item.id === 'area-size')!;
+    const sized = { ...base, technique: 'graduated-symbol' as const, attribute: 'area' };
+    for (const properties of [{ area: 0 }, { area: 7 }, { area: 1e9 }, { area: 'x' }, {}]) {
+      expect(pointRadius(sized, size, properties)).toBeCloseTo(
+        pointSymbolRadius(sized, size, properties),
+        2,
+      );
+    }
+    expect(pointRadius({ ...base, constant: { radius: 4 } }, undefined, {})).toBe(5);
+    // A radius control overrides the constant, not a data-driven size.
+    expect(pointRadius(base, undefined, {}, 12)).toBe(13);
+    expect(pointRadius(sized, size, { area: 0 }, 12)).toBe(pointRadius(sized, size, { area: 0 }));
+    // The compiled callout target is the drawn symbol of its feature.
+    const [callout] = story.scenes[0]!.callouts;
+    const feature = sourceData['period-a'].features.find(
+      (item: { geometry: { coordinates: number[] } }) =>
+        item.geometry.coordinates[0] === callout!.targets[0]!.at[0] &&
+        item.geometry.coordinates[1] === callout!.targets[0]!.at[1],
+    );
+    expect(callout!.targets[0]!.radius).toBe(
+      pointRadius(base, story.scales[0], feature.properties),
+    );
+    expect(matchesLayerFilter({ attribute: 'value', op: '>=', value: 40 }, { value: 40 })).toBe(
+      true,
+    );
+    expect(matchesLayerFilter({ attribute: 'value', op: '>=', value: 40 }, { value: '40' })).toBe(
+      false,
+    );
   });
 });

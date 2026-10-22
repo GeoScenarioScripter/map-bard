@@ -17,7 +17,6 @@ export interface MapAdapter {
   bindLayer(layer: CompiledLayer): void;
   unbindLayer(runtimeId: string): void;
   addMarker(anchor: CompiledScene['mediaAnchors'][number], popupHtml: string): MarkerHandle;
-  addAnnotation(annotation: CompiledAnnotation): MarkerHandle;
   /** Runs after every rendered frame, including each frame of a camera move; returns an unsubscribe. */
   onFrame(listener: () => void): () => void;
   /** Screen position of a map coordinate, in CSS pixels from the map container's top left. */
@@ -27,6 +26,10 @@ export interface MapAdapter {
     property: CompiledControl['property'],
     value: boolean | number,
   ): void;
+  /** Draw a scene's callouts (label, leader, halo) and keep them placed on every frame. */
+  showCallouts(scene: CompiledScene): MarkerHandle;
+  /** Current map bearing in degrees, read live because camera tracks animate it. */
+  bearing(): number;
 }
 
 export interface SceneView {

@@ -1,6 +1,6 @@
 import { styleBasemap } from './basemap-style.js';
 import { createDomView } from './dom-view.js';
-import { cameraPadding, zoomOffset } from './layout.js';
+import { cameraPadding, reservedArea, zoomOffset } from './layout.js';
 import { createPlayer } from './player.js';
 import { createMapLibreAdapter } from './maplibre-adapter.js';
 import { observeScenes } from './scroll.js';
@@ -13,6 +13,7 @@ Object.assign(globalThis, {
     createMapLibreAdapter,
     observeScenes,
     cameraPadding,
+    reservedArea,
     zoomOffset,
     styleBasemap,
   },

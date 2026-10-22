@@ -1,7 +1,7 @@
 # Compiled player — S1-W3-B
 
 `player.ts` owns scene lifetime. It removes the prior scene's map layers, sources,
-media/annotation markers, popups, controls and legend before binding the next
+media markers, popups, callouts, controls and legend before binding the next
 scene. Re-entering a scene reapplies compiled defaults. The first camera change
 and reduced-motion changes use `cut`.
 
@@ -18,12 +18,19 @@ it never infers a domain or category from a sample. It renders only neutral
 basemap stories. The caller creates a neutral MapLibre map and waits for its
 `load` event before entering a scene.
 
+Annotations render as compiled callouts in a DOM overlay inside the map
+container: a list of labels that screen readers read, with decorative SVG
+leader lines and target halos. `callout-placement.ts` re-places them on every
+map frame against the screen edge, other callouts, every drawn point symbol and
+the screen rects returned by the adapter's `obstacles` option (the compiled page
+passes the layout's reserved card area, the rail and the map controls).
+
 `createDomView({ scenes, media, controls, legends })` expects authored scene
 elements with `data-scene-id` and distinct media, control and legend hosts. Give
 the legend host class `mb-legend-host`; the included runtime stylesheet styles it.
 `observeScenes(player, scenes)` activates the most visible scene with an
 IntersectionObserver and returns a disconnect function. Call that and
-`player.dispose()` on page teardown. Native buttons open marker/annotation
+`player.dispose()` on page teardown. Native buttons open media marker
 popups; checkboxes and sliders are keyboard operable. Slider arrow keys move by
 one percent of the authored range, Page keys by ten percent, and Home/End to
 the endpoints.

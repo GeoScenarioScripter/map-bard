@@ -40,6 +40,62 @@ export function scalePaint(scale: ResolvedScale, attribute: string): Expression 
   return ['case', validNumber(attribute), radius, scale.noDataRadius];
 }
 
+/** Constant point radius and the halo stroke around every circle, in CSS pixels. */
+export const POINT_RADIUS = 7;
+export const POINT_STROKE = 1;
+
+type Properties = Record<string, unknown>;
+
+/** The typed comparison filter, evaluated as the MapLibre filter expression evaluates it. */
+export function matchesLayerFilter(
+  filter: CompiledLayer['filter'],
+  properties: Properties,
+): boolean {
+  if (!filter) return true;
+  const actual = properties[filter.attribute];
+  if (typeof actual !== typeof filter.value) return false;
+  const value = filter.value;
+  switch (filter.op) {
+    case '==':
+      return actual === value;
+    case '!=':
+      return actual !== value;
+    case '<':
+      return (actual as number) < (value as number);
+    case '<=':
+      return (actual as number) <= (value as number);
+    case '>':
+      return (actual as number) > (value as number);
+    case '>=':
+      return (actual as number) >= (value as number);
+  }
+}
+
+/**
+ * Outer radius (fill plus stroke) of one drawn point, matching the circle-radius paint below.
+ * Callout placement uses it to keep labels off symbols; `radius` overrides a constant radius
+ * the way a radius control does.
+ */
+export function pointRadius(
+  layer: CompiledLayer,
+  scale: ResolvedScale | undefined,
+  properties: Properties,
+  radius = layer.constant?.radius ?? POINT_RADIUS,
+): number {
+  if (scale?.kind === 'numeric-size' && layer.attribute) {
+    const value = properties[layer.attribute];
+    const [min, max] = scale.domain;
+    const [low, high] = scale.radiusRange;
+    radius =
+      typeof value !== 'number' || !Number.isFinite(value)
+        ? scale.noDataRadius
+        : min === max
+          ? high
+          : low + (high - low) * Math.sqrt(value / max);
+  }
+  return radius + POINT_STROKE;
+}
+
 export function layerStyle(
   layer: CompiledLayer,
   scale?: ResolvedScale,
@@ -68,10 +124,10 @@ export function layerStyle(
           'circle-radius':
             scale?.kind === 'numeric-size' && layer.attribute
               ? scalePaint(scale, layer.attribute)
-              : (layer.constant?.radius ?? 7),
+              : (layer.constant?.radius ?? POINT_RADIUS),
           'circle-opacity': opacity,
           'circle-stroke-color': halo,
-          'circle-stroke-width': 1,
+          'circle-stroke-width': POINT_STROKE,
         }
       : type === 'line'
         ? { 'line-color': color, 'line-width': 2.5, 'line-opacity': opacity }

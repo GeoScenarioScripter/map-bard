@@ -1,16 +1,10 @@
 import type { Map as MapLibreMap, LayerSpecification } from 'maplibre-gl';
-import { escapeHtml } from './media.js';
-import type { Padding } from './layout.js';
+import type { Padding, Rect } from './layout.js';
 
 export type CameraFrame = { padding: Padding; zoomOffset: number };
-import { layerStyle } from './resolved-style.js';
-import type {
-  CompiledAnnotation,
-  CompiledScene,
-  CompiledStory,
-  MapAdapter,
-  MarkerHandle,
-} from './types.js';
+import { createCalloutOverlay, type SymbolPoint } from './callouts.js';
+import { layerStyle, matchesLayerFilter, pointRadius } from './resolved-style.js';
+import type { CompiledScene, CompiledStory, MapAdapter, MarkerHandle } from './types.js';
 
 type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'>;
 type GeoData = Parameters<MapLibreMap['addSource']>[1];
@@ -48,7 +42,11 @@ export function createMapLibreAdapter(
   data: Record<string, unknown>,
   map: MapLibreMap,
   libre: MapLibreConstructors,
-  options: { frame?: () => CameraFrame } = {},
+  options: {
+    frame?: () => CameraFrame;
+    /** Client rects of screen UI callout labels must avoid: card area, rail, map controls. */
+    obstacles?: () => Rect[];
+  } = {},
 ): MapAdapter & { refit(): void } {
   const bound = new Map<string, { sourceId: string; type: 'circle' | 'line' | 'fill' }>();
   const sourceUsers = new Map<string, number>();
@@ -72,19 +70,50 @@ export function createMapLibreAdapter(
     };
   }
 
-  function addAnnotation(annotation: CompiledAnnotation): MarkerHandle {
-    const text = escapeHtml(annotation.text);
-    return popupMarker(
-      map,
-      libre,
-      annotation.at,
-      `Annotation: ${annotation.text}`,
-      `<p class="mb-annotation-text">${text}</p>`,
-      'mb-annotation-marker',
-    );
+  // Live control state, so callouts avoid symbols at their current size and visibility.
+  const radiusOverride = new Map<string, number>();
+  const hiddenLayers = new Set<string>();
+  let overlay: ReturnType<typeof createCalloutOverlay> | undefined;
+
+  /** Every drawn point of the scene's point layers; placement keeps labels off them. */
+  function sceneSymbols(scene: CompiledScene): () => SymbolPoint[] {
+    const drawn: { runtimeId: string; at: [number, number]; radius: (size?: number) => number }[] =
+      [];
+    for (const layer of scene.layers) {
+      if (layer.geometry !== 'point') continue;
+      const scale = story.scales.find((item) => item.id === layer.scaleId);
+      const source = data[layer.sourceId] as { features?: unknown[] } | undefined;
+      for (const feature of source?.features ?? []) {
+        const { geometry, properties } = (feature ?? {}) as {
+          geometry?: { type?: string; coordinates?: unknown };
+          properties?: Record<string, unknown> | null;
+        };
+        const props = properties ?? {};
+        if (!matchesLayerFilter(layer.filter, props)) continue;
+        const points =
+          geometry?.type === 'Point'
+            ? [geometry.coordinates]
+            : geometry?.type === 'MultiPoint' && Array.isArray(geometry.coordinates)
+              ? geometry.coordinates
+              : [];
+        for (const point of points) {
+          if (!Array.isArray(point) || typeof point[0] !== 'number' || typeof point[1] !== 'number')
+            continue;
+          drawn.push({
+            runtimeId: layer.runtimeId,
+            at: [point[0], point[1]],
+            radius: (size) => pointRadius(layer, scale, props, size),
+          });
+        }
+      }
+    }
+    return () =>
+      drawn
+        .filter((item) => !hiddenLayers.has(item.runtimeId))
+        .map((item) => ({ at: item.at, radius: item.radius(radiusOverride.get(item.runtimeId)) }));
   }
 
-  return {
+  const adapter: MapAdapter & { refit(): void } = {
     setCamera(next, transition) {
       camera = next;
       const target = cameraTarget(next);
@@ -125,6 +154,8 @@ export function createMapLibreAdapter(
       if (!existing) return;
       if (map.getLayer(runtimeId)) map.removeLayer(runtimeId);
       bound.delete(runtimeId);
+      radiusOverride.delete(runtimeId);
+      hiddenLayers.delete(runtimeId);
       const remaining = (sourceUsers.get(existing.sourceId) ?? 1) - 1;
       if (remaining === 0) {
         sourceUsers.delete(existing.sourceId);
@@ -142,7 +173,6 @@ export function createMapLibreAdapter(
         anchor.trigger === 'auto',
       );
     },
-    addAnnotation,
     onFrame(listener) {
       map.on('render', listener);
       return () => {
@@ -161,8 +191,12 @@ export function createMapLibreAdapter(
       const binding = bound.get(runtimeLayerId);
       if (!binding) throw new Error(`Missing active layer ${runtimeLayerId}`);
       if (property === 'visibility') {
+        if (value) hiddenLayers.delete(runtimeLayerId);
+        else hiddenLayers.add(runtimeLayerId);
         map.setLayoutProperty(runtimeLayerId, 'visibility', value ? 'visible' : 'none');
       } else {
+        if (property === 'radius' && typeof value === 'number')
+          radiusOverride.set(runtimeLayerId, value);
         const paintName = `${binding.type}-${property}`;
         map.setPaintProperty(
           runtimeLayerId,
@@ -171,5 +205,15 @@ export function createMapLibreAdapter(
         );
       }
     },
+    showCallouts(scene) {
+      overlay ??= createCalloutOverlay(map.getContainer(), adapter, {
+        panels: options.obstacles,
+      });
+      return overlay.show(scene.callouts, sceneSymbols(scene));
+    },
+    bearing() {
+      return map.getBearing();
+    },
   };
+  return adapter;
 }

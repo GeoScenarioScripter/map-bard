@@ -222,7 +222,14 @@ const app = `(() => {
           const padding = api.cameraPadding(payload.story.layout, viewport, rail.getBoundingClientRect());
           return { padding, zoomOffset: api.zoomOffset(payload.story.layout, viewport, padding) };
         };
-        const adapter = api.createMapLibreAdapter(payload.story, payload.data, map, maplibregl, { frame });
+        // Callout labels keep clear of the card area, the rail and the map controls.
+        const obstacles = () => [
+          api.reservedArea(payload.story.layout, { width: innerWidth, height: innerHeight }),
+          ...[rail, ...document.querySelectorAll('#map .maplibregl-ctrl-group, #map .maplibregl-ctrl-attrib, #map .maplibregl-ctrl-scale, #map .mb-north')]
+            .map((element) => element.getBoundingClientRect())
+            .filter((box) => box.width > 0 && box.height > 0),
+        ];
+        const adapter = api.createMapLibreAdapter(payload.story, payload.data, map, maplibregl, { frame, obstacles });
         const view = api.createDomView({ scenes, media: document.querySelector('#media'), controls: document.querySelector('#controls'), legends: document.querySelector('#legends') });
         const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches });
         player.enter(first.id);

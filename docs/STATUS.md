@@ -110,7 +110,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
-- 2026-10-22: Closed the Wave 3 open items. The CLI-written lockfile keeps its
+- 2026-10-21: Closed the Wave 3 open items. The CLI-written lockfile keeps its
   own formatting (prettier ignores it). `reveal-from-overview` can frame
   named features, and Potomac's opening frames the river; graduated circles
   draw largest first. QA checks point symbols without a callout through

@@ -1,4 +1,4 @@
-import { styleBasemap } from './basemap-style.js';
+import { providerCredit, styleBasemap } from './basemap-style.js';
 import { createDomView } from './dom-view.js';
 import { createNorthArrow } from './furniture.js';
 import { cameraPadding, reservedArea, zoomOffset } from './layout.js';
@@ -17,6 +17,7 @@ Object.assign(globalThis, {
     reservedArea,
     zoomOffset,
     styleBasemap,
+    providerCredit,
     createNorthArrow,
   },
 });

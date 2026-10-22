@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveBasemap } from '@mapbard/knowledge';
+import { BASEMAP_PROVIDERS, resolveBasemap } from '@mapbard/knowledge';
 import {
   hillshadeBefore,
+  providerCredit,
+  terrainCredit,
   styleBasemap,
   tintOperations,
   type StyleTarget,
@@ -98,5 +100,31 @@ describe('styleBasemap', () => {
     const offline = fakeMap();
     styleBasemap(offline.map, resolveBasemap({ provider: 'openfreemap', sky: false }, true), true);
     expect(offline.calls).toEqual([['projection', { type: 'mercator' }]]);
+  });
+});
+
+describe('providerCredit', () => {
+  const openfreemap = BASEMAP_PROVIDERS.openfreemap.attribution;
+
+  it('leaves out what the style already credits, so OpenFreeMap appears once', () => {
+    // The source attribution OpenFreeMap styles carry.
+    const own =
+      '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
+    expect(providerCredit(openfreemap, [own])).toBe('');
+    expect(providerCredit(BASEMAP_PROVIDERS.versatiles.attribution, ['© OpenStreetMap'])).toBe(
+      '© VersaTiles',
+    );
+  });
+
+  it('keeps the whole credit when the style credits nothing', () => {
+    expect(providerCredit(openfreemap, [])).toBe(openfreemap);
+  });
+
+  it('links the Mapterhorn credit to its list of elevation sources', () => {
+    if (basemap.provider === 'none' || !basemap.terrain) throw new Error('expected terrain');
+    expect(terrainCredit(basemap.terrain)).toBe(
+      '<a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">© Mapterhorn</a>',
+    );
+    expect(terrainCredit({ attribution: 'A & B' })).toBe('A &amp; B');
   });
 });

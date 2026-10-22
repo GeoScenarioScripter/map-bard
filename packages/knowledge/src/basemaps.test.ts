@@ -31,6 +31,7 @@ describe('keyless basemap resolution', () => {
       terrain: {
         tiles: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
         attribution: expect.stringContaining('Mapterhorn'),
+        attributionUrl: 'https://mapterhorn.com/attribution/',
         exaggeration: 1.4,
         tileSize: 512,
         hillshade: { shadow: '#5b5145', highlight: '#ffffff' },

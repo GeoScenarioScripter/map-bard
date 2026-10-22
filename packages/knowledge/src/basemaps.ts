@@ -30,7 +30,9 @@ export const BASEMAP_PROVIDERS = {
 
 export const TERRAIN_PROVIDERS = {
   mapterhorn: {
-    attribution: '© Mapterhorn; source credits: https://mapterhorn.com/attribution/',
+    // The credit links to Mapterhorn's list of elevation sources, which it requires.
+    attribution: '© Mapterhorn',
+    attributionUrl: 'https://mapterhorn.com/attribution/',
     notice: 'Public service; uptime is not guaranteed.',
   },
   'aws-terrarium': {
@@ -88,6 +90,9 @@ export function resolveBasemap(
         ? 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'
         : 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
     attribution: TERRAIN_PROVIDERS[authored.terrain.provider].attribution,
+    ...(authored.terrain.provider === 'mapterhorn'
+      ? { attributionUrl: TERRAIN_PROVIDERS.mapterhorn.attributionUrl }
+      : {}),
     exaggeration: authored.terrain.exaggeration ?? 1,
     tileSize: authored.terrain.provider === 'mapterhorn' ? (512 as const) : (256 as const),
     ...(authored.terrain.hillshade === false

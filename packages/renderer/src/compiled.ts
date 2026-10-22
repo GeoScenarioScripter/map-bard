@@ -219,9 +219,11 @@ const app = `(() => {
         clearTimeout(timer);
         ready = true;
         const chosen = styles[styleIndex];
+        // The provider is credited once: by the style's own sources, else by this line.
         const credit = document.createElement('span');
-        credit.textContent = chosen ? chosen.attribution : '';
-        attribution = new maplibregl.AttributionControl({ customAttribution: credit.innerHTML });
+        const own = Object.values(map.getStyle().sources || {}).map((source) => source.attribution || '');
+        credit.textContent = chosen ? api.providerCredit(chosen.attribution, own) : '';
+        attribution = new maplibregl.AttributionControl(credit.textContent ? { customAttribution: credit.innerHTML } : {});
         map.addControl(attribution);
         // Labels, theme tint, terrain, hillshade, sky and projection; online parts only with a provider style.
         api.styleBasemap(map, base, Boolean(chosen));
@@ -298,7 +300,9 @@ const app = `(() => {
         root.dataset.mbState = 'ready';
       } catch (error) { showError(error); map.remove(); }
     });
-    map.on('error', (event) => { if (styles.length && styleIndex < styles.length) failStyle(); else if (ready) console.error(event.error || 'Map error'); });
+    // Only a style that fails to load moves down the fallback chain. A tile that fails once the
+    // style is up (a terrain or vector tile) leaves a gap, not a reason to switch providers.
+    map.on('error', (event) => { if (!ready && styles.length && styleIndex < styles.length) failStyle(); else if (ready && !event.tile) console.error(event.error || 'Map error'); });
     addEventListener('pagehide', () => { clearTimeout(timer); if (cleanup) cleanup(); map.remove(); }, { once: true });
   } catch (error) { showError(error); }
 })();\n`;

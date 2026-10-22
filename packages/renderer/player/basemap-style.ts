@@ -71,6 +71,40 @@ export function hillshadeBefore(layers: readonly StyleLayer[]): string | undefin
   )?.id;
 }
 
+/**
+ * MapBard's credit line for a provider style, minus what the style's own sources already
+ * credit, so a provider is named once. Each `©` part is left out when its first word (the
+ * provider's name) appears in a source attribution; an empty result means nothing to add.
+ */
+export function providerCredit(credit: string, sourceAttributions: readonly string[]): string {
+  const shown = sourceAttributions
+    .join(' ')
+    .replace(/<[^>]*>/g, ' ')
+    .toLowerCase();
+  return credit
+    .split('©')
+    .map((part) => part.trim())
+    .filter((part) => {
+      const name = /[a-z][\w-]*/i.exec(part)?.[0];
+      return name !== undefined && !shown.includes(name.toLowerCase());
+    })
+    .map((part) => `© ${part}`)
+    .join(' ');
+}
+
+const escapeHtml = (text: string) =>
+  text.replace(
+    /[&<>"']/g,
+    (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!,
+  );
+
+/** Terrain credit as MapLibre shows source attribution (HTML): linked when it has a page. */
+export function terrainCredit(terrain: { attribution: string; attributionUrl?: string }): string {
+  return terrain.attributionUrl
+    ? `<a href="${escapeHtml(terrain.attributionUrl)}" target="_blank" rel="noopener">${escapeHtml(terrain.attribution)}</a>`
+    : escapeHtml(terrain.attribution);
+}
+
 /** Apply the compiled basemap to a freshly loaded style. `online` is false for the local fallback. */
 export function styleBasemap(map: StyleTarget, basemap: CompiledStory['basemap'], online: boolean) {
   if (typeof basemap === 'string') return;
@@ -106,7 +140,7 @@ export function styleBasemap(map: StyleTarget, basemap: CompiledStory['basemap']
     tileSize: terrain.tileSize,
     encoding: 'terrarium',
   };
-  map.addSource('mb-terrain', { ...dem, attribution: terrain.attribution });
+  map.addSource('mb-terrain', { ...dem, attribution: terrainCredit(terrain) });
   map.setTerrain({ source: 'mb-terrain', exaggeration: terrain.exaggeration });
   if (terrain.hillshade) {
     // A separate source: MapLibre warns when terrain and hillshade share one.

@@ -1,5 +1,6 @@
 /* global document, getComputedStyle, setTimeout, window */
-// Visual QA capture for a built publication (docs/m2-visual.md, item A).
+// Visual QA capture for a built publication (docs/m2-visual.md, items A and H): each scene at
+// progress 0, 0.5 and 1, through the capture-only MapBardStory.seek.
 //
 //   node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live] [--fail-on-findings]
 //
@@ -16,6 +17,8 @@ const VIEWPORTS = [
   { id: 'phone', width: 390, height: 844, isMobile: true },
 ];
 const IDLE_TIMEOUT_MS = 15000;
+/** Scene progress positions captured per scene (docs/m2-visual.md, item H). */
+const PROGRESS = [0, 0.5, 1];
 
 function parseArgs(argv) {
   const positional = [];
@@ -112,10 +115,14 @@ async function captureViewport(browser, options, story, viewport, log) {
     deviceScaleFactor: 1,
     isMobile: viewport.isMobile,
     hasTouch: viewport.isMobile,
-    // Reduced motion makes scene changes cuts, so a settled capture does not depend on timing.
-    reducedMotion: 'reduce',
+    // Motion plays as authored; seek() settles timed tracks so captures do not depend on timing.
+    reducedMotion: 'no-preference',
   });
   const page = await context.newPage();
+  // Opt in to the capture-only seek before the story starts.
+  await page.addInitScript(() => {
+    window.MAPBARD_CAPTURE = true;
+  });
   page.on('pageerror', (error) => log.pageErrors.push(`${viewport.id}: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() === 'error') log.consoleErrors.push(`${viewport.id}: ${message.text()}`);
@@ -150,9 +157,10 @@ async function captureViewport(browser, options, story, viewport, log) {
       throw new Error(
         `Story failed to start: ${await page.locator('[role="alert"]').allTextContents()}`,
       );
-    for (const sceneId of story.scenes.map((scene) => scene.id)) {
-      const scene = page.locator(`[data-scene-id="${sceneId}"]`);
-      await scene.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+    for (const [sceneId, p] of story.scenes.flatMap((scene) =>
+      PROGRESS.map((value) => [scene.id, value]),
+    )) {
+      await page.evaluate(([id, value]) => window.MapBardStory.seek(id, value), [sceneId, p]);
       await page.locator(`[data-scene-id="${sceneId}"].is-active`).waitFor({ timeout: 10000 });
       const idle = await page.evaluate(
         (timeout) =>
@@ -168,9 +176,12 @@ async function captureViewport(browser, options, story, viewport, log) {
         ...calloutFindings({ viewport, ...geometry }),
       ];
       if (!idle) findings.unshift({ kind: 'idle-timeout', timeoutMs: IDLE_TIMEOUT_MS });
-      const screenshot = `${sceneId}-${viewport.id}.png`;
+      const screenshot = `${sceneId}-p${p * 100}-${viewport.id}.png`;
       await page.screenshot({ path: join(options.out, screenshot) });
-      captures.push({ sceneId, viewport: viewport.id, screenshot, findings });
+      const shown = await page.evaluate(() => window.MapBardStory.progress());
+      if (!shown || shown.sceneId !== sceneId || shown.p !== p)
+        findings.unshift({ kind: 'seek-mismatch', expected: { sceneId, p }, shown });
+      captures.push({ sceneId, p, viewport: viewport.id, screenshot, findings });
     }
   } finally {
     await context.close();
@@ -196,7 +207,7 @@ async function writeContactSheet(browser, out, captures) {
         .filter((cell) => cell.sceneId === sceneId)
         .map(
           (cell) =>
-            `<figure><img src="data:image/png;base64,${cell.data}"><figcaption>${escape(`${cell.sceneId} · ${cell.viewport}`)}${
+            `<figure><img src="data:image/png;base64,${cell.data}"><figcaption>${escape(`${cell.sceneId} · p ${cell.p} · ${cell.viewport}`)}${
               cell.findings.length
                 ? `<b>${cell.findings.length} finding${cell.findings.length === 1 ? '' : 's'}</b>`
                 : ''
@@ -211,7 +222,7 @@ async function writeContactSheet(browser, out, captures) {
     await page.setContent(
       `<!doctype html><style>body{margin:16px;font:14px system-ui,sans-serif;background:#f4f4f2}
 .row{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px}figure{margin:0}
-img{height:450px;display:block;border:1px solid #ccc}figcaption{padding:4px 0}b{color:#b00020;margin-left:8px}</style>${rows}`,
+img{height:300px;display:block;border:1px solid #ccc}figcaption{padding:4px 0}b{color:#b00020;margin-left:8px}</style>${rows}`,
       { waitUntil: 'load' },
     );
     await page.screenshot({ path: join(out, 'contact-sheet.png'), fullPage: true });
@@ -258,6 +269,8 @@ console.log(
 );
 for (const capture of report.captures)
   for (const finding of capture.findings)
-    console.log(`  ${capture.sceneId} ${capture.viewport}: ${JSON.stringify(finding)}`);
+    console.log(
+      `  ${capture.sceneId} p=${capture.p} ${capture.viewport}: ${JSON.stringify(finding)}`,
+    );
 for (const finding of report.pageFindings) console.log(`  page: ${JSON.stringify(finding)}`);
 if (options.failOnFindings && report.findingCount) process.exit(1);

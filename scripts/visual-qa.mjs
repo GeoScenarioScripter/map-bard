@@ -98,15 +98,25 @@ function collectRects() {
   const story = document.querySelector('#story');
   const opaque =
     story && !/rgba\(.*,\s*0\)|transparent/.test(getComputedStyle(story).backgroundColor);
+  const controlName = (element) =>
+    element.id === 'mb-motion-toggle'
+      ? 'motion-toggle'
+      : element.classList.contains('maplibregl-ctrl-attrib')
+        ? 'map-attribution'
+        : element.classList.contains('maplibregl-ctrl-scale')
+          ? 'scale-bar'
+          : element.classList.contains('mb-north')
+            ? 'north-arrow'
+            : 'map-control';
+  const controls = [...document.querySelectorAll('#map .maplibregl-ctrl, #mb-motion-toggle')]
+    .map((element, index) => ({ id: `${controlName(element)}-${index}`, rect: visible(element) }))
+    .filter((item) => item.rect);
   const occluders = [
     ...panels,
     ...(opaque ? [{ id: 'story-column', rect: visible(story) }] : []),
-    ...[...document.querySelectorAll('#map .maplibregl-ctrl')].map((element, index) => ({
-      id: `map-control-${index}`,
-      rect: visible(element),
-    })),
+    ...controls,
   ].filter((item) => item.rect);
-  return { targets, panels, callouts, occluders };
+  return { targets, panels, controls, callouts, occluders };
 }
 
 async function captureViewport(browser, options, story, viewport, log) {

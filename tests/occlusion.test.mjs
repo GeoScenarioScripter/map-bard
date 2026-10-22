@@ -38,6 +38,18 @@ describe('visual QA occlusion geometry', () => {
     ]);
   });
 
+  it('reports targets under map controls without pairing controls with panels', () => {
+    const findings = occlusionFindings({
+      viewport,
+      targets: [{ id: 'hancock#0', rect: rect(240, 430, 26, 26) }],
+      panels: [{ id: 'scene-card', rect: rect(0, 400, 200, 400) }],
+      controls: [{ id: 'map-attribution-3', rect: rect(138, 416, 242, 64) }],
+    });
+    expect(findings).toEqual([
+      { kind: 'target-occluded', target: 'hancock#0', by: 'map-attribution-3', covered: 1 },
+    ]);
+  });
+
   it('measures how far a circle reaches into a rect', () => {
     expect(circleDepth({ x: 15, y: 5, r: 8 }, rect(0, 0, 10, 10))).toBe(3);
     expect(circleDepth({ x: 30, y: 5, r: 8 }, rect(0, 0, 10, 10))).toBe(-12);

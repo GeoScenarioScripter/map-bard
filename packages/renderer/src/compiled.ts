@@ -233,7 +233,7 @@ const app = `(() => {
         // Callout labels keep clear of the card area, the rail and the map controls.
         const obstacles = () => [
           api.reservedArea(payload.story.layout, { width: innerWidth, height: innerHeight }),
-          ...[rail, ...document.querySelectorAll('#map .maplibregl-ctrl-group, #map .maplibregl-ctrl-attrib, #map .maplibregl-ctrl-scale, #map .mb-north')]
+          ...[rail, ...document.querySelectorAll('#map .maplibregl-ctrl, #mb-motion-toggle')]
             .map((element) => element.getBoundingClientRect())
             .filter((box) => box.width > 0 && box.height > 0),
         ];

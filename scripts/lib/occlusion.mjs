@@ -14,9 +14,11 @@ const round = (value) => Math.round(value * 100) / 100;
 
 /**
  * Targets are things the reader must see (annotation and media markers); panels are overlay UI
- * (scene card, legend, controls, media). Findings are deterministic: input order, then panel order.
+ * (scene card, legend, controls, media). Map controls (attribution, scale bars, north arrow,
+ * motion toggle) also hide targets, but they sit in their own corners, so they are not checked
+ * against the panels. Findings are deterministic: input order, then panel order.
  */
-export function occlusionFindings({ viewport, targets, panels }) {
+export function occlusionFindings({ viewport, targets, panels, controls = [] }) {
   const findings = [];
   const screen = { x: 0, y: 0, width: viewport.width, height: viewport.height };
   for (const target of targets) {
@@ -27,7 +29,7 @@ export function occlusionFindings({ viewport, targets, panels }) {
       findings.push({ kind: 'target-offscreen', target: target.id, outside: round(outside) });
       continue;
     }
-    for (const panel of panels) {
+    for (const panel of [...panels, ...controls]) {
       const covered = targetArea ? overlapArea(target.rect, panel.rect) / targetArea : 0;
       if (covered >= TARGET_COVER_RATIO)
         findings.push({

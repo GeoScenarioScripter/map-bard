@@ -144,7 +144,7 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
         { ...story.scenes[0]!, layers: [{ ...base, scaleId: 'area-size' }] },
         { ...story, scales: [size] },
       ),
-    ).toMatch(/\(test units\).*<span>25<\/span>/);
+    ).toMatch(/\(test units\).*<text[^>]*>25<\/text>/);
   });
 
   it('binds scene-local IDs, applies controls, and removes callouts and sources on revisit', () => {

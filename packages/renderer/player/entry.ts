@@ -1,5 +1,6 @@
 import { styleBasemap } from './basemap-style.js';
 import { createDomView } from './dom-view.js';
+import { createNorthArrow } from './furniture.js';
 import { cameraPadding, reservedArea, zoomOffset } from './layout.js';
 import { createPlayer } from './player.js';
 import { createMapLibreAdapter } from './maplibre-adapter.js';
@@ -16,5 +17,6 @@ Object.assign(globalThis, {
     reservedArea,
     zoomOffset,
     styleBasemap,
+    createNorthArrow,
   },
 });

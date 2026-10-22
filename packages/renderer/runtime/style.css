@@ -37,6 +37,61 @@ body {
   color: var(--mb-ink);
 }
 
+/* map furniture: scale bars and the north arrow sit in the free map corner */
+.maplibregl-ctrl-bottom-left {
+  z-index: 3;
+}
+.maplibregl-ctrl.maplibregl-ctrl-scale {
+  background: var(--mb-card-bg);
+  color: var(--mb-ink);
+  border-color: var(--mb-ink);
+  font-family: var(--mb-body);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl.maplibregl-ctrl-scale {
+  margin-top: 2px;
+}
+.mb-north {
+  width: 34px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--mb-card-bg);
+  border: 1px solid var(--mb-rule);
+  border-radius: min(var(--mb-card-radius), 8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+.maplibregl-ctrl.mb-north[hidden] {
+  display: none;
+}
+.mb-north svg {
+  transform-origin: 50% 60%;
+}
+.mb-north-letter {
+  fill: var(--mb-ink);
+  font-family: var(--mb-body);
+  font-size: 9px;
+  font-weight: 700;
+}
+.mb-north-head {
+  fill: var(--mb-ink);
+}
+.mb-north-tail {
+  fill: var(--mb-card-bg);
+  stroke: var(--mb-ink);
+  stroke-width: 1px;
+}
+@media (min-width: 641px) {
+  [data-mb-layout='sidecar'] .maplibregl-ctrl-bottom-left,
+  [data-mb-layout='overlay-cards'] .maplibregl-ctrl-bottom-left {
+    left: var(--mb-reserve);
+  }
+  [data-mb-layout='full-bleed'] .maplibregl-ctrl-bottom-left {
+    bottom: var(--mb-reserve);
+  }
+}
+
 #map-credit {
   position: fixed;
   left: 12px;
@@ -277,13 +332,56 @@ h3 {
   font-size: var(--mb-text-small);
   font-variant-numeric: tabular-nums;
 }
-.mb-legend-swatch,
-.mb-legend-size {
+/* swatches take the shape of what the layer draws */
+.mb-legend-swatch {
   flex: none;
   width: 16px;
   height: 16px;
   border: 1px solid var(--mb-ink);
   border-radius: 50%;
+}
+.mb-legend-swatch--polygon {
+  width: 20px;
+  height: 14px;
+  border-radius: 2px;
+}
+.mb-legend-swatch--line {
+  width: 22px;
+  height: 4px;
+  border: 0;
+  border-radius: 2px;
+}
+/* a class ramp of filled areas reads as one continuous bar */
+.mb-legend-ramp li:has(.mb-legend-swatch--polygon) {
+  min-height: 0;
+}
+.mb-legend-ramp .mb-legend-swatch--polygon {
+  height: 22px;
+  border-radius: 0;
+  border-bottom-width: 0;
+}
+.mb-legend-ramp li:last-child .mb-legend-swatch--polygon {
+  border-bottom-width: 1px;
+}
+.mb-legend .mb-legend-nodata {
+  margin-top: 4px;
+}
+/* nested circles for graduated size */
+.mb-legend-nested {
+  display: block;
+  overflow: visible;
+  margin: 2px 0 2px;
+}
+.mb-legend-nested text {
+  fill: var(--mb-ink);
+  font-family: var(--mb-body);
+  font-size: var(--mb-text-small);
+  font-variant-numeric: tabular-nums;
+}
+.mb-legend-tick {
+  stroke: var(--mb-muted);
+  stroke-width: 0.75px;
+  stroke-dasharray: 2 2;
 }
 .mb-controls-title {
   font-weight: 600;
@@ -391,8 +489,9 @@ h3 {
   top: 0;
   left: 0;
   width: max-content;
-  max-width: 18rem;
+  max-width: 20rem;
   padding: 4px 8px 5px;
+  text-wrap: pretty;
   font-family: var(--mb-body);
   font-size: var(--mb-text-small);
   line-height: 1.3;
@@ -554,10 +653,13 @@ h3 {
   .mb-compiled-media figcaption {
     display: none;
   }
-  /* attribution stays readable above the sheet */
+  /* attribution stays readable above the sheet, beside the scale bars */
   .maplibregl-ctrl-bottom-right,
   .maplibregl-ctrl-bottom-left {
     bottom: var(--mb-reserve);
+  }
+  .maplibregl-ctrl-bottom-right {
+    left: 128px;
   }
 }
 

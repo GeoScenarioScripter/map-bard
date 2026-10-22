@@ -191,6 +191,13 @@ const app = `(() => {
       center: first.camera.center, zoom: first.camera.zoom, attributionControl: false,
     });
     map.scrollZoom.disable();
+    // Map furniture follows the live camera: an auto scale bar, and a north arrow while rotated.
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric', maxWidth: 110 }), 'bottom-left');
+    map.addControl(new maplibregl.ScaleControl({ unit: 'imperial', maxWidth: 110 }), 'bottom-left');
+    const north = document.createElement('div');
+    north.className = 'maplibregl-ctrl mb-north';
+    north.hidden = true;
+    map.addControl({ onAdd: () => north, onRemove: () => north.remove() }, 'bottom-left');
     const failStyle = () => {
       if (switching || styleIndex >= styles.length) return;
       switching = true;
@@ -234,6 +241,7 @@ const app = `(() => {
         const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches });
         player.enter(first.id);
         const disconnect = api.observeScenes(player, scenes);
+        const stopNorth = api.createNorthArrow(north, adapter);
         // Readiness hook for visual QA and the workbench; reading it never changes playback.
         window.MapBardStory = {
           sceneIds: payload.story.scenes.map((scene) => scene.id),
@@ -249,7 +257,7 @@ const app = `(() => {
           root.toggleAttribute('data-mb-bookend', framing.size > 0);
         }, { rootMargin: '-50% 0px -50% 0px' });
         document.querySelectorAll('.mb-intro, .mb-outro').forEach((element) => bookends.observe(element));
-        cleanup = () => { disconnect(); bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); delete window.MapBardStory; };
+        cleanup = () => { disconnect(); stopNorth(); bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); delete window.MapBardStory; };
         switching = false;
         root.dataset.mbState = 'ready';
       } catch (error) { showError(error); map.remove(); }

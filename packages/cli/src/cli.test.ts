@@ -1,6 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -10,8 +10,13 @@ const runFile = promisify(execFile);
 const binary = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 const created: string[] = [];
 async function cli(...args: string[]) {
+  return cliWith({}, ...args);
+}
+async function cliWith(env: NodeJS.ProcessEnv, ...args: string[]) {
   try {
-    const output = await runFile(process.execPath, [binary, '--json', ...args]);
+    const output = await runFile(process.execPath, [binary, '--json', ...args], {
+      env: { ...process.env, ...env },
+    });
     return { code: 0, envelope: JSON.parse(output.stdout) };
   } catch (error) {
     const failed = error as { code: number; stdout: string };
@@ -43,6 +48,7 @@ describe('CLI binary', () => {
       }),
     );
     expect((await cli('init', root)).envelope.ok).toBe(true);
+    expect(await readFile(join(root, '.gitignore'), 'utf8')).toContain('.mapbard-visual/');
     const registered = await cli('--project', root, 'add', data, '--attribution', 'Field survey');
     expect(registered.envelope.result.added).toEqual(['points']);
     expect(
@@ -248,5 +254,29 @@ describe('CLI binary', () => {
     const usage = await cli('build', '--bogus');
     expect(usage.code).toBe(2);
     expect(usage.envelope.command).toBe('build');
+  });
+  it('parses visual check options and reports a missing browser as exit 1', async () => {
+    const mode = await cli('check', '--visual', '--network', 'bogus');
+    expect(mode.code).toBe(2);
+    const stray = await cli('check', '--network', 'stub');
+    expect(stray.code).toBe(2);
+    expect(stray.envelope.diagnostics[0].remedy).toContain('--visual');
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    const potomac = fileURLToPath(new URL('../../../examples/projects/potomac/', import.meta.url));
+    for (const entry of ['mapbard.json', 'story.json', 'mapbard.lock.json', 'data', 'media'])
+      await cp(join(potomac, entry), join(scratch, entry), { recursive: true });
+    const missing = await cliWith(
+      { MAPBARD_CHROME_PATH: join(scratch, 'no-such-chrome.exe') },
+      '--project',
+      scratch,
+      'check',
+      '--visual',
+    );
+    expect(missing.code).toBe(1);
+    expect(missing.envelope.diagnostics.at(-1)).toMatchObject({
+      code: 'VISUAL_BROWSER_MISSING',
+      severity: 'error',
+    });
   });
 });

@@ -2,7 +2,7 @@
 
 **Updated 2026-10-22. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-Wave 4 is planned in detail (steps 4.1–4.4) and not started.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+in Wave 4, step 4.1 (J1, `check --visual`) is complete and step 4.2 (J2 ‖ K) is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -42,16 +42,25 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   rules (raw identifiers, caret units, hidden contrast, inconsistent scales,
   palette contrast) and provider catalog for OpenFreeMap, VersaTiles,
   Mapterhorn and AWS Terrarium.
-- Visual QA: `node scripts/visual-qa.mjs <publication> <out>` captures each
-  scene at p = 0, 0.5 and 1 at desktop and phone sizes, writes a contact
-  sheet, and reports console errors, remote requests and occlusion findings
+- Visual QA: `mapbard check --visual [--network offline|stub|live]
+[--fail-on-warnings]` runs `check`, builds into `.mapbard-visual/build/`
+  (offline by default) and returns the findings as `VISUAL_*` diagnostics,
+  with `report.json` and `contact-sheet.png` in `.mapbard-visual/captures/`.
+  It never edits the project or its lockfile. Without a usable Chromium it
+  reports `VISUAL_BROWSER_MISSING` (exit 1). `node scripts/visual-qa.mjs
+<publication> <out>` runs the same capture on any build. Each scene is
+  captured at p = 0, 0.5 and 1 at desktop and phone sizes. A flight sweep
+  samples every 0.05 across each moving scrub camera track and tags each
+  finding `rest` or `flight`. Symbols and targets passing under panels in
+  flight are warnings; everything else is an error. Captures use SwiftShader
+  on every OS. The capture also writes a contact sheet and reports console errors, remote requests and occlusion findings
   (panels, map controls, edge clipping, callout overlap, callouts covering
   targets, and point symbols without a callout hidden by panels, controls or
   labels). The compiled page exposes `data-mb-state` and a read-only
   `window.MapBardStory` hook (`symbols()` lists shown point symbols); `seek`
   exists only with `MAPBARD_CAPTURE`. `node scripts/frame-probe.mjs
 <publication>` scrolls a story and reports frame intervals.
-- `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
+- `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check` (and `check --visual`), `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
@@ -66,8 +75,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 229 routine tests (schema 37, knowledge 20, core 78, renderer 79, CLI 6,
-  root integration 8, browser smoke 1) and lint pass; the Windows tarball
+- Checks: 241 routine tests (schema 37, knowledge 20, core 78, renderer 79, CLI 23,
+  root integration 3, browser smoke 1) and lint pass; the Windows tarball
   install smoke last passed before M2. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
@@ -92,13 +101,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
-- Visual QA samples each scene at p = 0, 0.5 and 1 only. A one-off sweep of
-  Potomac's 2024 flight (p = 0.3 to 0.9 in 0.05 steps) found 24 overlaps
-  between samples, mostly on phones: gauges and callouts passing under the
-  card, legend, media or attribution while the camera flies close. The same
-  sweep found 22 before the fly-along path change, so it predates it. Likely
-  remedies: fade far callouts during flights with callout tracks, and let
-  QA sweep flights (Wave 4, J).
+- `check --visual` fails on Potomac today (exit 1), all of it on the 2024
+  flight. Stub: 19 findings, 4 errors (phones: the Hancock callout under the
+  card or attribution and over Point of Rocks; desktop: under the story
+  column). There are 7 warnings, for gauges passing under the card, media,
+  legend, attribution or scale bar, or off the screen edge. Offline: 14
+  findings, 2 errors. A live run adds rest errors on phones: the Point of
+  Rocks callout over Little Falls at 2024 p = 0.95–1, and a limits gauge 32%
+  under the legend at p = 0.9–1, next to the expanded double OpenFreeMap
+  credit. K fixes these with callout hiding and the attribution change.
 - With a live provider style, the attribution shows OpenFreeMap twice (the
   style's own source credit and MapBard's credit line).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
@@ -115,6 +126,18 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-22: Step 4.1 (J1). Visual QA moved into the CLI as TypeScript
+  (`packages/cli/src/visual/`) behind `mapbard check --visual`, with a
+  flight sweep, rest and flight phases, grouped `VISUAL_*` diagnostics,
+  SwiftShader on every OS and `playwright-core` loaded only for
+  `--visual`. Diagnostic codes for the rest of Wave 4 were added up front.
+  `scripts/visual-qa.mjs` is a thin wrapper. Build, 241 tests, lint and
+  browser smoke pass. On Potomac, rest findings are 0 at stub and offline (as
+  before), and the sweep finds 19 at stub and 14 offline on the 2024 flight.
+  The flags were ruled out as a cause (also 19 without them). A live run was
+  done and a phone capture inspected. The frame probe was not rerun (no
+  player change). Next: step 4.2, J2 ‖ K in parallel worktrees.
 
 - 2026-10-22: Planned Wave 4 in m2-visual.md as four staggered steps: J1
   moves visual QA into `mapbard check --visual` with a flight sweep; then J2

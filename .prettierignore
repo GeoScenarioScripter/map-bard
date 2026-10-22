@@ -2,6 +2,7 @@ node_modules
 dist
 out
 coverage
+.mapbard-visual
 pnpm-lock.yaml
 # Written by the mapbard CLI; keep its own formatting.
 **/mapbard.lock.json

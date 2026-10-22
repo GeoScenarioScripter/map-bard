@@ -1,7 +1,7 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-22. Status: **active**. Waves 1–3 are complete; Wave 4 is planned
-(staggered, see below) and not started. Part of the
+Updated 2026-10-22. Status: **active**. Waves 1–3 are complete; Wave 4 is
+staggered (see below): step 4.1 (J1) is complete, and 4.2 (J2 ‖ K) is next. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -239,7 +239,7 @@ the callout overlay and legends and does not edit the scroll module.
 
 ## Wave 4
 
-Planned 2026-10-22; not started. J, K and L touch each other's results:
+Planned 2026-10-22; step 4.1 done the same day. J, K and L touch each other's results:
 K's flights need J's sweep to be verified, the goldens must capture K's final
 look, and L documents everything. So the wave is staggered like Wave 3:
 
@@ -321,6 +321,46 @@ the recorded mid-flight overlaps (about 24 on the 2024 flight), each tagged
 with the right phase. CLI tests cover argument parsing, the missing-browser
 diagnostic, finding-to-diagnostic mapping and phase tagging, using a fake
 capture so they don't need a browser. The browser smoke still passes.
+
+As built (2026-10-22):
+
+- **Codes for the whole wave land in 4.1**, so J2 and K never edit the
+  schema's code list in parallel: `VISUAL_OCCLUSION`, `VISUAL_RUNTIME`,
+  `VISUAL_BROWSER_MISSING`, `VISUAL_GOLDEN_MISMATCH`, `BUDGET_EXCEEDED` and
+  K's `TEXT_OVERFLOW_LIKELY`.
+- **Phase.** A sample is `flight` when a **scrub** camera track moves the
+  camera there: strictly inside the track's `range`, on a keyframe segment
+  whose two ends differ. The range ends and held segments are `rest`. This
+  applies to the p = 0, 0.5 and 1 captures too, so Potomac's 2024 p = 0.5
+  capture is a flight sample. Play, loop and step cameras are not swept,
+  because captures settle them and scroll position never shows them moving.
+- **Severity.** `target-offscreen` also warns in flight, like
+  `target-occluded`. A target the camera carries past the edge is the same
+  kind of problem.
+- **Diagnostics are grouped.** Findings with the same scene, viewport, phase
+  and subject become one diagnostic that lists each `p`, with the worst
+  measurement. Visual findings use `artifact: "design"` and
+  `path: ["scenes", i]`. Runtime findings use `"export"`.
+  `--fail-on-warnings` promotes only visual warnings. The offline
+  basemap-removal warning stays a warning.
+- **`check --visual` leaves the project untouched.** `build` gained
+  `refresh` and `record` options, so the visual build neither refreshes nor
+  records into `mapbard.lock.json`. A stale lock fails the check step first.
+  `--network` defaults to `offline`. `--network` or `--fail-on-warnings`
+  without `--visual` is a usage error (exit 2).
+- **Result.** Only the p = 0, 0.5 and 1 captures go on the contact sheet.
+  Sweep samples are in `report.json` (`sweep`), with a screenshot only when
+  they have a finding.
+- **Repository wiring.** `scripts/visual-qa.mjs` imports `mapbard` (a root
+  dev dependency now) and also runs the sweep. `tests/browser.mjs` stays for
+  the smoke test and the frame probe, which J2 moves.
+- **Checked on Potomac (the only variant until K).** Rest positions show 0
+  findings at stub and offline, matching `scripts/visual-qa.mjs` before the
+  move. The 2024 flight shows 19 findings at stub and 14 offline. Offline
+  differs because the offline attribution is smaller. The limits push-in shows
+  none. Without the SwiftShader flags the geometry is the same (19). The
+  earlier one-off sweep reported 24. Its script was not kept, so the gap was
+  not traced. A live run adds two rest findings on phones (see STATUS).
 
 ### J2. Goldens, budgets, "tiles unavailable" and CI (step 4.2)
 

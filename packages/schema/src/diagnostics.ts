@@ -25,6 +25,13 @@ export const DiagnosticSchema = z
       'ENCODING_CONTRAST_HIDDEN',
       'SCALE_INCONSISTENT',
       'PALETTE_CONTRAST_LOW',
+      'TEXT_OVERFLOW_LIKELY',
+      // Visual checks (`mapbard check --visual`) and size budgets.
+      'VISUAL_OCCLUSION',
+      'VISUAL_RUNTIME',
+      'VISUAL_BROWSER_MISSING',
+      'VISUAL_GOLDEN_MISMATCH',
+      'BUDGET_EXCEEDED',
     ]),
     severity: z.enum(['error', 'warning']),
     artifact: z.enum(['project', 'narrative', 'design', 'data', 'media', 'compiled', 'export']),

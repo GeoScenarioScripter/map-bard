@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { readFileSync, watch } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, Option } from 'commander';
 import { BASEMAP_PROVIDERS, TERRAIN_PROVIDERS, STAGE1_CAPABILITIES } from '@mapbard/knowledge';
 import { projectJsonSchema, storyJsonSchema, type Diagnostic } from '@mapbard/schema';
 import {
@@ -17,6 +17,10 @@ import {
   refreshProjectLock,
   type Outcome,
 } from './operations.js';
+import { NETWORK_MODES, type NetworkMode } from './visual/capture.js';
+import { checkVisual, VISUAL_DIRECTORY } from './visual/check.js';
+
+export * from './visual/index.js';
 
 const cliVersion = (
   JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
@@ -24,6 +28,7 @@ const cliVersion = (
   }
 ).version;
 type Global = { json?: boolean; limit?: string; project?: string };
+type CheckFlags = { visual?: boolean; network: NetworkMode; failOnWarnings?: boolean };
 const rootOf = (options: Global): string => resolve(options.project ?? '.');
 /**
  * Bound list output: diagnostics, a list result and the lists directly inside an object result.
@@ -92,6 +97,7 @@ const ignoredChange = (file: string, output: string): boolean => {
   const first = file.split(/[\\/]/)[0]!;
   return (
     first.startsWith(output) ||
+    first === VISUAL_DIRECTORY ||
     first === '.git' ||
     first === 'node_modules' ||
     file === 'mapbard.lock.json'
@@ -291,21 +297,60 @@ export async function run(argv: string[] = process.argv): Promise<number> {
       };
     });
   });
-  program.command('check').action(async (_local: unknown, command: Command) => {
-    const options = command.optsWithGlobals() as Global;
-    await execute('check', options, async () => {
-      const result = await prepare(rootOf(options), false, false);
-      return {
-        result: result.compiled
-          ? {
-              scenes: result.compiled.scenes.length,
-              requiredNetwork: result.compiled.requiredNetwork,
-            }
-          : undefined,
-        diagnostics: result.diagnostics,
-      };
+  program
+    .command('check')
+    .option('--visual', 'Build into .mapbard-visual/ and check the story in headless Chromium')
+    .addOption(
+      new Option('--network <mode>', 'Network for --visual')
+        .choices(NETWORK_MODES)
+        .default('offline'),
+    )
+    .option('--fail-on-warnings', 'With --visual, treat visual warnings as errors')
+    .action(async (local: CheckFlags, command: Command) => {
+      const options = command.optsWithGlobals() as Global;
+      const visualOnly = command.options
+        .filter((option) => option.long !== '--visual')
+        .map((option) => option.attributeName())
+        .filter((name) => command.getOptionValueSource(name) === 'cli');
+      if (!local.visual && visualOnly.length) {
+        emit(
+          'check',
+          {
+            diagnostics: [
+              issue(
+                'VALUE_INVALID',
+                'project',
+                [],
+                '--network and --fail-on-warnings only apply to visual checks.',
+                'Add --visual, or drop those options.',
+              ),
+            ],
+          },
+          options,
+        );
+        code = 2;
+        return;
+      }
+      if (local.visual)
+        return execute('check', options, () =>
+          checkVisual(rootOf(options), {
+            network: local.network,
+            failOnWarnings: Boolean(local.failOnWarnings),
+          }),
+        );
+      await execute('check', options, async () => {
+        const result = await prepare(rootOf(options), false, false);
+        return {
+          result: result.compiled
+            ? {
+                scenes: result.compiled.scenes.length,
+                requiredNetwork: result.compiled.requiredNetwork,
+              }
+            : undefined,
+          diagnostics: result.diagnostics,
+        };
+      });
     });
-  });
   program
     .command('build')
     .option('--out <dir>', 'Output directory', 'out')

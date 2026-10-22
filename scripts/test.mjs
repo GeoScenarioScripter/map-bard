@@ -13,7 +13,6 @@ const steps = [
       'node_modules/vitest/vitest.mjs',
       'run',
       'tests/g3.integration.test.mjs',
-      'tests/occlusion.test.mjs',
       // Agent worktrees under .claude/ hold their own copies of these tests.
       '--exclude',
       '**/.claude/**',

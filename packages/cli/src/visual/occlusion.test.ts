@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  calloutFindings,
-  circleDepth,
-  occlusionFindings,
-  overlapArea,
-} from '../scripts/lib/occlusion.mjs';
+import { calloutFindings, circleDepth, occlusionFindings, overlapArea } from './occlusion.js';
 
-const rect = (x, y, width, height) => ({ x, y, width, height });
+const rect = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
 const viewport = { width: 1000, height: 800 };
 
 describe('visual QA occlusion geometry', () => {
@@ -56,7 +51,7 @@ describe('visual QA occlusion geometry', () => {
   });
 
   it('reports callout labels that are clipped, covered, overlapping or over a target', () => {
-    const halo = (x, y, r = 10) => ({ x, y, r });
+    const halo = (x: number, y: number, r = 10) => ({ x, y, r });
     const findings = calloutFindings({
       viewport,
       callouts: [

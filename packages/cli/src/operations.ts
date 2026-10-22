@@ -101,7 +101,7 @@ export async function initialize(directory: string, template: boolean): Promise<
   };
   await saveJson(join(root, 'mapbard.json'), manifest);
   await saveJson(join(root, 'story.json'), story);
-  await writeFile(join(root, '.gitignore'), 'out/\n.mapbard-preview/\n');
+  await writeFile(join(root, '.gitignore'), 'out/\n.mapbard-preview/\n.mapbard-visual/\n');
   await writeFile(
     join(root, '.gitattributes'),
     '*.json text eol=lf\n*.geojson text eol=lf\n*.csv text eol=lf\n',
@@ -491,8 +491,17 @@ export async function prepare(root: string, offline: boolean, refresh: boolean) 
   };
 }
 
-export async function build(root: string, output: string, offline: boolean): Promise<Outcome> {
-  const prepared = await prepare(root, offline, true);
+/**
+ * Build a publication into `output`. `refresh` updates the lockfile first and `record` notes the
+ * compiled inputs in it afterwards; `check --visual` turns both off, so it never edits the project.
+ */
+export async function build(
+  root: string,
+  output: string,
+  offline: boolean,
+  { refresh = true, record = true }: { refresh?: boolean; record?: boolean } = {},
+): Promise<Outcome> {
+  const prepared = await prepare(root, offline, refresh);
   if (!prepared.compiled || !prepared.loaded) return { diagnostics: prepared.diagnostics };
   const publication = renderCompiled(prepared.compiled, {
     currentInput: prepared.loaded.input,
@@ -611,7 +620,7 @@ export async function build(root: string, output: string, offline: boolean): Pro
       );
     }
   }
-  await recordProjectCompilation(root, prepared.compiled);
+  if (record) await recordProjectCompilation(root, prepared.compiled);
   return {
     result: {
       directory: out,

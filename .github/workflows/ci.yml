@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      update_goldens:
+        description: Rewrite the visual goldens on Linux and upload them as an artifact
+        type: boolean
+        default: false
 
 jobs:
   verify:
@@ -28,3 +33,63 @@ jobs:
       - run: pnpm test
       - run: pnpm lint
       - run: pnpm test:pack
+
+  # Visual QA on Linux, the canonical golden platform: offline captures gate on the committed
+  # goldens, a run with every request aborted must still tell the story, and the size budgets
+  # are reported. `.mapbard-visual/` is always uploaded so failures can be inspected.
+  visual:
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [potomac, potomac-night]
+    runs-on: ubuntu-latest
+    env:
+      PROJECT: examples/projects/${{ matrix.project }}
+      UPDATE_GOLDENS: ${{ github.event_name == 'workflow_dispatch' && inputs.update_goldens }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node node_modules/playwright-core/cli.js install --with-deps chromium
+      - run: pnpm -r build
+      - name: Offline check against the goldens
+        run: |
+          if [ "$UPDATE_GOLDENS" = "true" ]; then
+            node packages/cli/dist/bin.js --project "$PROJECT" --json check --visual --network offline --update > offline.json || status=$?
+          else
+            test -f "$PROJECT/goldens/manifest.json" || { echo "::error::$PROJECT has no goldens; run the workflow with update_goldens and commit them."; exit 1; }
+            node packages/cli/dist/bin.js --project "$PROJECT" --json check --visual --network offline > offline.json || status=$?
+          fi
+          node -e "const e=JSON.parse(require('fs').readFileSync('offline.json','utf8'));for(const d of e.diagnostics)console.log(d.severity.toUpperCase(),d.code,d.message);console.log(JSON.stringify(e.result?.visual?.goldens??null))"
+          exit "${status:-0}"
+      - name: Tiles-unavailable check
+        if: ${{ !cancelled() }}
+        run: |
+          node packages/cli/dist/bin.js --project "$PROJECT" --json check --visual --network unavailable > unavailable.json || status=$?
+          node -e "const e=JSON.parse(require('fs').readFileSync('unavailable.json','utf8'));for(const d of e.diagnostics)console.log(d.severity.toUpperCase(),d.code,d.message)"
+          exit "${status:-0}"
+      - name: Size budget report
+        if: ${{ !cancelled() && hashFiles('offline.json') != '' }}
+        run: |
+          node -e "const s=JSON.parse(require('fs').readFileSync('offline.json','utf8')).result.visual.sizes;const kb=(b)=>(b/1024).toFixed(1)+' KB';const rows=[...s.parts.map(p=>[p.path,kb(p.gzipBytes)]),...Object.entries(s.totals).map(([k,t])=>[k+' (total)',kb(t.gzipBytes)]),['core budget',kb(s.budgets.core.gzipBytes)+' / '+kb(s.budgets.core.limit)+(s.budgets.core.ok?'':' OVER')],['all tiers budget',kb(s.budgets.allTiers.gzipBytes)+' / '+kb(s.budgets.allTiers.limit)+(s.budgets.allTiers.ok?'':' OVER')]];console.log(['| part | gzip |','| --- | --- |',...rows.map(r=>'| '+r.join(' | ')+' |')].join('\n'))" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: visual-${{ matrix.project }}
+          path: |
+            ${{ env.PROJECT }}/.mapbard-visual/
+            offline.json
+            unavailable.json
+          if-no-files-found: ignore
+          include-hidden-files: true
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && env.UPDATE_GOLDENS == 'true' }}
+        with:
+          name: goldens-${{ matrix.project }}
+          path: ${{ env.PROJECT }}/goldens/

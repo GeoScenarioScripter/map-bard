@@ -221,7 +221,21 @@
           }
         },
         "layers": []
-      }
+      },
+      "callouts": [
+        {
+          "id": "where-one",
+          "text": "Invented site One",
+          "anchor": [-77.5, 39.2],
+          "priority": 0,
+          "targets": [
+            {
+              "at": [-77.5, 39.2],
+              "radius": 8
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "b",
@@ -294,7 +308,16 @@
           }
         },
         "layers": []
-      }
+      },
+      "callouts": [
+        {
+          "id": "comparison-note",
+          "text": "Compare with the same extent and scale",
+          "anchor": [-77.2, 39.25],
+          "priority": 0,
+          "targets": []
+        }
+      ]
     }
   ],
   "scales": [

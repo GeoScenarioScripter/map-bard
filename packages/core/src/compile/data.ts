@@ -156,3 +156,23 @@ export function matchesFilter(feature: Feature, filter: Comparison | undefined):
       return (actual as number) >= (filter.value as number);
   }
 }
+
+/** Positions of a checked point feature (Point or MultiPoint); none for other geometry. */
+export function featurePoints(
+  project: ValidatedProject,
+  resourceId: string,
+  feature: Feature,
+): [number, number][] {
+  if (feature.geometry !== 'point') return [];
+  const data = project.dataMap[resourceId];
+  if (!data || Array.isArray(data) || typeof data !== 'object' || !Array.isArray(data.features))
+    return [];
+  const raw = data.features[feature.index];
+  const geometry = raw && !Array.isArray(raw) && typeof raw === 'object' ? raw.geometry : undefined;
+  if (!geometry || Array.isArray(geometry) || typeof geometry !== 'object') return [];
+  // sourceFeatures already checked the coordinates against the geometry type.
+  const coordinates = geometry.coordinates as number[] | number[][];
+  const positions =
+    geometry.type === 'Point' ? [coordinates as number[]] : (coordinates as number[][]);
+  return positions.map((position) => [position[0]!, position[1]!]);
+}

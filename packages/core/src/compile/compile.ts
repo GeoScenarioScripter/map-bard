@@ -26,6 +26,7 @@ import {
   type CapabilityId,
 } from '@mapbard/knowledge';
 import {
+  featurePoints,
   matchesFilter,
   parseLegacyFilter,
   sourceFeatures,
@@ -41,6 +42,7 @@ import {
   type ScaleKey,
 } from './scales.js';
 import { resolveSceneMotion } from './motion.js';
+import { resolveSceneCallouts } from './callouts.js';
 
 export const COMPILER_VERSION = 's1-w3-a.1';
 
@@ -904,6 +906,8 @@ export function compileProject(
       annotations,
       controls,
       motion: resolveSceneMotion(scene),
+      // Resolved below, once the scales that size the annotated symbols exist.
+      callouts: [],
     });
   }
 
@@ -1075,6 +1079,18 @@ export function compileProject(
     };
     const resolved = resolveScale(input, kind, diagnostics);
     if (resolved) scales.push(resolved);
+  }
+
+  for (const scene of compiledScenes) {
+    scene.callouts = resolveSceneCallouts(
+      scene.annotations,
+      scene.layers,
+      scales,
+      (sourceId, id) => {
+        const feature = featureMap.get(sourceId)?.find((entry) => entry.id === id);
+        return feature && { feature, points: featurePoints(project, sourceId, feature) };
+      },
+    );
   }
 
   const resources: Compiled['resources'] = [];

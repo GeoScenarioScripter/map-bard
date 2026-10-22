@@ -9,6 +9,7 @@ import {
 import { ResolvedLayoutSchema } from './layout.js';
 import { HexColorSchema, ResolvedThemeSchema } from './theme.js';
 import { SceneMotionSchema } from './motion.js';
+import { SceneCalloutsSchema } from './callout.js';
 import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
 import {
   COMPILED_VERSION,
@@ -213,6 +214,7 @@ export const CompiledSchema = z
           annotations: z.array(AnnotationSchema.extend({ sceneId: IdSchema }).strict()),
           controls: z.array(ResolvedControlSchema),
           motion: SceneMotionSchema,
+          callouts: SceneCalloutsSchema,
         })
         .strict(),
     ),

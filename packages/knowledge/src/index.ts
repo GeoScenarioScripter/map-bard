@@ -21,6 +21,15 @@ export {
   type CriticInput,
 } from './critic.js';
 export {
+  SIZE_BUDGETS,
+  budgetDiagnostics,
+  sizeKind,
+  sizeReport,
+  type SizeKind,
+  type SizeReport,
+  type SizedFile,
+} from './budgets.js';
+export {
   BASEMAP_PROVIDERS,
   TERRAIN_PROVIDERS,
   resolveBasemap,

@@ -113,7 +113,8 @@
         "layers": [
           {
             "layerId": "gauges",
-            "property": "opacity"
+            "property": "opacity",
+            "stagger": { "delayMs": 350 }
           },
           {
             "layerId": "river-context",
@@ -139,6 +140,11 @@
               }
             ]
           }
+        ],
+        "callouts": [
+          { "calloutId": "hancock-2024", "delayMs": 500 },
+          { "calloutId": "point-of-rocks-2024", "delayMs": 850 },
+          { "calloutId": "little-falls-2024", "delayMs": 1200 }
         ]
       },
       "annotations": [

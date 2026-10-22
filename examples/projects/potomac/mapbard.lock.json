@@ -1,10 +1,10 @@
 {
   "lockVersion": "0.2.0",
   "projectId": "potomac-daily-discharge",
-  "revision": 9,
+  "revision": 10,
   "inputs": {
     "manifestSha256": "sha256:160d6c5374b3dd4244bdf02871b0aca2ecd8489bd7f27f7e1ef3c96cc8c20ac3",
-    "storySha256": "sha256:f5191562f623c54d49f9894f5423bc55f0aa7d387e3f806d765bded35f5cf6a8",
+    "storySha256": "sha256:584dadbe7e3d66797bb55f128377d907993488219e3d6b5a285357fc98d68a23",
     "resources": [
       {
         "id": "potomac-2024",
@@ -544,7 +544,7 @@
   },
   "lastCompileInputs": {
     "manifestSha256": "sha256:160d6c5374b3dd4244bdf02871b0aca2ecd8489bd7f27f7e1ef3c96cc8c20ac3",
-    "storySha256": "sha256:f5191562f623c54d49f9894f5423bc55f0aa7d387e3f806d765bded35f5cf6a8",
+    "storySha256": "sha256:584dadbe7e3d66797bb55f128377d907993488219e3d6b5a285357fc98d68a23",
     "resources": [
       {
         "id": "potomac-2024",

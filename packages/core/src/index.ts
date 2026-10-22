@@ -15,6 +15,7 @@ export {
 export { migrateProject } from './project/migrate.js';
 export { validateProject } from '@mapbard/schema';
 export { compileProject, COMPILER_VERSION } from './compile/compile.js';
+export { critiqueProject } from './compile/critique.js';
 
 /** Parse + validate an external object into a `GeoNarrative`. */
 export function loadNarrative(input: unknown): GeoNarrative {

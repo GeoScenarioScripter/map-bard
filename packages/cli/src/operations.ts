@@ -15,6 +15,7 @@ import { basename, extname, isAbsolute, join, relative, resolve } from 'node:pat
 import { fileURLToPath } from 'node:url';
 import {
   compileProject,
+  critiqueProject,
   ingestDataFile,
   loadProjectV2,
   migrateProject,
@@ -481,7 +482,13 @@ export async function prepare(root: string, offline: boolean, refresh: boolean) 
   const compiled = compileProject(loaded.value, STAGE1_CAPABILITIES, { offline });
   if (!compiled.ok || attribution.length)
     return { diagnostics: [...attribution, ...compiled.diagnostics] };
-  return { loaded: loaded.value, compiled: compiled.value, diagnostics: compiled.diagnostics };
+  // Critic warnings never block publishing; they are reported with the compile diagnostics.
+  const critic = critiqueProject(loaded.value, compiled.value);
+  return {
+    loaded: loaded.value,
+    compiled: compiled.value,
+    diagnostics: [...compiled.diagnostics, ...critic],
+  };
 }
 
 export async function build(root: string, output: string, offline: boolean): Promise<Outcome> {

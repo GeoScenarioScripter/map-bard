@@ -93,6 +93,10 @@ function scaleTitle(declaration: { label?: string } | undefined, attribute: stri
   return declaration?.label ?? humanizeId(attribute);
 }
 
+function resourceName(name: string | undefined, id: string): string {
+  return name && name !== id ? name : humanizeId(id);
+}
+
 function hash(bytes: Uint8Array): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 }
@@ -1109,6 +1113,11 @@ export function compileProject(
       id: resource.id,
       kind: 'data',
       bundlePath: `data/${safeResourceName(resource.id)}-${resource.sha256.slice(7, 15)}.geojson`,
+      // Credits list resources by name; an unnamed resource gets words, not its ID.
+      name: resourceName(
+        narrative.dataSources.find((source) => source.id === resource.id)?.name,
+        resource.id,
+      ),
       credit: resource.attribution.label,
       ...(resource.attribution.qualification
         ? { qualification: resource.attribution.qualification }

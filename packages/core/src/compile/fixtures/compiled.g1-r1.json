@@ -283,6 +283,7 @@
       "id": "period-a",
       "kind": "data",
       "bundlePath": "data/period-a-8cf18501.geojson",
+      "name": "Synthetic period A",
       "credit": "MapBard synthetic software fixture",
       "qualification": "Invented values; not geographic observations."
     },
@@ -290,6 +291,7 @@
       "id": "period-b",
       "kind": "data",
       "bundlePath": "data/period-b-821cbc7d.geojson",
+      "name": "Synthetic period B",
       "credit": "MapBard synthetic software fixture",
       "qualification": "Invented values; not geographic observations."
     }

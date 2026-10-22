@@ -19,6 +19,12 @@ export const DiagnosticSchema = z
       'MEASUREMENT_INCOMPATIBLE',
       'VALUE_INVALID',
       'INPUT_STALE',
+      // Critic rules (warnings): honest, readable cartography.
+      'TEXT_RAW_IDENTIFIER',
+      'TEXT_UNIT_UNFORMATTED',
+      'ENCODING_CONTRAST_HIDDEN',
+      'SCALE_INCONSISTENT',
+      'PALETTE_CONTRAST_LOW',
     ]),
     severity: z.enum(['error', 'warning']),
     artifact: z.enum(['project', 'narrative', 'design', 'data', 'media', 'compiled', 'export']),

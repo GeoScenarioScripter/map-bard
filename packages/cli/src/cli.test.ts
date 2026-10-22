@@ -81,6 +81,18 @@ describe('CLI binary', () => {
     const refreshed = await cli('--project', root, 'lock');
     expect(refreshed.envelope.result).toEqual({ revision: 4, resources: 1, profiles: 1 });
     expect((await cli('--project', root, 'check')).code).toBe(0);
+    // Critic findings are warnings: reported by check, never blocking.
+    await writeFile(storyPath, revisedStory.replace('Survey location', 'Flow in m^3/s'));
+    await cli('--project', root, 'lock');
+    const critiqued = await cli('--project', root, 'check');
+    expect(critiqued.code).toBe(0);
+    expect(critiqued.envelope.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'TEXT_UNIT_UNFORMATTED',
+        severity: 'warning',
+        path: ['scenes', 0, 'title'],
+      }),
+    );
     expect((await cli('--project', root, 'build', '--offline', '--out', 'offline')).code).toBe(0);
     const skill = await cli('--project', root, 'skill', 'install', '--codex');
     expect(skill.code).toBe(0);

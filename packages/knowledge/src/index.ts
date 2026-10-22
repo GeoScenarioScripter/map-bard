@@ -10,6 +10,17 @@ export { contrastRatio, parseHexColor, relativeLuminance } from './color.js';
 export { BUNDLED_FONTS, THEME_PRESET_TOKENS, resolveTheme } from './themes.js';
 export { LAYOUT_FRAMES, resolveLayout } from './layouts.js';
 export {
+  MIN_MARK_CONTRAST,
+  caretUnitRule,
+  critique,
+  hiddenContrastRule,
+  inconsistentScaleRule,
+  paletteContrastRule,
+  rawIdentifierRule,
+  type CriticFeature,
+  type CriticInput,
+} from './critic.js';
+export {
   BASEMAP_PROVIDERS,
   TERRAIN_PROVIDERS,
   resolveBasemap,

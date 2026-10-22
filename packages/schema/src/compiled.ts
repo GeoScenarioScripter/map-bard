@@ -5,8 +5,8 @@ import {
   DiscourseDimensionsSchema,
   LngLatSchema,
   SceneMediaSchema,
-  ThemeTokensSchema,
 } from './geo-narrative.js';
+import { ResolvedThemeSchema } from './theme.js';
 import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
 import {
   COMPILED_VERSION,
@@ -123,7 +123,7 @@ export const CompiledSchema = z
     id: IdSchema,
     title: z.string(),
     intent: z.string(),
-    theme: ThemeTokensSchema.strict().optional(),
+    theme: ResolvedThemeSchema,
     basemap: z.union([
       z.literal('neutral'),
       z.object({ provider: z.literal('none') }).strict(),

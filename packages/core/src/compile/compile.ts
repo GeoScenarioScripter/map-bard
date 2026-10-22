@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import {
   CapabilityCatalogSchema,
   CompiledSchema,
+  FontFamilySchema,
   type CapabilityCatalog,
   type Compiled,
   type DataResource,
@@ -18,6 +19,7 @@ import {
   humanizeId,
   numericColorPrerequisite,
   resolveBasemap,
+  resolveTheme,
   techniqueGeometry,
   type CapabilityId,
 } from '@mapbard/knowledge';
@@ -38,17 +40,6 @@ import {
 } from './scales.js';
 
 export const COMPILER_VERSION = 's1-w3-a.1';
-const DEFAULT_PALETTE = [
-  '#edf8fb',
-  '#66c2a4',
-  '#238b45',
-  '#145a32',
-  '#0b3d20',
-  '#092913',
-  '#071b0e',
-  '#051109',
-  '#030806',
-];
 
 function issue(
   code: Diagnostic['code'],
@@ -436,6 +427,22 @@ export function compileProject(
       ),
     );
   else capability(capabilities, 'basemap.neutral', diagnostics, ['basemap']);
+
+  const authoredTheme = narrative.theme ?? {};
+  for (const field of ['displayFont', 'bodyFont'] as const) {
+    const family = authoredTheme[field];
+    if (family !== undefined && !FontFamilySchema.safeParse(family).success)
+      diagnostics.push(
+        issue(
+          'VALUE_INVALID',
+          'project',
+          ['theme', field],
+          `Font family ${JSON.stringify(family)} cannot be written to the page stylesheet.`,
+          'Use a plain family name of letters, digits, spaces, dots, underscores or hyphens.',
+        ),
+      );
+  }
+  const theme = resolveTheme(authoredTheme);
 
   const featureMap = new Map<string, Feature[]>();
   for (const resource of project.project.resources.data) {
@@ -1052,7 +1059,7 @@ export function compileProject(
       memberKeys: [{ sceneId: context.sceneId, layerId: layer.id, sourceId: resource.id }],
       unit: declaration.unit,
       values: valuesFor(context, diagnostics, kind !== 'category-color'),
-      palette: narrative.theme?.palette?.length ? narrative.theme.palette : DEFAULT_PALETTE,
+      palette: theme.palette,
       classes: layer.classification?.classes ?? 3,
       ...(layer.classification ? { method: layer.classification.method } : {}),
       ...(layer.classification?.breaks ? { breaks: layer.classification.breaks } : {}),
@@ -1171,7 +1178,7 @@ export function compileProject(
     id: narrative.id,
     title: narrative.title,
     intent: narrative.intent,
-    ...(narrative.theme ? { theme: narrative.theme } : {}),
+    theme,
     basemap,
     scenes: compiledScenes,
     scales,

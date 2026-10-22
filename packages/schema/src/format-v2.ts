@@ -15,8 +15,8 @@ import {
   LngLatSchema,
   MediaAnchorSchema,
   SceneMediaSchema,
-  ThemeTokensSchema,
 } from './geo-narrative.js';
+import { ThemeTokensSchema } from './theme.js';
 import {
   AttributionSchema,
   AttributeDeclarationSchema,

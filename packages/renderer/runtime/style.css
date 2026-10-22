@@ -1,13 +1,5 @@
 /* MapBard runtime styles — layout for the sticky-map scrollytelling shell.
-   Theme tokens (fonts, accent) arrive as CSS variables set inline in index.html. */
-:root {
-  --mb-display: var(--mb-display-font, 'Iowan Old Style', Georgia, 'Times New Roman', serif);
-  --mb-body: var(--mb-body-font, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
-  --mb-accent: var(--mb-accent-color, #0b3d91);
-  --mb-card-bg: rgba(255, 255, 255, 0.94);
-  --mb-ink: #213631;
-  --mb-muted: #455a55;
-}
+   Every colour, font, type size and card style is a token from the generated theme.css. */
 
 * {
   box-sizing: border-box;
@@ -19,8 +11,10 @@ body {
 }
 body {
   font-family: var(--mb-body);
+  font-size: var(--mb-text-base);
+  line-height: var(--mb-line-height);
   color: var(--mb-ink);
-  background: #e9e6df;
+  background: var(--mb-page);
 }
 
 /* full-bleed sticky map behind the scrolling story */
@@ -30,9 +24,17 @@ body {
   width: 100%;
   height: 100vh;
   z-index: 0;
+  background: var(--mb-land);
 }
 .maplibregl-ctrl-bottom-right {
   z-index: 3;
+}
+.maplibregl-ctrl.maplibregl-ctrl-attrib {
+  background: var(--mb-card-bg);
+  color: var(--mb-muted);
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--mb-ink);
 }
 
 #map-credit {
@@ -42,7 +44,7 @@ body {
   z-index: 2;
   max-width: calc(100vw - 90px);
   padding: 5px 8px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--mb-card-bg);
   color: var(--mb-ink);
   font-size: 0.7rem;
   line-height: 1.3;
@@ -61,6 +63,28 @@ body {
   pointer-events: none; /* let the map receive drags; cards re-enable below */
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--mb-display);
+  font-weight: var(--mb-heading-weight);
+  color: var(--mb-ink);
+}
+
+/* cards share one token-driven surface */
+.mb-intro-panel,
+.scene-card,
+.mb-outro p {
+  background: var(--mb-card-bg);
+  -webkit-backdrop-filter: blur(var(--mb-card-blur));
+  backdrop-filter: blur(var(--mb-card-blur));
+  border: 1px solid var(--mb-rule);
+  border-left: var(--mb-card-rule-left) solid var(--mb-card-rule-left-color);
+  border-top: var(--mb-card-rule-top) solid var(--mb-card-rule-top-color);
+  border-radius: var(--mb-card-radius);
+  box-shadow: var(--mb-card-shadow);
+}
+
 .mb-intro,
 .mb-outro {
   min-height: 100vh;
@@ -70,39 +94,41 @@ body {
   max-width: 560px;
 }
 .mb-intro-panel {
+  pointer-events: auto;
   width: min(100%, 520px);
   padding: clamp(24px, 3vw, 38px);
-  background: rgba(255, 255, 255, 0.91);
-  border-left: 4px solid var(--mb-accent);
-  box-shadow: 0 16px 44px rgba(33, 54, 49, 0.12);
 }
 .mb-intro h1 {
-  font-family: var(--mb-display);
-  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  font-size: clamp(var(--mb-text-h1-min), 5vw, var(--mb-text-h1-max));
   line-height: 1.08;
   margin: 0 0 0.4em;
-  color: var(--mb-ink);
 }
 .mb-intro p,
 .mb-outro p {
-  font-size: 1.08rem;
-  line-height: 1.55;
+  font-size: var(--mb-text-h3);
+  line-height: 1.5;
   color: var(--mb-muted);
   max-width: 38ch;
 }
+.mb-outro h2 {
+  font-size: var(--mb-text-h3);
+}
+.mb-outro ul {
+  color: var(--mb-muted);
+  font-size: var(--mb-text-small);
+  padding-left: 1.2em;
+}
 .mb-intro .mb-scroll-hint {
-  font-size: 0.88rem;
+  font-size: var(--mb-text-small);
   font-weight: 600;
   color: var(--mb-ink);
   margin: 28px 0 0;
   padding-top: 15px;
-  border-top: 1px solid rgba(33, 54, 49, 0.16);
+  border-top: 1px solid var(--mb-rule);
 }
 .mb-outro p {
   width: fit-content;
   padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.91);
-  border-left: 4px solid var(--mb-accent);
 }
 
 .scene {
@@ -113,14 +139,7 @@ body {
 .scene-card {
   pointer-events: auto;
   width: min(420px, 92vw);
-  background: var(--mb-card-bg);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border-radius: 3px 12px 12px 3px;
   padding: 22px 24px;
-  box-shadow: 0 12px 34px rgba(33, 54, 49, 0.14);
-  border: 1px solid rgba(33, 54, 49, 0.08);
-  border-left: 4px solid var(--mb-accent);
   opacity: 0.82;
   transition: opacity 0.2s ease;
 }
@@ -128,14 +147,11 @@ body {
   opacity: 1;
 }
 .scene-card h2 {
-  font-family: var(--mb-display);
-  font-size: 1.5rem;
+  font-size: var(--mb-text-h2);
+  line-height: 1.2;
   margin: 0 0 0.4em;
-  color: var(--mb-ink);
 }
 .scene-narration p {
-  font-size: 1.02rem;
-  line-height: 1.6;
   margin: 0 0 0.8em;
 }
 .scene-narration p:last-child {
@@ -149,13 +165,13 @@ body {
 .mb-media video {
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: min(var(--mb-card-radius), 10px);
   display: block;
-  background: #cfcabd;
+  background: var(--mb-rule);
 }
 .mb-media figcaption {
-  font-size: 0.82rem;
-  color: #555;
+  font-size: var(--mb-text-small);
+  color: var(--mb-muted);
   margin-top: 6px;
   line-height: 1.4;
 }
@@ -179,17 +195,36 @@ body {
   color: #fff;
 }
 
+/* overlay panels: media, controls and legends */
+.mb-compiled-media,
+#controls,
+.mb-legend-host {
+  background: var(--mb-card-bg);
+  border: 1px solid var(--mb-rule);
+  border-radius: min(var(--mb-card-radius), 12px);
+  box-shadow: var(--mb-card-shadow);
+  color: var(--mb-ink);
+}
+.mb-compiled-media {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 3;
+  width: min(300px, 28vw);
+  max-height: 45vh;
+  overflow: auto;
+  padding: 12px;
+}
+.mb-compiled-media:empty {
+  display: none;
+}
 #controls {
   position: fixed;
   top: 18px;
   right: 18px;
   z-index: 4;
   width: 232px;
-  background: var(--mb-card-bg);
-  border-radius: 12px;
   padding: 14px 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 #controls[hidden] {
   display: none;
@@ -202,17 +237,15 @@ body {
   width: min(250px, calc(100vw - 24px));
   max-height: min(44vh, 380px);
   overflow: auto;
-  background: var(--mb-card-bg);
-  border-radius: 10px;
   padding: 10px 14px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
 }
 .mb-legend-host[hidden] {
   display: none;
 }
 .mb-legend h3 {
+  font-family: var(--mb-body);
   margin: 0 0 6px;
-  font-size: 0.8rem;
+  font-size: var(--mb-text-small);
 }
 .mb-legend-unit {
   font-weight: 400;
@@ -228,19 +261,20 @@ body {
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  font-size: 0.78rem;
+  font-size: var(--mb-text-small);
+  font-variant-numeric: tabular-nums;
 }
 .mb-legend-swatch,
 .mb-legend-size {
   flex: none;
   width: 16px;
   height: 16px;
-  border: 1px solid #34433d;
+  border: 1px solid var(--mb-ink);
   border-radius: 50%;
 }
 .mb-controls-title {
   font-weight: 600;
-  font-size: 0.74rem;
+  font-size: var(--mb-text-small);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--mb-ink);
@@ -255,7 +289,7 @@ body {
 }
 .mb-control-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--mb-text-small);
   margin-bottom: 5px;
 }
 .mb-control-input {
@@ -265,7 +299,7 @@ body {
 .mb-control-value {
   display: block;
   color: var(--mb-muted);
-  font-size: 0.8rem;
+  font-size: var(--mb-text-small);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -277,7 +311,7 @@ body {
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   background: var(--mb-accent);
-  border: 2px solid #fff;
+  border: 2px solid var(--mb-card-bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   cursor: pointer;
 }
@@ -293,7 +327,7 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--mb-card-bg);
   border: 3px solid var(--mb-accent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   cursor: pointer;
@@ -301,7 +335,7 @@ body {
 .mb-marker:focus-visible,
 .mb-annotation-marker:focus-visible,
 .mb-control-input:focus-visible {
-  outline: 3px solid #172b71;
+  outline: 3px solid var(--mb-ink);
   outline-offset: 3px;
 }
 .mb-annotation-text {
@@ -309,13 +343,35 @@ body {
   margin: 0;
   color: var(--mb-ink);
 }
+.mb-popup .maplibregl-popup-close-button {
+  color: var(--mb-ink);
+}
 .mb-popup .maplibregl-popup-close-button:focus-visible {
-  outline: 3px solid #172b71;
+  outline: 3px solid var(--mb-ink);
   outline-offset: 2px;
 }
 .mb-popup .maplibregl-popup-content {
   padding: 10px;
-  border-radius: 10px;
+  border-radius: min(var(--mb-card-radius), 10px);
+  background: var(--mb-card-bg);
+  color: var(--mb-ink);
+  font-size: var(--mb-text-small);
+}
+.mb-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.mb-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.mb-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--mb-card-bg);
+}
+.mb-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.mb-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.mb-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--mb-card-bg);
+}
+.mb-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--mb-card-bg);
+}
+.mb-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--mb-card-bg);
 }
 .mb-popup-title {
   display: block;
@@ -331,8 +387,8 @@ body {
   display: block;
 }
 .mb-popup figcaption {
-  font-size: 0.78rem;
-  color: #555;
+  font-size: var(--mb-text-small);
+  color: var(--mb-muted);
   margin-top: 5px;
 }
 
@@ -345,6 +401,13 @@ body {
   }
   .scene-card {
     width: 100%;
+  }
+  .mb-compiled-media {
+    top: auto;
+    bottom: 82px;
+    right: 14px;
+    width: min(230px, 55vw);
+    max-height: 24vh;
   }
   #controls {
     left: 14px;
@@ -371,12 +434,11 @@ body {
   left: 12px;
   bottom: 12px;
   z-index: 10;
-  background: #fff;
-  color: #222;
+  background: var(--mb-card-bg);
+  color: var(--mb-ink);
   padding: 8px 12px;
   border-radius: 4px;
-  box-shadow: 0 2px 10px #0004;
-  font:
-    14px system-ui,
-    sans-serif;
+  box-shadow: var(--mb-card-shadow);
+  font-family: var(--mb-body);
+  font-size: var(--mb-text-small);
 }

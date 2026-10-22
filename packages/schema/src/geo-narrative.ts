@@ -9,6 +9,7 @@
  * dimensions it needs (build-guide directive 5).
  */
 import { z } from 'zod';
+import { ThemeTokensSchema } from './theme.js';
 
 /** Bumped when the schema shape changes in a breaking way. */
 export const SCHEMA_VERSION = '0.1.0';
@@ -205,12 +206,6 @@ export const SceneSchema = z.object({
   controls: z.array(ControlSchema).optional(),
 });
 
-export const ThemeTokensSchema = z.object({
-  palette: z.array(z.string()).optional(),
-  displayFont: z.string().optional(),
-  bodyFont: z.string().optional(),
-});
-
 export const BasemapSchema = z.object({
   style: z.string(),
   pmtilesUrl: z.string().optional(),
@@ -303,7 +298,6 @@ export type LayerBinding = z.infer<typeof LayerBindingSchema>;
 export type Camera = z.infer<typeof CameraSchema>;
 export type Control = z.infer<typeof ControlSchema>;
 export type Scene = z.infer<typeof SceneSchema>;
-export type ThemeTokens = z.infer<typeof ThemeTokensSchema>;
 export type Basemap = z.infer<typeof BasemapSchema>;
 export type GeoNarrative = z.infer<typeof GeoNarrativeSchema>;
 

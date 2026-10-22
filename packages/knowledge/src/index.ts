@@ -6,6 +6,8 @@ import {
   type LayerBinding,
 } from '@mapbard/schema';
 export { formatNumber, formatUnit, humanizeId } from './display.js';
+export { contrastRatio, parseHexColor, relativeLuminance } from './color.js';
+export { BUNDLED_FONTS, THEME_PRESET_TOKENS, resolveTheme } from './themes.js';
 export {
   BASEMAP_PROVIDERS,
   TERRAIN_PROVIDERS,

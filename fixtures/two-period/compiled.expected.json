@@ -26,6 +26,89 @@
   "id": "synthetic-two-periods",
   "title": "Synthetic comparison",
   "intent": "Check stable scene and scale contracts with invented numbers.",
+  "theme": {
+    "preset": "editorial-light",
+    "colors": {
+      "page": "#e9e6df",
+      "ink": "#213631",
+      "muted": "#455a55",
+      "accent": "#0b3d91",
+      "card": "#fffffff0",
+      "rule": "#21363129",
+      "land": "#f2efe9",
+      "water": "#b8d4e3",
+      "landcover": "#e2e9d9",
+      "road": "#ffffff",
+      "boundary": "#9aa39f",
+      "building": "#e4dfd6",
+      "label": "#5c6a66",
+      "labelHalo": "#ffffff",
+      "hillshadeShadow": "#5b5145",
+      "hillshadeHighlight": "#ffffff",
+      "sky": "#c9dcea",
+      "horizon": "#eef2f3",
+      "fog": "#e9e6df"
+    },
+    "palette": [
+      "#edf8fb",
+      "#66c2a4",
+      "#238b45",
+      "#145a32",
+      "#0b3d20",
+      "#092913",
+      "#071b0e",
+      "#051109",
+      "#030806"
+    ],
+    "ramps": {
+      "sequential": [
+        "#edf8fb",
+        "#66c2a4",
+        "#238b45",
+        "#145a32",
+        "#0b3d20",
+        "#092913",
+        "#071b0e",
+        "#051109",
+        "#030806"
+      ],
+      "diverging": [
+        "#b2182b",
+        "#d6604d",
+        "#f4a582",
+        "#fddbc7",
+        "#f7f7f7",
+        "#d1e5f0",
+        "#92c5de",
+        "#4393c3",
+        "#2166ac"
+      ]
+    },
+    "fonts": {
+      "display": {
+        "family": "Source Serif 4",
+        "fallback": "serif",
+        "bundled": true
+      },
+      "body": {
+        "family": "Inter",
+        "fallback": "sans-serif",
+        "bundled": true
+      }
+    },
+    "type": {
+      "basePx": 17,
+      "ratio": 1.25,
+      "lineHeight": 1.6,
+      "headingWeight": 600
+    },
+    "card": {
+      "radius": 12,
+      "blur": 6,
+      "shadow": "soft",
+      "rule": "left"
+    }
+  },
   "basemap": "neutral",
   "scenes": [
     {

@@ -241,6 +241,35 @@ describe('compileProject', () => {
     );
   });
 
+  it('resolves the theme preset and overrides, and rejects fonts that cannot be written to CSS', async () => {
+    const project = await fixture();
+    project.narrative.theme = {
+      preset: 'night',
+      colors: { water: '#001122' },
+      displayFont: 'Georgia',
+    };
+    const result = compileProject(project, STAGE1_CAPABILITIES);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(result.value.theme.preset).toBe('night');
+    expect(result.value.theme.colors.water).toBe('#001122');
+    expect(result.value.theme.fonts.display).toEqual({
+      family: 'Georgia',
+      fallback: 'sans-serif',
+      bundled: false,
+    });
+    expect(result.value.theme.fonts.body).toEqual({
+      family: 'Inter',
+      fallback: 'sans-serif',
+      bundled: true,
+    });
+    project.narrative.theme = { bodyFont: "Inter'; } body { color: red" };
+    const rejected = compileProject(project, STAGE1_CAPABILITIES);
+    expect(rejected.ok).toBe(false);
+    expect(rejected.diagnostics).toContainEqual(
+      expect.objectContaining({ code: 'VALUE_INVALID', path: ['theme', 'bodyFont'] }),
+    );
+  });
+
   it('compiles seven categorical values from data, beyond a five-value profile sample', async () => {
     const project = await fixture();
     project.design.sharedScales = [];

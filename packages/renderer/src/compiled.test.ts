@@ -6,7 +6,7 @@ import { Script } from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Compiled, PublicationInputs } from '@mapbard/schema';
-import { renderCompiled } from './compiled.js';
+import { bundledFonts, renderCompiled, themeCss } from './compiled.js';
 import { writeCompiledBundle } from './write-compiled.js';
 
 const fixture = JSON.parse(
@@ -27,6 +27,50 @@ const publication = (): PublicationInputs => ({
 const digest = (bytes: Uint8Array) => `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 const codes = (result: { diagnostics: { code: string }[] }) =>
   result.diagnostics.map((item) => item.code);
+
+describe('generated theme stylesheet', () => {
+  it('writes every token as a CSS variable and only bundled families as font faces', () => {
+    const css = themeCss(fixture);
+    expect(css).toContain('--mb-accent:#0b3d91');
+    expect(css).toContain("--mb-display:'Source Serif 4', Georgia, 'Times New Roman', serif");
+    expect(css).toContain('--mb-text-base:17px');
+    expect(css).toContain('--mb-text-h2:26.56px');
+    expect(css).toContain('color-scheme:light');
+    expect(css.match(/@font-face/g)).toHaveLength(2);
+    const night = structuredClone(fixture);
+    night.theme = {
+      ...night.theme,
+      preset: 'night',
+      colors: { ...night.theme.colors, page: '#0e1420' },
+      fonts: {
+        display: { family: 'Georgia', fallback: 'serif', bundled: false },
+        body: { family: 'Inter', fallback: 'sans-serif', bundled: true },
+      },
+    };
+    expect(bundledFonts(night)).toEqual(['Inter']);
+    expect(themeCss(night)).toContain('color-scheme:dark');
+    expect(themeCss(night).match(/@font-face/g)).toHaveLength(1);
+    const rendered = renderCompiled(night, publication());
+    if (!rendered.ok) throw new Error(JSON.stringify(rendered.diagnostics));
+    expect(rendered.value.fonts).toEqual(['Inter']);
+    expect(rendered.value.files['index.html']).toContain('data-mb-theme="night"');
+  });
+
+  it('refuses to write a font the renderer does not bundle', async () => {
+    const rendered = renderCompiled(fixture, publication());
+    if (!rendered.ok) throw new Error(JSON.stringify(rendered.diagnostics));
+    const root = await mkdtemp(join(tmpdir(), 'mapbard-font-'));
+    try {
+      const result = await writeCompiledBundle(
+        { ...rendered.value, fonts: ['Comic Sans'] },
+        join(root, 'story'),
+      );
+      expect(codes(result)).toContain('RESOURCE_MISSING');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});
 
 describe('compiled publication', () => {
   it('wires the actual compiled fixture and full data into a direct-file page', async () => {
@@ -51,6 +95,18 @@ describe('compiled publication', () => {
       expect(written.ok).toBe(true);
       if (written.ok) expect(written.value.written).toContain('player.js');
       expect((await readFile(join(out, 'player.js'), 'utf8')).length).toBeGreaterThan(1000);
+      // Bundled OFL fonts travel with their licences, so offline builds keep typography.
+      for (const path of [
+        'fonts/inter-latin-wght-normal.woff2',
+        'fonts/source-serif-4-latin-wght-normal.woff2',
+      ])
+        expect((await readFile(join(out, path))).subarray(0, 4).toString('latin1')).toBe('wOF2');
+      expect(await readFile(join(out, 'fonts/LICENSE-Inter.txt'), 'utf8')).toContain(
+        'SIL Open Font License',
+      );
+      expect(await readFile(join(out, 'theme.css'), 'utf8')).toContain(
+        "src:url('fonts/inter-latin-wght-normal.woff2')",
+      );
       expect(await readFile(join(out, 'index.html'), 'utf8')).toContain('Sources');
       expect(codes(await writeCompiledBundle(result.value, out))).toContain('ASSET_COLLISION');
     } finally {

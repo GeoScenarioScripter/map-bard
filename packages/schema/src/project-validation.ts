@@ -3,6 +3,7 @@ import { BasemapV2Schema } from './format-v2.js';
 import { GeoNarrativeSchema, SCHEMA_VERSION, type GeoNarrative } from './geo-narrative.js';
 import { CompiledSchema, ResolvedAssetsSchema, type Compiled } from './compiled.js';
 import { DesignSchema, type Design } from './design.js';
+import { FontFamilySchema } from './theme.js';
 import { DiagnosticSchema, type Diagnostic, type Result } from './diagnostics.js';
 import {
   COMPILED_VERSION,
@@ -52,6 +53,8 @@ export const CompiledBundleSchema = z
   .object({
     files: z.record(z.string()),
     mediaCopies: ResolvedAssetsSchema,
+    /** Font families the writer copies into fonts/ with their licences. */
+    fonts: z.array(FontFamilySchema),
     input: InputSnapshotSchema,
     diagnostics: z.array(DiagnosticSchema),
     requiredNetwork: z.array(z.string().url()),

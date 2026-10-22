@@ -28,3 +28,16 @@ else console.error(result.diagnostics);
 should use [`mapbard build`](https://www.npmjs.com/package/mapbard), which handles
 validation, source files, and offline mode for them. [Source and examples](https://github.com/GeoScenarioScripter/map-bard).
 MIT licensed.
+
+## Bundled third-party assets
+
+Each publication copies these files next to the page, so it works offline:
+
+| Asset                                     | Version | Licence                        |
+| ----------------------------------------- | ------- | ------------------------------ |
+| MapLibre GL JS (`vendor/`)                | 6.1.0   | BSD-3-Clause                   |
+| Inter, Latin variable (`fonts/`)          | 5.3.0   | OFL-1.1, licence file included |
+| Source Serif 4, Latin variable (`fonts/`) | 5.3.0   | OFL-1.1, licence file included |
+
+Fonts come from the `@fontsource-variable` packages; a build copies only the
+families its theme uses.

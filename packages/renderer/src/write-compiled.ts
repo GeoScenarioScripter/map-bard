@@ -20,6 +20,7 @@ import {
   type Diagnostic,
   type Result,
 } from '@mapbard/schema';
+import { FONT_FILES } from './fonts.js';
 
 const require = createRequire(import.meta.url);
 const runtimeDir = fileURLToPath(new URL('../runtime/', import.meta.url));
@@ -33,6 +34,7 @@ const fixedPaths = [
   'index.html',
   'compiled-data.js',
   'compiled-app.js',
+  'theme.css',
   'style.css',
   'player.js',
   ...vendor.map((item) => item[1]),
@@ -91,10 +93,28 @@ export async function writeCompiledBundle(
       ],
     };
   const diagnostics: Diagnostic[] = [];
-  const destinations = [...fixedPaths, ...bundle.mediaCopies.map((item) => item.bundlePath)];
+  const fonts: [string, string][] = [];
+  for (const family of bundle.fonts) {
+    const file = FONT_FILES[family];
+    if (file) fonts.push(file.font, file.license);
+    else
+      diagnostics.push(
+        issue(
+          'RESOURCE_MISSING',
+          `Font family ${family} is not bundled with the renderer.`,
+          'Use a bundled family or a system font name that the theme does not mark as bundled.',
+        ),
+      );
+  }
+  const destinations = [
+    ...fixedPaths,
+    ...fonts.map((item) => item[1]),
+    ...bundle.mediaCopies.map((item) => item.bundlePath),
+  ];
+  const pageFiles = ['index.html', 'compiled-data.js', 'compiled-app.js', 'theme.css'];
   if (
-    Object.keys(bundle.files).length !== 3 ||
-    !['index.html', 'compiled-data.js', 'compiled-app.js'].every((path) => path in bundle.files)
+    Object.keys(bundle.files).length !== pageFiles.length ||
+    !pageFiles.every((path) => path in bundle.files)
   )
     diagnostics.push(
       issue(
@@ -173,7 +193,11 @@ export async function writeCompiledBundle(
       );
     }
   }
-  for (const spec of [builtPlayer, ...vendor.map((item) => item[0])]) {
+  for (const spec of [
+    builtPlayer,
+    ...vendor.map((item) => item[0]),
+    ...fonts.map((item) => item[0]),
+  ]) {
     try {
       require.resolve(spec);
     } catch {
@@ -214,7 +238,7 @@ export async function writeCompiledBundle(
       await writeFile(join(staging, path), content, 'utf8');
     await copyFile(join(runtimeDir, 'style.css'), join(staging, 'style.css'));
     await copyFile(require.resolve(builtPlayer), join(staging, 'player.js'));
-    for (const [spec, path] of vendor) {
+    for (const [spec, path] of [...vendor, ...fonts]) {
       await mkdir(dirname(join(staging, path)), { recursive: true });
       await copyFile(require.resolve(spec), join(staging, path));
     }

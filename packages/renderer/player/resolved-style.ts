@@ -40,7 +40,12 @@ export function scalePaint(scale: ResolvedScale, attribute: string): Expression 
   return ['case', validNumber(attribute), radius, scale.noDataRadius];
 }
 
-export function layerStyle(layer: CompiledLayer, scale?: ResolvedScale, accent = '#0b3d91') {
+export function layerStyle(
+  layer: CompiledLayer,
+  scale?: ResolvedScale,
+  accent = '#0b3d91',
+  halo = '#ffffff',
+) {
   const type: 'circle' | 'line' | 'fill' =
     layer.geometry === 'point' ? 'circle' : layer.geometry === 'line' ? 'line' : 'fill';
   const color =
@@ -65,12 +70,12 @@ export function layerStyle(layer: CompiledLayer, scale?: ResolvedScale, accent =
               ? scalePaint(scale, layer.attribute)
               : (layer.constant?.radius ?? 7),
           'circle-opacity': opacity,
-          'circle-stroke-color': '#fff',
+          'circle-stroke-color': halo,
           'circle-stroke-width': 1,
         }
       : type === 'line'
         ? { 'line-color': color, 'line-width': 2.5, 'line-opacity': opacity }
-        : { 'fill-color': color, 'fill-opacity': opacity, 'fill-outline-color': '#fff' };
+        : { 'fill-color': color, 'fill-opacity': opacity, 'fill-outline-color': halo };
   // Every bound filter is compiler-resolved to one of six typed operators.
   const filter = layer.filter
     ? [

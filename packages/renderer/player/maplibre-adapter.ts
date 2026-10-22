@@ -42,7 +42,7 @@ export function createMapLibreAdapter(
 ): MapAdapter {
   const bound = new Map<string, { sourceId: string; type: 'circle' | 'line' | 'fill' }>();
   const sourceUsers = new Map<string, number>();
-  const accent = story.theme?.palette?.at(-1) ?? '#0b3d91';
+  const { accent, labelHalo } = story.theme.colors;
   for (const scene of story.scenes) {
     for (const layer of scene.layers) {
       if (!data[layer.sourceId]) throw new Error(`Missing GeoJSON source ${layer.sourceId}`);
@@ -88,7 +88,7 @@ export function createMapLibreAdapter(
         if (!sourceData) throw new Error(`Missing GeoJSON source ${layer.sourceId}`);
         map.addSource(layer.sourceId, { type: 'geojson', data: sourceData } as GeoData);
       }
-      const specification = layerStyle(layer, scale, accent);
+      const specification = layerStyle(layer, scale, accent, labelHalo);
       try {
         const label = map
           .getStyle()

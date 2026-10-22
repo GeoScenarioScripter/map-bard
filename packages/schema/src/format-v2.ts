@@ -16,6 +16,11 @@ import {
   MediaAnchorSchema,
   SceneMediaSchema,
 } from './geo-narrative.js';
+import {
+  AuthoredSceneMotionSchema,
+  MotionPresetsSchema,
+  StoryMotionSchema,
+} from './authored-motion.js';
 import { LAYOUT_TEMPLATES } from './layout.js';
 import { ThemeTokensSchema } from './theme.js';
 import {
@@ -126,6 +131,10 @@ export const ProjectV2Schema = z
     theme: ThemeTokensSchema.strict().optional(),
     layout: z.enum(LAYOUT_TEMPLATES).optional(),
     basemap: BasemapV2Schema,
+    /** Story-wide motion defaults; presets, scenes and tracks override them. */
+    motion: StoryMotionSchema.optional(),
+    /** Named scene motions that scenes reuse with `motion.preset`. */
+    motionPresets: MotionPresetsSchema.optional(),
     resources: z
       .object({ data: z.array(DataResourceV2Schema), media: z.array(MediaResourceV2Schema) })
       .strict(),
@@ -165,6 +174,8 @@ export const StorySceneSchema = z
     layers: z.array(StoryLayerSchema),
     camera: CameraSchema.strict(),
     transitionIn: z.enum(['fly', 'ease', 'cut']).optional(),
+    /** Scroll-driven camera and layer tracks; without it the camera holds `camera`. */
+    motion: AuthoredSceneMotionSchema.optional(),
     annotations: z.array(AnnotationSchema),
     controls: z
       .array(

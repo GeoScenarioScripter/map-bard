@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CameraTrackSchema, LayerTrackSchema } from './motion.js';
+import { CameraTrackSchema, LayerTrackSchema, SceneMotionSchema } from './motion.js';
 
 const camera = { center: [-77, 39] as [number, number], zoom: 8, pitch: 0, bearing: 0 };
 
@@ -40,5 +40,32 @@ describe('compiled motion tracks', () => {
     expect(LayerTrackSchema.safeParse(fade).success).toBe(true);
     expect(LayerTrackSchema.safeParse({ ...fade, durationMs: undefined }).success).toBe(false);
     expect(LayerTrackSchema.safeParse({ ...fade, final: 2 }).success).toBe(false);
+    // Every track ends in its declared final state: the last keyframe.
+    expect(LayerTrackSchema.safeParse({ ...fade, final: 0.5 }).success).toBe(false);
+  });
+
+  it('allows one track per layer property in a scene', () => {
+    const track = {
+      mode: 'step',
+      range: [0, 1],
+      runtimeLayerId: 'mb:1:a:5:sites',
+      property: 'highlight',
+      keyframes: [{ at: 0, value: 1, easing: 'linear' }],
+      final: 1,
+    };
+    const motion = {
+      scrollLength: 1,
+      trigger: 0.5,
+      reducedMotion: 'step',
+      camera: {
+        mode: 'scrub',
+        range: [0, 1],
+        keyframes: [{ at: 0, ...camera, easing: 'linear' }],
+        final: camera,
+      },
+      layers: [track],
+    };
+    expect(SceneMotionSchema.safeParse(motion).success).toBe(true);
+    expect(SceneMotionSchema.safeParse({ ...motion, layers: [track, track] }).success).toBe(false);
   });
 });

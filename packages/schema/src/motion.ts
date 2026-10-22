@@ -5,8 +5,10 @@ import { IdSchema } from './project.js';
 /** Scene progress `p`: 0 when a scene reaches its trigger line, 1 after `scrollLength` viewports. */
 export const ProgressSchema = z.number().finite().min(0).max(1);
 
+export const NAMED_EASINGS = ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'expo-out'] as const;
+
 export const EasingSchema = z.union([
-  z.enum(['linear', 'ease-in', 'ease-out', 'ease-in-out', 'expo-out']),
+  z.enum(NAMED_EASINGS),
   z
     .object({
       kind: z.literal('cubic-bezier'),
@@ -30,7 +32,7 @@ export const EasingSchema = z.union([
 /** `scrub` follows scroll, `play` runs once for `durationMs`, `loop` repeats, `step` jumps to `final`. */
 export const MotionModeSchema = z.enum(['scrub', 'play', 'loop', 'step']);
 
-const RangeSchema = z
+export const RangeSchema = z
   .tuple([ProgressSchema, ProgressSchema])
   .refine(([start, end]) => start <= end, 'Range start must not exceed its end.');
 
@@ -50,11 +52,18 @@ const TrackBase = {
   range: RangeSchema,
   /** Required for `play` and `loop`. */
   durationMs: z.number().finite().positive().optional(),
+  /** Wait after the trigger before a `play` or `loop` track starts. */
+  delayMs: z.number().finite().nonnegative().optional(),
 };
 
-function keyframesAscending(
-  track: { keyframes: readonly { at: number }[]; mode: string; durationMs?: number },
+function sameValue(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function checkTrack<K extends { at: number }>(
+  track: { keyframes: readonly K[]; mode: string; durationMs?: number; final: unknown },
   ctx: z.RefinementCtx,
+  finalOf: (frame: K) => unknown,
 ): void {
   track.keyframes.forEach((frame, index) => {
     if (index > 0 && frame.at < track.keyframes[index - 1]!.at)
@@ -70,40 +79,62 @@ function keyframesAscending(
       path: ['durationMs'],
       message: `A ${track.mode} track needs durationMs.`,
     });
+  // Interpolation stops at the last keyframe, so it must be the declared final state.
+  const last = track.keyframes[track.keyframes.length - 1];
+  if (last && !sameValue(finalOf(last), track.final))
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['final'],
+      message: 'The final state must equal the last keyframe.',
+    });
 }
+
+export const CameraKeyframeSchema = CameraStateSchema.extend({
+  at: ProgressSchema,
+  /** Shapes the segment that ends at this keyframe; the first keyframe's easing is unused. */
+  easing: EasingSchema,
+}).strict();
 
 export const CameraTrackSchema = z
   .object({
     ...TrackBase,
     /** `at` is local to `range`: 0 at its start, 1 at its end. */
-    keyframes: z
-      .array(CameraStateSchema.extend({ at: ProgressSchema, easing: EasingSchema }).strict())
-      .min(1),
+    keyframes: z.array(CameraKeyframeSchema).min(1),
     final: CameraStateSchema,
   })
   .strict()
-  .superRefine(keyframesAscending);
+  .superRefine((track, ctx) =>
+    checkTrack(track, ctx, (frame: CameraKeyframe) => ({
+      center: frame.center,
+      zoom: frame.zoom,
+      pitch: frame.pitch,
+      bearing: frame.bearing,
+    })),
+  );
+
+/** `opacity` scales the layer's own opacity, `line-reveal` draws a line on, `highlight` strengthens its outline. */
+export const LAYER_TRACK_PROPERTIES = ['opacity', 'line-reveal', 'highlight'] as const;
+
+const LayerKeyframeSchema = z
+  .object({
+    at: ProgressSchema,
+    value: z.number().finite().min(0).max(1),
+    easing: EasingSchema,
+  })
+  .strict();
 
 export const LayerTrackSchema = z
   .object({
     ...TrackBase,
     runtimeLayerId: IdSchema,
-    property: z.enum(['opacity', 'line-reveal', 'highlight']),
-    keyframes: z
-      .array(
-        z
-          .object({
-            at: ProgressSchema,
-            value: z.number().finite().min(0).max(1),
-            easing: EasingSchema,
-          })
-          .strict(),
-      )
-      .min(1),
+    property: z.enum(LAYER_TRACK_PROPERTIES),
+    keyframes: z.array(LayerKeyframeSchema).min(1),
     final: z.number().finite().min(0).max(1),
   })
   .strict()
-  .superRefine(keyframesAscending);
+  .superRefine((track, ctx) =>
+    checkTrack(track, ctx, (frame: z.infer<typeof LayerKeyframeSchema>) => frame.value),
+  );
 
 export const SceneMotionSchema = z
   .object({
@@ -115,11 +146,26 @@ export const SceneMotionSchema = z
     camera: CameraTrackSchema,
     layers: z.array(LayerTrackSchema),
   })
-  .strict();
+  .strict()
+  .superRefine((motion, ctx) => {
+    const seen = new Set<string>();
+    motion.layers.forEach((track, index) => {
+      const key = `${track.runtimeLayerId}\u0000${track.property}`;
+      if (seen.has(key))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['layers', index],
+          message: 'A layer property has at most one track per scene.',
+        });
+      seen.add(key);
+    });
+  });
 
 export type Easing = z.infer<typeof EasingSchema>;
 export type MotionMode = z.infer<typeof MotionModeSchema>;
 export type CameraState = z.infer<typeof CameraStateSchema>;
+export type CameraKeyframe = z.infer<typeof CameraKeyframeSchema>;
 export type CameraTrack = z.infer<typeof CameraTrackSchema>;
 export type LayerTrack = z.infer<typeof LayerTrackSchema>;
+export type LayerTrackProperty = (typeof LAYER_TRACK_PROPERTIES)[number];
 export type SceneMotion = z.infer<typeof SceneMotionSchema>;

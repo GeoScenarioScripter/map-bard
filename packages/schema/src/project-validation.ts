@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AuthoredMotionSchema } from './authored-motion.js';
 import { BasemapV2Schema } from './format-v2.js';
 import { GeoNarrativeSchema, SCHEMA_VERSION, type GeoNarrative } from './geo-narrative.js';
 import { CompiledSchema, ResolvedAssetsSchema, type Compiled } from './compiled.js';
@@ -38,6 +39,7 @@ export const LoadedProjectSchema = z
     resolvedAssets: ResolvedAssetsSchema,
     authoredFormat: z.literal('0.2.0').optional(),
     authoredBasemap: BasemapV2Schema.optional(),
+    authoredMotion: AuthoredMotionSchema.optional(),
   })
   .strict();
 export const ValidatedProjectSchema = LoadedProjectSchema;

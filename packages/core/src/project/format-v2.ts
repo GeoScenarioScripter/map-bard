@@ -462,7 +462,7 @@ export async function loadProjectV2(root: string): Promise<Result<LoadedProject>
       ...(r.at ? { location: r.at } : {}),
     })),
     scenes: story.scenes.map((scene) => ({
-      ...omitKeys(scene, ['annotations', 'layers']),
+      ...omitKeys(scene, ['annotations', 'layers', 'motion']),
       content: scene.content ?? {},
       discourse: scene.discourse ?? {
         narrativeRole: 'develop',
@@ -498,6 +498,13 @@ export async function loadProjectV2(root: string): Promise<Result<LoadedProject>
     resolvedAssets: assets,
     authoredFormat: '0.2.0',
     authoredBasemap: manifest.basemap,
+    authoredMotion: {
+      ...(manifest.motion ? { story: manifest.motion } : {}),
+      ...(manifest.motionPresets ? { presets: manifest.motionPresets } : {}),
+      scenes: Object.fromEntries(
+        story.scenes.flatMap((scene) => (scene.motion ? [[scene.id, scene.motion]] : [])),
+      ),
+    },
     input: {
       projectId: manifest.id,
       revision: lock.revision,

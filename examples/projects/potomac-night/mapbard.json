@@ -1,0 +1,174 @@
+{
+  "formatVersion": "0.2.0",
+  "id": "potomac-daily-discharge",
+  "title": "Two October days on the Potomac",
+  "intent": "Compare published USGS daily mean discharge at Hancock, Point of Rocks and Little Falls on 2024-10-01 and 2025-10-01, while keeping each gauge's limits visible.",
+  "theme": {
+    "preset": "night"
+  },
+  "basemap": {
+    "provider": "openfreemap",
+    "style": "dark",
+    "labels": "minimal",
+    "fallback": ["versatiles"],
+    "terrain": {
+      "provider": "mapterhorn",
+      "exaggeration": 1.5
+    },
+    "sky": true
+  },
+  "resources": {
+    "data": [
+      {
+        "id": "potomac-states-context",
+        "kind": "geojson",
+        "path": "data/potomac-states-context.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "state",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau 2024 generalized state boundaries",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2024/State_County/MapServer/8",
+          "license": "U.S. public domain",
+          "qualification": "Local geographic context only; generalized state outlines do not represent discharge observations."
+        },
+        "name": "2024 generalized state outlines for Potomac context"
+      },
+      {
+        "id": "potomac-river-context",
+        "kind": "geojson",
+        "path": "data/potomac-river-context.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "Maryland iMAP Rivers and Streams — Generalized",
+          "url": "https://mdgeodata.md.gov/imap/rest/services/Hydrology/MD_Waterbodies/FeatureServer/0",
+          "qualification": "Named Potomac River segments are local geographic context, not a flow model or gauge measurement."
+        },
+        "name": "Generalized Potomac River line"
+      },
+      {
+        "id": "potomac-2024",
+        "kind": "geojson",
+        "path": "data/potomac-2024-10-01.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "station_id",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2024-10-01 (Eastern time). Three distinct catchments; regulation, hydroelectric effects and diversion limit interpretation."
+        },
+        "observationLabel": "2024-10-01",
+        "name": "USGS daily mean discharge, 2024-10-01"
+      },
+      {
+        "id": "potomac-2025",
+        "kind": "geojson",
+        "path": "data/potomac-2025-10-01.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "station_id",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2025-10-01 (Eastern time). These are separate published station-day summaries, not a trend or reach water balance."
+        },
+        "observationLabel": "2025-10-01",
+        "name": "USGS daily mean discharge, 2025-10-01"
+      }
+    ],
+    "media": [
+      {
+        "id": "potomac-context",
+        "kind": "image",
+        "attribution": {
+          "label": "Potomac River at Whites Ferry",
+          "url": "https://www.usgs.gov/media/images/potomac-river",
+          "creator": "Cynthia L. Cunningham, U.S. Geological Survey",
+          "license": "Public Domain",
+          "qualification": "Context photograph; it does not depict a gauge observation on either comparison date."
+        },
+        "location": {
+          "type": "local",
+          "path": "media/potomac-context.jpg"
+        },
+        "name": "Potomac River at Whites Ferry",
+        "mimeType": "image/jpeg",
+        "width": 1704,
+        "height": 2272,
+        "caption": "A stream entering the Potomac at Whites Ferry.",
+        "credit": "Cynthia L. Cunningham, U.S. Geological Survey (Public Domain)"
+      }
+    ]
+  }
+}

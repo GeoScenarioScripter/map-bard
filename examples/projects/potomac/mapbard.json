@@ -3,11 +3,19 @@
   "id": "potomac-daily-discharge",
   "title": "Two October days on the Potomac",
   "intent": "Compare published USGS daily mean discharge at Hancock, Point of Rocks and Little Falls on 2024-10-01 and 2025-10-01, while keeping each gauge's limits visible.",
+  "theme": {
+    "preset": "atlas"
+  },
   "basemap": {
     "provider": "openfreemap",
     "style": "positron",
     "labels": "minimal",
-    "fallback": ["versatiles"]
+    "fallback": ["versatiles"],
+    "terrain": {
+      "provider": "mapterhorn",
+      "exaggeration": 1.5
+    },
+    "sky": true
   },
   "resources": {
     "data": [

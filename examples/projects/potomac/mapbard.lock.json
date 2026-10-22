@@ -1,10 +1,10 @@
 {
   "lockVersion": "0.2.0",
   "projectId": "potomac-daily-discharge",
-  "revision": 11,
+  "revision": 16,
   "inputs": {
-    "manifestSha256": "sha256:160d6c5374b3dd4244bdf02871b0aca2ecd8489bd7f27f7e1ef3c96cc8c20ac3",
-    "storySha256": "sha256:6ecba38574ae4da95224acb44451cfce2c7d86bdc5e8fd8dcfab7672c3895754",
+    "manifestSha256": "sha256:cbe068475a794c14768a39b364a670fe526b263317e0f215260e53a2607f9ec5",
+    "storySha256": "sha256:bcdc466f37c8b1e7caf3b7f5adac46c404de6ddaab33922850c1c20beb648541",
     "resources": [
       {
         "id": "potomac-2024",
@@ -58,13 +58,13 @@
           ]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [
         -83.67541300020784,
         36.54073799988352,
         -74.68951599985573,
         42.26985999994247
       ],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "name": {
           "present": 5,
@@ -89,13 +89,13 @@
           ]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [
         -78.59045164378917,
         38.04042414606486,
         -76.32587484772613,
         39.69828655400445
       ],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "name": {
           "present": 52,
@@ -246,6 +246,7 @@
           ]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [
         -78.17788888888889,
         38.949777777777776,
@@ -256,7 +257,6 @@
         "2024-10-01",
         "2025-03-11T06:31:13.773492+00:00"
       ],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,
@@ -465,6 +465,7 @@
           ]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [
         -78.17788888888889,
         38.949777777777776,
@@ -475,7 +476,6 @@
         "2025-10-01",
         "2026-01-14T18:37:02.329200+00:00"
       ],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,

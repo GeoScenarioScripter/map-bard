@@ -98,6 +98,54 @@ describe('format 0.2 migration and lock', () => {
     expect(reference.diagnostics.some((entry) => entry.code === 'REFERENCE_MISSING')).toBe(true);
   });
 
+  it('carries authored motion through the 0.2 loader into compiled tracks and diagnostics', async () => {
+    const dest = await destination();
+    expect((await migrateProject(source, dest)).ok).toBe(true);
+    const manifestPath = join(dest, 'mapbard.json');
+    const storyPath = join(dest, 'story.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    const story = JSON.parse(await readFile(storyPath, 'utf8'));
+    manifest.motion = { trigger: 'top', data: { durationMs: 600 } };
+    manifest.motionPresets = { long: { scrollLength: 2.5 } };
+    const gauges = story.scenes[0].layers.find((layer: { id: string }) => layer.id === 'gauges');
+    story.scenes[0].motion = {
+      preset: 'long',
+      camera: { preset: 'fly-along', feature: `${gauges.sourceId}/USGS-01646500` },
+      layers: [{ layerId: 'gauges', property: 'opacity' }],
+    };
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    await writeFile(storyPath, JSON.stringify(story));
+    expect((await refreshProjectLock(dest)).ok).toBe(true);
+    let loaded = await loadProject(dest);
+    if (!loaded.ok) throw new Error(JSON.stringify(loaded.diagnostics));
+    const rejected = compileProject(loaded.value, STAGE1_CAPABILITIES);
+    expect(rejected.ok).toBe(false);
+    expect(rejected.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'VALUE_INVALID',
+        artifact: 'narrative',
+        path: ['scenes', 0, 'motion', 'camera', 'feature'],
+        ids: { sceneId: story.scenes[0].id, featureId: 'USGS-01646500' },
+      }),
+    );
+    story.scenes[0].motion.camera = {
+      preset: 'push-in',
+      feature: `${gauges.sourceId}/USGS-01646500`,
+    };
+    await writeFile(storyPath, JSON.stringify(story));
+    expect((await refreshProjectLock(dest)).ok).toBe(true);
+    loaded = await loadProject(dest);
+    if (!loaded.ok) throw new Error(JSON.stringify(loaded.diagnostics));
+    const compiled = compileProject(loaded.value, STAGE1_CAPABILITIES);
+    if (!compiled.ok) throw new Error(JSON.stringify(compiled.diagnostics));
+    const motion = compiled.value.scenes[0]!.motion;
+    expect(motion).toMatchObject({ scrollLength: 2.5, trigger: 0 });
+    expect(motion.camera.final.center).toEqual([-77.127639, 38.949778]);
+    expect(motion.layers[0]).toMatchObject({ property: 'opacity', mode: 'play', durationMs: 600 });
+    // Scenes without authored motion keep the built-in held camera.
+    expect(compiled.value.scenes[1]!.motion.camera.keyframes).toHaveLength(1);
+  });
+
   it('migrates the two-period fixture and rejects a future lock version', async () => {
     const dest = await destination();
     expect((await migrateProject(fixture, dest)).ok).toBe(true);

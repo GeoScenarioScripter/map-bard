@@ -60,6 +60,87 @@
         "zoom": 8
       },
       "transitionIn": "cut",
+      "motion": {
+        "scrollLength": 3,
+        "camera": [
+          {
+            "preset": "reveal-from-overview",
+            "range": [0, 0.25]
+          },
+          {
+            "preset": "fly-along",
+            "feature": [
+              "potomac-river-context/mdimap-113",
+              "potomac-river-context/mdimap-112",
+              "potomac-river-context/mdimap-110",
+              "potomac-river-context/mdimap-109",
+              "potomac-river-context/mdimap-108",
+              "potomac-river-context/mdimap-331",
+              "potomac-river-context/mdimap-330",
+              "potomac-river-context/mdimap-102",
+              "potomac-river-context/mdimap-132",
+              "potomac-river-context/mdimap-130",
+              "potomac-river-context/mdimap-129",
+              "potomac-river-context/mdimap-128",
+              "potomac-river-context/mdimap-127",
+              "potomac-river-context/mdimap-126",
+              "potomac-river-context/mdimap-125",
+              "potomac-river-context/mdimap-121",
+              "potomac-river-context/mdimap-119",
+              "potomac-river-context/mdimap-334",
+              "potomac-river-context/mdimap-333",
+              "potomac-river-context/mdimap-177",
+              "potomac-river-context/mdimap-346"
+            ],
+            "zoom": 9.6,
+            "pitch": 55,
+            "range": [0.3, 0.85]
+          },
+          {
+            "range": [0.93, 1],
+            "keyframes": [
+              {
+                "at": 0,
+                "center": [-77.65, 39.33],
+                "zoom": 8,
+                "pitch": 0,
+                "bearing": 0
+              }
+            ]
+          }
+        ],
+        "layers": [
+          {
+            "layerId": "gauges",
+            "property": "opacity",
+            "range": [0.2, 1]
+          },
+          {
+            "layerId": "river-context",
+            "property": "highlight",
+            "mode": "scrub",
+            "range": [0.3, 0.9],
+            "keyframes": [
+              {
+                "at": 0,
+                "value": 0
+              },
+              {
+                "at": 0.15,
+                "value": 1
+              },
+              {
+                "at": 0.85,
+                "value": 1
+              },
+              {
+                "at": 1,
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
       "annotations": [
         {
           "id": "hancock-2024",
@@ -145,6 +226,30 @@
         "zoom": 8
       },
       "transitionIn": "cut",
+      "motion": {
+        "scrollLength": 1.5,
+        "layers": [
+          {
+            "layerId": "gauges",
+            "property": "highlight",
+            "durationMs": 1600,
+            "keyframes": [
+              {
+                "at": 0,
+                "value": 0
+              },
+              {
+                "at": 0.4,
+                "value": 1
+              },
+              {
+                "at": 1,
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
       "annotations": [
         {
           "id": "point-of-rocks-2025",
@@ -210,6 +315,15 @@
         "zoom": 8
       },
       "transitionIn": "cut",
+      "motion": {
+        "scrollLength": 1.5,
+        "camera": {
+          "preset": "push-in",
+          "feature": "potomac-2025/USGS-01646500",
+          "pitch": 35,
+          "range": [0.1, 0.9]
+        }
+      },
       "annotations": [
         {
           "id": "little-falls-limits",

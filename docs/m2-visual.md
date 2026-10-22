@@ -406,6 +406,53 @@ the manifest and budget arithmetic. The unavailable run passes on Potomac.
 The workflow passes `actionlint`, or is checked by hand if actionlint isn't
 available. Running it in CI waits for a push.
 
+As built (2026-10-22):
+
+- **Goldens** (`packages/cli/src/visual/goldens.ts`, `pixelmatch` 7.2.0 ISC and
+  `pngjs` 7.0.0 MIT, pinned). Every screenshot capture (p = 0, 0.5 and 1,
+  including a capture that falls in flight) has a golden. `--update` needs
+  `--network offline` (else exit 2). It runs the full capture five times,
+  sweep included, and the noise is the worst diff of runs 2–5 against run 1.
+  Captures-only runs are not used: the sweep's path changes what the captures
+  show (about 0.7% of pixels on Potomac), while full runs repeat exactly. On
+  this Windows machine the noise was **0** over five runs, so the tolerance
+  takes its floor, `maxDiffRatio` 0.0005 (0.05% of pixels, 3 × noise
+  otherwise). The manifest records the noise, factor and floor. Goldens are
+  compared only on offline runs, and only when `goldens/manifest.json`
+  exists. A missing golden or a golden with no capture is also
+  `VISUAL_GOLDEN_MISMATCH`. Another platform's goldens only warn; the
+  Windows–Linux SwiftShader diff is not measured yet (needs CI). On Potomac
+  the 18 goldens are 2.8 MB, and changing the river colour failed all 18
+  captures at 0.20–0.22% with diff images. `--update` takes about 3 minutes here.
+- **`--network unavailable`** aborts every request on an online build.
+  Chromium's own "Failed to load resource" console lines are expected there
+  and ignored. In the first scene it checks that `#mb-basemap-notice` is
+  visible and that, with every overlay hidden, more than 0.1% of the map
+  differs from its background colour. The run found a player bug: when every
+  provider style failed, the fallback chain stopped at the second style and
+  the story never reached `ready`. Fixed in `compiled.ts`. It also runs the
+  full capture, so occlusion findings are reported too (see STATUS).
+- **Budgets** (`@mapbard/knowledge` `budgets.ts`): file kinds from the build
+  path (core, tier `tier-*.js`, data, media, style, font, other). Gzip level 9
+  for text files. Fonts, images and video count at their raw size. `build`
+  and `check --visual` return `sizes` (the core and tier parts, totals by kind,
+  budgets). Potomac core is 407,735 bytes (398.2 KiB) gzip, inside 450 KiB.
+- **Frames.** `check --visual --frames` samples desktop and phone in a second
+  browser on Chromium's default WebGL path. Forced SwiftShader is several times
+  slower at desktop size (p99 about 117 ms), so it would mostly measure the
+  software rasteriser. Per scene with a moving scrub camera, it counts
+  the frames whose `progress()` falls in flight. `scripts/frame-probe.mjs` is a
+  wrapper (`--swiftshader` to force it) and matches the earlier 8.5 ms p99.
+  Frame times swing with machine load (p99 from 8.5 to 90 ms between runs
+  while another worker ran browsers). Info only.
+- **CI** `visual` job: a matrix over `potomac` and `potomac-night`. It
+  fails when a project has no goldens, unless `update_goldens` is set, and it
+  uploads `goldens-<project>`. The budget table goes to the step summary.
+  `actionlint` isn't installed here. The YAML was parsed and its inline
+  scripts were run on local outputs.
+- The CLI's test timeout is 20 s, because Potomac builds under parallel load
+  passed 5 s.
+
 ### K. Potomac V1 redesign, two variants (step 4.2)
 
 - **Variants.** `examples/projects/potomac` becomes the **atlas** variant

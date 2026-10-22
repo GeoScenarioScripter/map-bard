@@ -15,6 +15,7 @@ import {
   validateProject,
 } from '@mapbard/schema';
 import {
+  contextPaint,
   graduatedSizePrerequisite,
   hasCapability,
   humanizeId,
@@ -653,6 +654,17 @@ export function compileProject(
             ids,
           ),
         );
+      if (layer.encode?.maxRadius !== undefined && layer.encode.visualVariable !== 'size')
+        diagnostics.push(
+          issue(
+            'CAPABILITY_UNSUPPORTED',
+            'narrative',
+            [...at, 'encode', 'maxRadius'],
+            'maxRadius applies only to size encodings.',
+            'Remove maxRadius or encode size.',
+            ids,
+          ),
+        );
       if (layer.technique === 'graduated-symbol' && layer.encode?.visualVariable !== 'size')
         diagnostics.push(
           issue(
@@ -738,6 +750,20 @@ export function compileProject(
         );
       if (!layer.encode || designed?.constant)
         capability(capabilities, 'layer.constant', diagnostics, at, ids);
+      // A colour that no data drives and no author set comes from the theme.
+      const themed =
+        actualGeometry && layer.encode?.visualVariable !== 'color' && !designed?.constant?.color
+          ? contextPaint(theme.colors, actualGeometry)
+          : undefined;
+      const constant = themed
+        ? {
+            ...designed?.constant,
+            color: themed.color,
+            ...(themed.opacity !== undefined && designed?.constant?.opacity === undefined
+              ? { opacity: themed.opacity }
+              : {}),
+          }
+        : designed?.constant;
       if (actualGeometry)
         layers.push({
           sceneId: scene.id,
@@ -748,7 +774,8 @@ export function compileProject(
           technique: layer.technique === 'heatmap' ? 'point' : layer.technique,
           ...(layer.encode ? { attribute: layer.encode.attribute, scaleId } : {}),
           ...(filter ? { filter } : {}),
-          ...(designed?.constant ? { constant: designed.constant } : {}),
+          ...(constant ? { constant } : {}),
+          ...(themed?.outline ? { outline: themed.outline } : {}),
         });
     }
     const annotations = (sceneDesign?.annotations ?? []).map((item) => ({
@@ -984,6 +1011,30 @@ export function compileProject(
           { scaleId: scale.id },
         ),
       );
+    // One mapping: the shared scale's largest radius, else the one its members agree on.
+    const maxRadius = color
+      ? undefined
+      : ((scale.visualVariable === 'size' ? scale.maxRadius : undefined) ??
+        members.find((member) => member.layer.encode?.maxRadius !== undefined)?.layer.encode
+          ?.maxRadius);
+    if (
+      !color &&
+      members.some(
+        (member) =>
+          member.layer.encode?.maxRadius !== undefined &&
+          member.layer.encode.maxRadius !== maxRadius,
+      )
+    )
+      diagnostics.push(
+        issue(
+          'MEASUREMENT_INCOMPATIBLE',
+          'design',
+          ['sharedScales', scale.id, 'maxRadius'],
+          'Shared size scale members set different largest radii.',
+          'Set maxRadius once on the shared scale and remove it from the member layers.',
+          { scaleId: scale.id },
+        ),
+      );
     members.forEach((member) => {
       handled.add(key(member.sceneId, member.layer.id));
       checkMeasurement(member, color ? 'color' : 'size', diagnostics, scale.id);
@@ -1012,6 +1063,7 @@ export function compileProject(
       ...(color ? { method: color.method } : {}),
       ...(color?.breaks ? { breaks: color.breaks } : {}),
       ...(color?.domain ? { domain: color.domain } : {}),
+      ...(maxRadius !== undefined ? { maxRadius } : {}),
       path: ['sharedScales', scale.id],
     };
     const resolved = resolveScale(input, color ? 'numeric-color' : 'numeric-size', diagnostics);
@@ -1113,6 +1165,7 @@ export function compileProject(
       classes: layer.classification?.classes ?? 3,
       ...(layer.classification ? { method: layer.classification.method } : {}),
       ...(layer.classification?.breaks ? { breaks: layer.classification.breaks } : {}),
+      ...(layer.encode.maxRadius !== undefined ? { maxRadius: layer.encode.maxRadius } : {}),
       path: ['features', 'properties', layer.encode.attribute],
     };
     const resolved = resolveScale(input, kind, diagnostics);

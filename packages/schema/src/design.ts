@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ClassificationMethodSchema, LngLatSchema } from './geo-narrative.js';
+import { ClassificationMethodSchema, LngLatSchema, MaxRadiusSchema } from './geo-narrative.js';
 import { DESIGN_VERSION, ExtensionsSchema, IdSchema } from './project.js';
 
 export const AnnotationSchema = z
@@ -61,7 +61,14 @@ export const SharedScaleSchema = z.discriminatedUnion('visualVariable', [
     })
     .strict(),
   // Graduated symbols: one sqrt-area mapping from zero to the largest value of every member.
-  z.object({ ...sharedScaleBase, visualVariable: z.literal('size') }).strict(),
+  z
+    .object({
+      ...sharedScaleBase,
+      visualVariable: z.literal('size'),
+      /** Radius of the largest symbol, in CSS pixels (default 16). */
+      maxRadius: MaxRadiusSchema.optional(),
+    })
+    .strict(),
 ]);
 
 export const LayerConstantSchema = z

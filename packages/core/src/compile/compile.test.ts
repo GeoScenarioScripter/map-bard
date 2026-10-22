@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vitest';
-import { STAGE1_CAPABILITIES } from '@mapbard/knowledge';
+import { STAGE1_CAPABILITIES, contextPaint } from '@mapbard/knowledge';
 import type { CapabilityCatalog, ValidatedProject } from '@mapbard/schema';
 import { loadProject } from '../project/load.js';
 import { compileProject } from './compile.js';
@@ -166,6 +166,69 @@ describe('compileProject', () => {
     expect(compileProject(project, STAGE1_CAPABILITIES).diagnostics).toContainEqual(
       expect.objectContaining({ code: 'MEASUREMENT_INCOMPATIBLE', ids: { scaleId: shared.id } }),
     );
+  });
+
+  it('sizes a shared scale to its maxRadius and rejects members that disagree', async () => {
+    const project = await fixture();
+    const shared = project.design.sharedScales[0]!;
+    project.design.sharedScales[0] = {
+      id: shared.id,
+      members: shared.members,
+      visualVariable: 'size',
+      maxRadius: 30,
+    };
+    for (const resource of project.project.resources.data)
+      for (const attribute of resource.attributes)
+        if (attribute.role === 'quantity') attribute.level = 'ratio';
+    const members = shared.members.map(
+      (member) =>
+        project.narrative.scenes
+          .find((scene) => scene.id === member.sceneId)!
+          .layers.find((layer) => layer.id === member.layerId)!,
+    );
+    for (const layer of members) {
+      layer.technique = 'graduated-symbol';
+      layer.encode = { attribute: layer.encode!.attribute, visualVariable: 'size' };
+      delete layer.classification;
+    }
+    const result = compileProject(project, STAGE1_CAPABILITIES);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const scale = result.value.scales.find((item) => item.id === shared.id)!;
+    if (scale.kind !== 'numeric-size') throw new Error('expected a size scale');
+    expect(scale.radiusRange).toEqual([0, 30]);
+    expect(Math.max(...scale.legend.map((entry) => entry.radius))).toBe(30);
+
+    members[0]!.encode = { ...members[0]!.encode!, maxRadius: 20 };
+    expect(compileProject(project, STAGE1_CAPABILITIES).diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'MEASUREMENT_INCOMPATIBLE',
+        path: ['sharedScales', shared.id, 'maxRadius'],
+      }),
+    );
+  });
+
+  it('takes unauthored context colours from the theme', async () => {
+    const project = await fixture();
+    project.narrative.theme = { preset: 'night' };
+    project.narrative.scenes[0]!.layers.push({
+      id: 'plain-sites',
+      dataSourceId: 'period-a',
+      technique: 'point',
+    });
+    project.design.scenes[0]!.layers.push({ layerId: 'plain-sites', constant: { radius: 6 } });
+    const result = compileProject(project, STAGE1_CAPABILITIES);
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const layer = result.value.scenes[0]!.layers.find(
+      (item) => item.authoredLayerId === 'plain-sites',
+    )!;
+    expect(layer.constant).toEqual({
+      radius: 6,
+      color: contextPaint(result.value.theme.colors, 'point').color,
+    });
+    expect(layer.outline).toBeUndefined();
+    // Colour-encoded layers keep their scale and gain no constant colour.
+    for (const item of result.value.scenes[0]!.layers)
+      if (item.scaleId) expect(item.constant?.color).toBeUndefined();
   });
 
   it('rejects nonnumeric values and all-missing numeric scales with counts', async () => {

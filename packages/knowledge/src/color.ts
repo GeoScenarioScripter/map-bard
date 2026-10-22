@@ -52,3 +52,73 @@ export function contrastRatio(
   );
   return (high! + 0.05) / (low! + 0.05);
 }
+
+const toHex = (color: Rgba) =>
+  `#${[color.r, color.g, color.b]
+    .map((channel) =>
+      Math.round(Math.min(255, Math.max(0, channel)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+
+function toHsl({ r, g, b }: Rgba): [number, number, number] {
+  const [red, green, blue] = [r / 255, g / 255, b / 255];
+  const high = Math.max(red, green, blue);
+  const low = Math.min(red, green, blue);
+  const lightness = (high + low) / 2;
+  if (high === low) return [0, 0, lightness];
+  const delta = high - low;
+  const saturation = delta / (1 - Math.abs(2 * lightness - 1));
+  const hue =
+    high === red
+      ? ((green - blue) / delta + 6) % 6
+      : high === green
+        ? (blue - red) / delta + 2
+        : (red - green) / delta + 4;
+  return [hue * 60, saturation, lightness];
+}
+
+function fromHsl([hue, saturation, lightness]: [number, number, number]): Rgba {
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const x = chroma * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const m = lightness - chroma / 2;
+  const [r, g, b] =
+    hue < 60
+      ? [chroma, x, 0]
+      : hue < 120
+        ? [x, chroma, 0]
+        : hue < 180
+          ? [0, chroma, x]
+          : hue < 240
+            ? [0, x, chroma]
+            : hue < 300
+              ? [x, 0, chroma]
+              : [chroma, 0, x];
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255, a: 1 };
+}
+
+/**
+ * The colour with its hue and saturation kept and its lightness moved away from every
+ * background (darker on light grounds, lighter on dark ones) until it reaches `ratio`
+ * against each. A colour that already passes is returned unchanged. Opaque `#rrggbb` out.
+ */
+export function withContrast(color: string, backgrounds: readonly string[], ratio: number): string {
+  const parsed = parseHexColor(color);
+  const grounds = backgrounds.map(parseHexColor).filter((item): item is Rgba => !!item);
+  if (!parsed || !grounds.length) return color;
+  const passes = (hex: string) =>
+    backgrounds.every((background) => (contrastRatio(hex, background) ?? 0) >= ratio);
+  if (passes(color)) return color;
+  const darker =
+    grounds.reduce((sum, ground) => sum + relativeLuminance(ground), 0) / grounds.length > 0.18;
+  const [hue, saturation, start] = toHsl(parsed);
+  // Hundredth steps, so the result is the nearest passing lightness and stays deterministic.
+  for (let step = 1; step <= 100; step++) {
+    const lightness = darker ? start - step / 100 : start + step / 100;
+    if (lightness < 0 || lightness > 1) break;
+    const hex = toHex(fromHsl([hue, saturation, lightness]));
+    if (passes(hex)) return hex;
+  }
+  return darker ? '#000000' : '#ffffff';
+}

@@ -133,6 +133,10 @@ export const DiscourseDimensionsSchema = z.object({
 // Visual bindings, camera, controls
 // ---------------------------------------------------------------------------
 
+/** Largest graduated-symbol radius, in CSS pixels. */
+export const DEFAULT_MAX_RADIUS = 16;
+export const MaxRadiusSchema = z.number().finite().min(4).max(48);
+
 export const ClassificationMethodSchema = z.enum([
   'equal-interval',
   'quantile',
@@ -156,6 +160,8 @@ export const LayerBindingSchema = z.object({
     .object({
       attribute: z.string(),
       visualVariable: z.enum(['color', 'size', 'opacity']),
+      /** Size encodings only: radius of the largest symbol, in CSS pixels (default 16). */
+      maxRadius: MaxRadiusSchema.optional(),
     })
     .optional(),
   classification: z

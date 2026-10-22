@@ -1,4 +1,6 @@
-import type { ResolvedTheme, ThemePreset, ThemeTokens } from '@mapbard/schema';
+import type { ResolvedTheme, ThemeColors, ThemePreset, ThemeTokens } from '@mapbard/schema';
+import { parseHexColor, withContrast } from './color.js';
+import { MIN_MARK_CONTRAST } from './critic.js';
 
 /** OFL families the renderer copies into `fonts/`, so offline builds keep their typography. */
 export const BUNDLED_FONTS = {
@@ -237,4 +239,31 @@ export function resolveTheme(authored: ThemeTokens = {}): ResolvedTheme {
     type: { ...base.type },
     card: { ...base.card },
   };
+}
+
+/** Alpha of a context fill drawn in the land colour, so the basemap shows through. */
+export const CONTEXT_FILL_OPACITY = 0.35;
+
+/**
+ * Paint for a layer whose colour is not data-driven and not authored: fills take the land
+ * colour at a low alpha with a boundary outline, lines the water colour and points the
+ * accent. The fill's alpha sits in its colour, not in its opacity, because MapLibre draws a
+ * fill outline at the fill's opacity and the outline should stay visible. Lines and points
+ * are moved in lightness, if needed, to reach the critic's mark contrast against land (and
+ * water, for points), so the defaults never trip it.
+ */
+export function contextPaint(
+  colors: ThemeColors,
+  geometry: 'point' | 'line' | 'polygon',
+): { color: string; opacity?: number; outline?: string } {
+  if (geometry === 'polygon') {
+    const land = parseHexColor(colors.land)!;
+    const color = `#${[land.r, land.g, land.b, CONTEXT_FILL_OPACITY * 255]
+      .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
+      .join('')}`;
+    return { color, opacity: 1, outline: colors.boundary };
+  }
+  if (geometry === 'line')
+    return { color: withContrast(colors.water, [colors.land], MIN_MARK_CONTRAST) };
+  return { color: withContrast(colors.accent, [colors.land, colors.water], MIN_MARK_CONTRAST) };
 }

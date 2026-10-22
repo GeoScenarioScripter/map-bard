@@ -116,7 +116,10 @@ const ResolvedLayerSchema = z
     attribute: IdSchema.optional(),
     scaleId: IdSchema.optional(),
     filter: TypedFilterSchema.optional(),
+    /** Authored constants, with colour (and a fill's opacity) defaulted from the theme. */
     constant: LayerConstantSchema.optional(),
+    /** Polygon outline colour; set when a fill takes its colour from the theme. */
+    outline: z.string().optional(),
   })
   .strict();
 
@@ -176,6 +179,8 @@ export const CompiledSchema = z
             .object({
               tiles: z.string().url(),
               attribution: z.string().min(1),
+              /** Where the credit links, for providers whose source list is a page of its own. */
+              attributionUrl: z.string().url().optional(),
               exaggeration: z.number().positive(),
               tileSize: z.union([z.literal(256), z.literal(512)]),
               /** Hillshade from the same tiles, drawn below roads and labels. */

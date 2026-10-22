@@ -1,5 +1,5 @@
 import { formatNumber, formatUnit } from '@mapbard/knowledge';
-import type { Diagnostic, ResolvedScale } from '@mapbard/schema';
+import { DEFAULT_MAX_RADIUS, type Diagnostic, type ResolvedScale } from '@mapbard/schema';
 
 export type ScaleKey = { sceneId: string; layerId: string; sourceId: string };
 export type ScaleInput = {
@@ -16,6 +16,8 @@ export type ScaleInput = {
   /** Manual interior edges, strictly increasing and inside the domain. */
   breaks?: number[];
   domain?: [number, number];
+  /** Graduated size: radius of the largest symbol, in CSS pixels. */
+  maxRadius?: number;
   path: (string | number)[];
 };
 
@@ -470,7 +472,10 @@ export function numericSizeScale(input: ScaleInput): {
   const min = usable.reduce((value, entry) => Math.min(value, entry), Infinity),
     max = usable.reduce((value, entry) => Math.max(value, entry), -Infinity);
   const domain: [number, number] = min === max ? [min, max] : [0, max];
-  const radiusRange: [number, number] = min === max ? (max === 0 ? [0, 0] : [8, 8]) : [0, 16];
+  const largest = input.maxRadius ?? DEFAULT_MAX_RADIUS;
+  // One distinct value draws at half the largest radius: there is nothing to compare it with.
+  const radiusRange: [number, number] =
+    min === max ? (max === 0 ? [0, 0] : [largest / 2, largest / 2]) : [0, largest];
   const examples = min === max ? [max] : [0, max / 4, max];
   return {
     scale: {
@@ -482,7 +487,7 @@ export function numericSizeScale(input: ScaleInput): {
       noDataRadius: 3,
       legend: examples.map((value) => ({
         value,
-        radius: min === max ? radiusRange[0] : 16 * Math.sqrt(value / max),
+        radius: min === max ? radiusRange[0] : largest * Math.sqrt(value / max),
         label: `${formatNumber(value)}${max === 0 ? ' (zero area)' : ''}`,
       })),
     },

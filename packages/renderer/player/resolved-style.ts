@@ -131,7 +131,11 @@ export function layerStyle(
         }
       : type === 'line'
         ? { 'line-color': color, 'line-width': 2.5, 'line-opacity': opacity }
-        : { 'fill-color': color, 'fill-opacity': opacity, 'fill-outline-color': halo };
+        : {
+            'fill-color': color,
+            'fill-opacity': opacity,
+            'fill-outline-color': layer.outline ?? halo,
+          };
   // Every bound filter is compiler-resolved to one of six typed operators.
   const filter = layer.filter
     ? [

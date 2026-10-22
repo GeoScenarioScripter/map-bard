@@ -1,7 +1,7 @@
 import { ResolvedThemeSchema, THEME_PRESETS } from '@mapbard/schema';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from './color.js';
-import { resolveTheme, THEME_PRESET_TOKENS } from './themes.js';
+import { contrastRatio, parseHexColor, relativeLuminance, withContrast } from './color.js';
+import { contextPaint, resolveTheme, THEME_PRESET_TOKENS } from './themes.js';
 
 describe('theme presets', () => {
   it.each(THEME_PRESETS)('%s resolves to a complete, readable token set', (preset) => {
@@ -62,5 +62,33 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#00000000', '#ffffff')).toBeCloseTo(1, 5);
     expect(contrastRatio('#fff', '#000')).toBeCloseTo(21, 5);
     expect(contrastRatio('red', '#000')).toBeUndefined();
+  });
+});
+
+describe('context paint', () => {
+  it.each(THEME_PRESETS)('%s defaults keep marks at the critic contrast', (preset) => {
+    const { colors } = resolveTheme({ preset });
+    const fill = contextPaint(colors, 'polygon');
+    // Land at 35% alpha (0x59), drawn at full opacity so the boundary outline stays solid.
+    expect(fill).toEqual({ color: `${colors.land}59`, opacity: 1, outline: colors.boundary });
+    const line = contextPaint(colors, 'line');
+    expect(contrastRatio(line.color, colors.land)).toBeGreaterThanOrEqual(3);
+    const point = contextPaint(colors, 'point');
+    expect(contrastRatio(point.color, colors.land)).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(point.color, colors.water)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps a passing colour and moves a failing one in lightness only', () => {
+    expect(withContrast('#0b3d91', ['#ffffff'], 3)).toBe('#0b3d91');
+    // Night water on night land: lighter, still blue.
+    const lifted = withContrast('#0c1726', ['#18202e'], 3);
+    expect(contrastRatio(lifted, '#18202e')).toBeGreaterThanOrEqual(3);
+    const { r, b } = parseHexColor(lifted)!;
+    expect(b).toBeGreaterThan(r);
+    // Atlas water on atlas land: darker.
+    const deepened = withContrast('#a7c3c4', ['#efe3c8'], 3);
+    expect(relativeLuminance(parseHexColor(deepened)!)).toBeLessThan(
+      relativeLuminance(parseHexColor('#a7c3c4')!),
+    );
   });
 });

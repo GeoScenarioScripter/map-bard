@@ -13,6 +13,7 @@ import {
   DiscourseDimensionsSchema,
   LayerBindingSchema,
   LngLatSchema,
+  MaxRadiusSchema,
   MediaAnchorSchema,
   SceneMediaSchema,
 } from './geo-narrative.js';
@@ -146,7 +147,12 @@ export const StoryLayerSchema = LayerBindingSchema.omit({ dataSourceId: true, fi
   .extend({
     sourceId: IdSchema,
     encode: z
-      .object({ attribute: IdSchema, visualVariable: z.enum(['color', 'size', 'opacity']) })
+      .object({
+        attribute: IdSchema,
+        visualVariable: z.enum(['color', 'size', 'opacity']),
+        /** Size encodings only: radius of the largest symbol, in CSS pixels (default 16). */
+        maxRadius: MaxRadiusSchema.optional(),
+      })
       .strict()
       .optional(),
     classification: z

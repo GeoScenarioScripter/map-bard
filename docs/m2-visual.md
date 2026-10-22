@@ -1,6 +1,6 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-21. Status: **active**. Wave 1 is complete; Wave 2 is next. Part of the
+Updated 2026-10-21. Status: **active**. Waves 1 and 2 are complete; Wave 3 is next. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -136,6 +136,14 @@ the Potomac build, browser smoke and the QA capture show the new encoding.
 
 ## Wave 2
 
+Complete. As built, beyond the items below: the compiled spec carries the
+resolved `theme` and `layout` (additive under 0.2.0); legends, controls, media
+and notices stack in one rail (right on desktop, top on phones) that also pads
+the camera; the camera zooms out (never in) when the free map area is smaller
+than on the 1440×900 reference desktop, so authored targets stay visible on
+phones; and visual QA flags targets clipped by the screen edge. `sidecar` is a
+solid text column; today's floating cards are `overlay-cards`.
+
 ### D. Themes and typography
 
 - `theme.preset`: `editorial-light` (default), `night`, `atlas`, `newsroom`.
@@ -150,7 +158,7 @@ the Potomac build, browser smoke and the QA capture show the new encoding.
 
 ### E. Layout templates
 
-- `layout`: `sidecar` (today), `overlay-cards`, `full-bleed`; `split` and
+- `layout`: `sidecar` (default, a text column), `overlay-cards` (the pre-M2 floating cards), `full-bleed`; `split` and
   `chapter` follow in V4 unless they are cheap.
 - Each layout declares the screen rectangle it reserves for the card at
   desktop and phone widths. The player applies it as MapLibre camera

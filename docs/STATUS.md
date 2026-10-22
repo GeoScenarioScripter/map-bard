@@ -1,8 +1,8 @@
 # MapBard — Status
 
 **Updated 2026-10-21. [M2 — Visual Engine](visual-engine.md) is active; its
-execution plan is [m2-visual.md](m2-visual.md). Wave 1 is complete; next is
-Wave 2.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+execution plan is [m2-visual.md](m2-visual.md). Waves 1 and 2 are complete;
+next is Wave 3.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -12,20 +12,29 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - `@mapbard/core`: load and validate a project with source hashes; compile it
   to a resolved spec (equal-interval, quantile, natural-breaks and manual
   color classes; category and size scales; shared color and size scales;
-  legend titles and display units; annotations, controls, capability
-  diagnostics); ingest/profiling helpers in
+  legend titles and display units; resolved theme and layout; annotations,
+  controls, capability diagnostics), a static critic (`critiqueProject`);
+  ingest/profiling helpers in
   `inspect/`. Format 0.2 loads from `mapbard.json` and `story.json`, with text
   hashes and profiles in `mapbard.lock.json`; 0.1 projects migrate into a new
   directory without changing the source.
 - `@mapbard/renderer`: compiled publication (MapLibre 6.1 player and local IIFE
   worker) that runs from `file://`, with stale-input rejection, safe asset
-  paths, online style fallback, terrain and offline mode.
+  paths, online style fallback, terrain and offline mode. Styles are
+  token-driven (generated `theme.css`, bundled OFL Inter and Source Serif 4);
+  layouts `sidecar`, `overlay-cards` and `full-bleed` with a phone bottom
+  sheet, camera padding and responsive zoom; theme-tinted OpenFreeMap and
+  VersaTiles styles, hillshade, sky and globe projection.
 - `@mapbard/knowledge`: capability list, encoding prerequisites, display
-  formatters (units, numbers, titles) and provider catalog for OpenFreeMap,
-  VersaTiles, Mapterhorn and AWS Terrarium.
+  formatters (units, numbers, titles), theme presets (`editorial-light`,
+  `night`, `atlas`, `newsroom`), layout frames, WCAG contrast, five critic
+  rules (raw identifiers, caret units, hidden contrast, inconsistent scales,
+  palette contrast) and provider catalog for OpenFreeMap, VersaTiles,
+  Mapterhorn and AWS Terrarium.
 - Visual QA: `node scripts/visual-qa.mjs <publication> <out>` captures each
   scene at desktop and phone sizes, writes a contact sheet, and reports
-  console errors, remote requests and occlusion findings. The compiled page
+  console errors, remote requests and occlusion findings, including targets
+  clipped by the screen edge. The compiled page
   exposes `data-mb-state` and a read-only `window.MapBardStory` hook.
 - `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
@@ -40,7 +49,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 121 routine tests (schema 24, knowledge 5, core 56, renderer 24, CLI 6,
+- Checks: 148 routine tests (schema 24, knowledge 20, core 57, renderer 35, CLI 6,
   root integration 5, browser smoke 1), lint and Windows tarball install smoke
   pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -50,11 +59,17 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - Visual quality is below the bar (<60/100). The defects are listed in
   [visual-engine.md](visual-engine.md#why-the-current-output) (M2). Fixed
   in Wave 1: raw legend IDs, caret units, and the encoding that hid the 2025
-  drop. Open: the visual QA report on Potomac still has 6 layout findings:
-  on desktop the card covers Hancock and the legend overlaps the card in
-  `limits`; on phone the card covers Point of Rocks and overlaps the media
-  panel and legend (Wave 2, item E). Annotation marker buttons sit on top of
-  small 2025 symbols (Wave 3, item I). The largest symbol radius is 16 px.
+  drop. Fixed in Wave 2: all 6 layout findings; Potomac's QA report is clean
+  at desktop and phone sizes (stub-online and offline). Open: annotation
+  marker buttons sit on top of small 2025 symbols (Wave 3, item I); the
+  largest symbol radius is 16 px. Potomac still uses its own context colours
+  (an opaque state fill), which hide most of the basemap tint and hillshade;
+  the K redesign picks a theme and context styling.
+- Long narration scrolls inside the phone bottom sheet and the full-bleed
+  caption card, which are capped at the reserved height. The critic does not
+  warn about it yet.
+- With a live provider style, the attribution shows OpenFreeMap twice (the
+  style's own source credit and MapBard's credit line).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
@@ -70,6 +85,17 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Ran M2 Wave 2. D: theme presets resolved at compile time,
+  generated theme.css, token-only style.css, bundled OFL fonts with licences.
+  E: sidecar, overlay-cards and full-bleed layouts with a phone bottom sheet,
+  panel rail, camera padding and responsive zoom; QA now flags edge-clipped
+  targets. F: theme tint for OpenMapTiles and Shortbread layers, hillshade,
+  sky and globe. G: five critic rules as check/build warnings; credits use
+  resource names. Build, 148 tests, lint and browser smoke pass. Visual QA on
+  Potomac: 0 findings (stub-online; offline with zero requests), plus
+  overlay-cards/night and full-bleed/atlas variants; a live run with
+  OpenFreeMap tiles and Mapterhorn terrain confirmed tint, terrain,
+  hillshade, sky and pitch. Contact sheets were inspected. Next: Wave 3 (H, I).
 - 2026-10-21: Wrote the M2 execution plan (docs/m2-visual.md, four waves) and
   ran Wave 1. A: visual QA capture script, readiness hook and occlusion
   geometry; the baseline on the old Potomac flagged the known card/legend

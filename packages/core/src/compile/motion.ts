@@ -3,6 +3,8 @@ import {
   parseEasingText,
   type AuthoredEasing,
   type AuthoredMotion,
+  type CalloutMotion,
+  type CalloutTrack,
   type CameraKeyframe,
   type CameraMotion,
   type CameraState,
@@ -54,6 +56,7 @@ export const MOTION_DEFAULTS = {
   camera: { mode: 'scrub', easing: 'ease-in-out', durationMs: 1600, delayMs: 0 },
   data: { mode: 'play', easing: 'ease-out', durationMs: 900, delayMs: 0 },
   ambient: { mode: 'loop', easing: 'ease-in-out', durationMs: 2400, delayMs: 0 },
+  annotation: { mode: 'play', easing: 'ease-out', durationMs: 400, delayMs: 0 },
 } as const satisfies {
   scrollLength: number;
   trigger: number;
@@ -61,6 +64,7 @@ export const MOTION_DEFAULTS = {
   camera: ResolvedDefaults;
   data: ResolvedDefaults;
   ambient: ResolvedDefaults;
+  annotation: ResolvedDefaults;
 };
 
 /** Width of the player's right-hand rail (renderer `RAIL_WIDTH`); presets frame the map beside it. */
@@ -74,6 +78,8 @@ export type MotionLayer = {
   sourceId: string;
   geometry: 'point' | 'line' | 'polygon';
   scaleId?: string;
+  /** The encoded attribute, which an ascending or descending stagger ranks by. */
+  attribute?: string;
 };
 
 export type MotionInput = {
@@ -83,6 +89,8 @@ export type MotionInput = {
   /** Compiled layers of this scene. */
   layers: readonly MotionLayer[];
   controls: readonly { runtimeLayerId: string; property: string }[];
+  /** Annotation IDs of this scene; each compiles to a callout a track can fade. */
+  calloutIds: readonly string[];
   /** Registered data source IDs. */
   sourceIds: readonly string[];
   /** Raw GeoJSON geometry of one feature, or undefined when the source has no such feature. */
@@ -154,6 +162,14 @@ function mergeCamera(general: CameraMotion, specific: CameraMotion): CameraMotio
 }
 
 function mergeLayer(general: LayerMotion, specific: LayerMotion): LayerMotion {
+  return mergeValueTrack(general, specific);
+}
+
+/** Most specific wins; new keyframes or from/to replace the general track's values. */
+function mergeValueTrack<T extends { from?: number; to?: number; keyframes?: unknown }>(
+  general: T,
+  specific: T,
+): T {
   const base =
     specific.keyframes !== undefined || specific.from !== undefined || specific.to !== undefined
       ? omit(general, LAYER_SHAPE_KEYS)
@@ -175,6 +191,7 @@ const LAYER_CAPABILITY: Record<LayerTrack['property'], CapabilityId> = {
 };
 
 type Frame = { at: number; state: CameraState; easing: Easing };
+type TrackKind = 'camera' | 'data' | 'ambient' | 'annotation';
 
 /** Resolve the authored cascade into compiled tracks for one scene. */
 export function resolveSceneMotion(input: MotionInput): SceneMotion {
@@ -213,7 +230,7 @@ export function resolveSceneMotion(input: MotionInput): SceneMotion {
     );
   const presetPath: Path = ['motionPresets', presetName ?? ''];
 
-  const defaults = (kind: 'camera' | 'data' | 'ambient'): ResolvedDefaults => ({
+  const defaults = (kind: TrackKind): ResolvedDefaults => ({
     ...MOTION_DEFAULTS[kind],
     ...defined(story?.[kind] ?? ({} as TrackDefaults)),
   });
@@ -277,7 +294,42 @@ export function resolveSceneMotion(input: MotionInput): SceneMotion {
     if (resolved) layers.push(resolved);
   }
 
-  return { scrollLength, trigger, reducedMotion, camera, layers };
+  // ---- callouts ----
+  const calloutMerged = new Map<string, { track: CalloutMotion; where: Where }>();
+  const collectCallouts = (tracks: readonly CalloutMotion[] | undefined, base: Where) => {
+    const seen = new Set<string>();
+    tracks?.forEach((track, index) => {
+      const at: Where = { artifact: base.artifact, path: [...base.path, index] };
+      if (seen.has(track.calloutId)) {
+        problem(
+          'ID_DUPLICATE',
+          at,
+          `Callout ${track.calloutId} has two tracks.`,
+          'Keep one track per callout, and sequence values with keyframes.',
+          { annotationId: track.calloutId },
+        );
+        return;
+      }
+      seen.add(track.calloutId);
+      const previous = calloutMerged.get(track.calloutId);
+      calloutMerged.set(track.calloutId, {
+        track: previous ? mergeValueTrack(previous.track, track) : track,
+        where: at,
+      });
+    });
+  };
+  collectCallouts(preset?.callouts, { artifact: 'project', path: [...presetPath, 'callouts'] });
+  collectCallouts(sceneMotion?.callouts, {
+    artifact: 'narrative',
+    path: [...scenePath, 'callouts'],
+  });
+  const callouts: CalloutTrack[] = [];
+  for (const { track, where: at } of calloutMerged.values()) {
+    const resolved = resolveCalloutTrack(input, track, at, defaults('annotation'), problem);
+    if (resolved) callouts.push(resolved);
+  }
+
+  return { scrollLength, trigger, reducedMotion, camera, layers, callouts };
 }
 
 type Problem = (
@@ -631,7 +683,7 @@ function resolveLayerTrack(
   input: MotionInput,
   track: LayerMotion,
   where: Where,
-  defaults: (kind: 'camera' | 'data' | 'ambient') => ResolvedDefaults,
+  defaults: (kind: TrackKind) => ResolvedDefaults,
   problem: Problem,
 ): LayerTrack | undefined {
   const layer = input.layers.find((entry) => entry.authoredLayerId === track.layerId);
@@ -713,6 +765,53 @@ function resolveLayerTrack(
       { at: 1, value: track.to ?? 1, easing },
     ];
   const delayMs = track.delayMs ?? kind.delayMs;
+  let stagger: LayerTrack['stagger'];
+  if (track.stagger) {
+    const order = track.stagger.order ?? 'data';
+    const at: Where = { artifact: where.artifact, path: [...where.path, 'stagger'] };
+    if (
+      !input.capability('motion.stagger', at.path, {
+        sceneId: input.scene.id,
+        layerId: track.layerId,
+      })
+    )
+      return undefined;
+    if (mode !== 'play' && mode !== 'loop') {
+      problem(
+        'VALUE_INVALID',
+        at,
+        `A ${mode} track follows scroll, so it cannot stagger features in time.`,
+        'Give the track mode play or loop, or remove stagger.',
+        ids,
+      );
+      return undefined;
+    }
+    if (track.property === 'line-reveal') {
+      problem(
+        'CAPABILITY_UNSUPPORTED',
+        at,
+        'line-reveal draws the whole layer at once and cannot stagger.',
+        'Stagger an opacity or highlight track instead.',
+        ids,
+      );
+      return undefined;
+    }
+    if (order !== 'data' && !(layer.attribute && layer.scaleId)) {
+      problem(
+        'VALUE_INVALID',
+        { artifact: at.artifact, path: [...at.path, 'order'] },
+        `An ${order} stagger ranks by the encoded attribute; layer ${track.layerId} encodes none.`,
+        'Use order "data", or stagger a layer that encodes an attribute.',
+        ids,
+      );
+      return undefined;
+    }
+    stagger = {
+      delayMs: track.stagger.delayMs,
+      order,
+      ...(order !== 'data' ? { attribute: layer.attribute! } : {}),
+    };
+  }
   return {
     mode,
     range: track.range ?? [0, 1],
@@ -721,6 +820,52 @@ function resolveLayerTrack(
       : {}),
     runtimeLayerId: layer.runtimeId,
     property: track.property,
+    keyframes,
+    final: keyframes.at(-1)!.value,
+    ...(stagger ? { stagger } : {}),
+  };
+}
+
+function resolveCalloutTrack(
+  input: MotionInput,
+  track: CalloutMotion,
+  where: Where,
+  kind: ResolvedDefaults,
+  problem: Problem,
+): CalloutTrack | undefined {
+  const ids = { annotationId: track.calloutId };
+  if (!input.calloutIds.includes(track.calloutId)) {
+    problem(
+      'REFERENCE_MISSING',
+      { artifact: where.artifact, path: [...where.path, 'calloutId'] },
+      `Callout ${track.calloutId} is not an annotation of scene ${input.scene.id}.`,
+      `Name an annotation of this scene (known: ${input.calloutIds.join(', ') || 'none'}).`,
+      ids,
+    );
+    return undefined;
+  }
+  if (!input.capability('motion.callout', where.path, { sceneId: input.scene.id, ...ids }))
+    return undefined;
+  const mode = track.mode ?? kind.mode;
+  const easing = resolveEasing(track.easing ?? kind.easing);
+  const keyframes: CalloutTrack['keyframes'] = track.keyframes
+    ? track.keyframes.map((frame, index) => ({
+        at: frame.at,
+        value: frame.value,
+        easing: index === 0 ? 'linear' : frame.easing ? resolveEasing(frame.easing) : easing,
+      }))
+    : [
+        { at: 0, value: track.from ?? 0, easing: 'linear' },
+        { at: 1, value: track.to ?? 1, easing },
+      ];
+  const delayMs = track.delayMs ?? kind.delayMs;
+  return {
+    mode,
+    range: track.range ?? [0, 1],
+    ...(mode === 'play' || mode === 'loop'
+      ? { durationMs: track.durationMs ?? kind.durationMs, ...(delayMs > 0 ? { delayMs } : {}) }
+      : {}),
+    calloutId: track.calloutId,
     keyframes,
     final: keyframes.at(-1)!.value,
   };

@@ -9,6 +9,8 @@ import {
   layerValueAt,
   pauseClock,
   sameCamera,
+  staggerSpan,
+  staggerT,
   trackFrame,
   type Track,
   type TrackClock,
@@ -102,6 +104,7 @@ export function createPlayer(
     return {
       camera: effectiveTrack(scene.motion.camera, policy, isReduced),
       layers: scene.motion.layers.map((track) => effectiveTrack(track, policy, isReduced)),
+      callouts: scene.motion.callouts.map((track) => effectiveTrack(track, policy, isReduced)),
     };
   }
 
@@ -116,7 +119,9 @@ export function createPlayer(
 
   function notify(scene: CompiledScene | undefined): void {
     const loop = scene
-      ? [tracks(scene).camera, ...tracks(scene).layers].some((track) => track.mode === 'loop')
+      ? Object.values(tracks(scene))
+          .flat()
+          .some((track) => track.mode === 'loop')
       : false;
     const status = { loop, paused };
     const key = JSON.stringify(status);
@@ -132,7 +137,7 @@ export function createPlayer(
     if (!scene) return;
     const time = now();
     const state = { p: progress, armed, now: time, settle, paused };
-    const { camera, layers } = tracks(scene);
+    const { camera, layers, callouts } = tracks(scene);
     let running = false;
     // Effective tracks are rebuilt when reduced motion changes, so clocks key on the source track.
     const cameraFrame = trackFrame(camera, state, clockFor(scene.motion.camera));
@@ -151,12 +156,42 @@ export function createPlayer(
       shownCamera = target;
     }
     layers.forEach((track, index) => {
-      const frame = trackFrame(track, state, clockFor(scene.motion.layers[index]!));
+      const clock = clockFor(scene.motion.layers[index]!);
+      const stagger = track.stagger;
+      if (
+        stagger &&
+        track.property !== 'line-reveal' &&
+        (track.mode === 'play' || track.mode === 'loop')
+      ) {
+        // Each feature runs the track, offset by its rank; the clock spans all of them.
+        const count = map.staggerCount(track.runtimeLayerId, stagger);
+        const frame = trackFrame({ ...track, durationMs: staggerSpan(track, count) }, state, clock);
+        running ||= frame.running;
+        const key = `${track.runtimeLayerId}\u0000${track.property}`;
+        if (layerValues.get(key) !== frame.t) {
+          map.setLayerFeatureValues(track.runtimeLayerId, track.property, stagger, (rank) =>
+            layerValueAt(track, staggerT(track, count, frame.t, rank)),
+          );
+          layerValues.set(key, frame.t);
+        }
+        return;
+      }
+      const frame = trackFrame(track, state, clock);
       running ||= frame.running;
       const value = layerValueAt(track, frame.t);
       const key = `${track.runtimeLayerId}\u0000${track.property}`;
       if (layerValues.get(key) !== value) {
         map.setLayerProperty(track.runtimeLayerId, track.property, value);
+        layerValues.set(key, value);
+      }
+    });
+    callouts.forEach((track, index) => {
+      const frame = trackFrame(track, state, clockFor(scene.motion.callouts[index]!));
+      running ||= frame.running;
+      const value = layerValueAt(track, frame.t);
+      const key = `callout\u0000${track.calloutId}`;
+      if (layerValues.get(key) !== value) {
+        map.setCalloutOpacity(track.calloutId, value);
         layerValues.set(key, value);
       }
     });

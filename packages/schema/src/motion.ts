@@ -123,11 +123,57 @@ const LayerKeyframeSchema = z
   })
   .strict();
 
+/** Feature order for a stagger: as stored, or by the layer's encoded attribute. */
+export const STAGGER_ORDERS = ['data', 'ascending', 'descending'] as const;
+
+/**
+ * Per-feature offset of a `play` or `loop` layer track: the feature ranked `i` starts
+ * `i * delayMs` after the first, so features rise one after another.
+ */
+export const StaggerSchema = z
+  .object({
+    delayMs: z.number().finite().positive().max(10000),
+    order: z.enum(STAGGER_ORDERS),
+    /** The encoded attribute that ranks features; required unless the order is `data`. */
+    attribute: IdSchema.optional(),
+  })
+  .strict()
+  .refine((value) => value.order === 'data' || value.attribute !== undefined, {
+    message: 'An ascending or descending stagger needs the attribute it ranks by.',
+    path: ['attribute'],
+  });
+
 export const LayerTrackSchema = z
   .object({
     ...TrackBase,
     runtimeLayerId: IdSchema,
     property: z.enum(LAYER_TRACK_PROPERTIES),
+    keyframes: z.array(LayerKeyframeSchema).min(1),
+    final: z.number().finite().min(0).max(1),
+    stagger: StaggerSchema.optional(),
+  })
+  .strict()
+  .superRefine((track, ctx) => {
+    checkTrack(track, ctx, (frame: z.infer<typeof LayerKeyframeSchema>) => frame.value);
+    if (track.stagger && track.mode !== 'play' && track.mode !== 'loop')
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['stagger'],
+        message: 'Only play and loop tracks stagger; scrub and step follow scroll.',
+      });
+    if (track.stagger && track.property === 'line-reveal')
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['stagger'],
+        message: 'line-reveal draws the whole layer at once and cannot stagger.',
+      });
+  });
+
+/** Opacity of one callout (label, leader and halo); 0 hides it from readers and placement. */
+export const CalloutTrackSchema = z
+  .object({
+    ...TrackBase,
+    calloutId: IdSchema,
     keyframes: z.array(LayerKeyframeSchema).min(1),
     final: z.number().finite().min(0).max(1),
   })
@@ -149,9 +195,20 @@ export const SceneMotionSchema = z
     reducedMotion: z.enum(['step', 'shorten', 'keep']),
     camera: CameraTrackSchema,
     layers: z.array(LayerTrackSchema),
+    callouts: z.array(CalloutTrackSchema),
   })
   .strict()
   .superRefine((motion, ctx) => {
+    const callouts = new Set<string>();
+    motion.callouts.forEach((track, index) => {
+      if (callouts.has(track.calloutId))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['callouts', index],
+          message: 'A callout has at most one track per scene.',
+        });
+      callouts.add(track.calloutId);
+    });
     const seen = new Set<string>();
     motion.layers.forEach((track, index) => {
       const key = `${track.runtimeLayerId}\u0000${track.property}`;
@@ -171,5 +228,7 @@ export type CameraState = z.infer<typeof CameraStateSchema>;
 export type CameraKeyframe = z.infer<typeof CameraKeyframeSchema>;
 export type CameraTrack = z.infer<typeof CameraTrackSchema>;
 export type LayerTrack = z.infer<typeof LayerTrackSchema>;
+export type Stagger = z.infer<typeof StaggerSchema>;
+export type CalloutTrack = z.infer<typeof CalloutTrackSchema>;
 export type LayerTrackProperty = (typeof LAYER_TRACK_PROPERTIES)[number];
 export type SceneMotion = z.infer<typeof SceneMotionSchema>;

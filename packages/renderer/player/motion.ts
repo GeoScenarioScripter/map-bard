@@ -5,9 +5,15 @@ import {
   sampleCameraKeyframes,
   sampleLayerKeyframes,
 } from '@mapbard/schema/easing';
-import type { CameraState, CameraTrack, LayerTrack, SceneMotion } from '@mapbard/schema';
+import type {
+  CalloutTrack,
+  CameraState,
+  CameraTrack,
+  LayerTrack,
+  SceneMotion,
+} from '@mapbard/schema';
 
-export type Track = CameraTrack | LayerTrack;
+export type Track = CameraTrack | LayerTrack | CalloutTrack;
 export type ReducedMotionPolicy = SceneMotion['reducedMotion'];
 
 /** Fast fades under `shorten`; long enough to read as a change, short enough not to move the page. */
@@ -15,8 +21,8 @@ export const SHORTEN_MS = 250;
 
 /**
  * The track the reader gets. Under `prefers-reduced-motion`, `step` jumps every
- * track to its final state; `shorten` keeps only short data fades (no camera
- * movement and no loops); `keep` plays as authored.
+ * track to its final state; `shorten` keeps only short data and callout fades (no
+ * camera movement, no loops and no stagger); `keep` plays as authored.
  */
 export function effectiveTrack<T extends Track>(
   track: T,
@@ -24,7 +30,12 @@ export function effectiveTrack<T extends Track>(
   reduced: boolean,
 ): T {
   if (!reduced || policy === 'keep') return track;
-  const isCamera = !('runtimeLayerId' in track);
+  if ('stagger' in track) {
+    const copy = { ...(track as LayerTrack) };
+    delete copy.stagger;
+    track = copy as T;
+  }
+  const isCamera = typeof track.final === 'object';
   if (policy === 'shorten' && track.mode === 'play' && !isCamera)
     return {
       ...track,
@@ -95,7 +106,18 @@ export function cameraAt(track: CameraTrack, t: number): CameraState {
   return sampleCameraKeyframes(track.keyframes, t);
 }
 
-export function layerValueAt(track: LayerTrack, t: number): number {
+/** A staggered track runs until its last feature is done: one delay per later feature. */
+export function staggerSpan(track: LayerTrack, count: number): number {
+  return (track.durationMs ?? 1) + Math.max(0, count - 1) * (track.stagger?.delayMs ?? 0);
+}
+
+/** Local progress of the feature ranked `rank`, from progress `t` through the whole span. */
+export function staggerT(track: LayerTrack, count: number, t: number, rank: number): number {
+  const elapsed = t * staggerSpan(track, count) - rank * (track.stagger?.delayMs ?? 0);
+  return Math.max(0, Math.min(1, elapsed / (track.durationMs ?? 1)));
+}
+
+export function layerValueAt(track: Pick<LayerTrack, 'keyframes'>, t: number): number {
   return Math.max(0, Math.min(1, sampleLayerKeyframes(track.keyframes, t)));
 }
 

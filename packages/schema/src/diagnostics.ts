@@ -37,6 +37,7 @@ export const DiagnosticSchema = z
         featureId: IdSchema.optional(),
         assetId: IdSchema.optional(),
         scaleId: IdSchema.optional(),
+        annotationId: IdSchema.optional(),
       })
       .strict(),
     message: z.string().min(1),

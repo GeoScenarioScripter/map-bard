@@ -1,4 +1,4 @@
-import type { Compiled, LayerTrackProperty } from '@mapbard/schema';
+import type { Compiled, LayerTrackProperty, Stagger } from '@mapbard/schema';
 
 // Aliases derive from the public contract; no private consumer shape can drift.
 export type CompiledStory = Compiled;
@@ -32,6 +32,17 @@ export interface MapAdapter {
   bearing(): number;
   /** Apply a motion track value in [0, 1] to an active layer (opacity factor, reveal fraction, highlight strength). */
   setLayerProperty(runtimeLayerId: string, property: LayerTrackProperty, value: number): void;
+  /** Features a staggered track starts one after another: the layer's drawn features. */
+  staggerCount(runtimeLayerId: string, stagger: Stagger): number;
+  /** Apply a staggered track: `valueAt(rank)` for each drawn feature in stagger order. */
+  setLayerFeatureValues(
+    runtimeLayerId: string,
+    property: Exclude<LayerTrackProperty, 'line-reveal'>,
+    stagger: Stagger,
+    valueAt: (rank: number) => number,
+  ): void;
+  /** Fade one callout of the shown scene; 0 hides it from readers and placement. */
+  setCalloutOpacity(calloutId: string, value: number): void;
   /** Every shown point symbol as a screen circle (map container pixels), for visual QA. */
   drawnSymbols(): { layerId: string; x: number; y: number; radius: number }[];
 }

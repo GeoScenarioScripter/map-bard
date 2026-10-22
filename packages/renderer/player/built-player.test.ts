@@ -48,6 +48,9 @@ function harness(reducedMotion = false) {
     bearing: vi.fn(() => 0),
     setLayerProperty: vi.fn(),
     drawnSymbols: vi.fn(() => []),
+    staggerCount: vi.fn(() => 0),
+    setLayerFeatureValues: vi.fn(),
+    setCalloutOpacity: vi.fn(),
   };
   const disposeView = vi.fn();
   const view: SceneView = { showScene: vi.fn(() => disposeView), clear: vi.fn() };

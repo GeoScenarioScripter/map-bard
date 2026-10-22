@@ -53,9 +53,11 @@ function input(authored?: AuthoredMotion, extra: Partial<MotionInput> = {}) {
         sourceId: 'gauges',
         geometry: 'point',
         scaleId: 'size',
+        attribute: 'discharge',
       },
     ],
     controls: [],
+    calloutIds: ['label'],
     sourceIds: ['river', 'gauges'],
     feature: (sourceId, featureId) => geometries[sourceId]?.[featureId],
     sourceGeometries: (sourceId) => Object.values(geometries[sourceId] ?? {}),
@@ -94,6 +96,7 @@ describe('motion compilation', () => {
         final: camera,
       },
       layers: [],
+      callouts: [],
     });
   });
 
@@ -375,5 +378,90 @@ describe('motion compilation', () => {
       },
     );
     expect(asked).toEqual(['camera.orbit', 'motion.line-reveal']);
+  });
+
+  it('staggers play tracks by data order or by the encoded attribute', () => {
+    const { motion, diagnostics } = resolve(
+      scene({
+        layers: [
+          { layerId: 'gauges', property: 'opacity', stagger: { delayMs: 200 } },
+          {
+            layerId: 'gauges',
+            property: 'highlight',
+            type: 'ambient',
+            stagger: { delayMs: 150, order: 'descending' },
+          },
+        ],
+      }),
+    );
+    expect(diagnostics).toEqual([]);
+    expect(SceneMotionSchema.safeParse(motion).success).toBe(true);
+    expect(motion.layers.map((track) => [track.mode, track.stagger])).toEqual([
+      ['play', { delayMs: 200, order: 'data' }],
+      ['loop', { delayMs: 150, order: 'descending', attribute: 'discharge' }],
+    ]);
+  });
+
+  it('rejects a stagger the player cannot honour', () => {
+    const { motion, diagnostics } = resolve(
+      scene({
+        layers: [
+          { layerId: 'gauges', property: 'opacity', mode: 'scrub', stagger: { delayMs: 200 } },
+          { layerId: 'river', property: 'line-reveal', stagger: { delayMs: 200 } },
+          {
+            layerId: 'river',
+            property: 'highlight',
+            stagger: { delayMs: 200, order: 'ascending' },
+          },
+        ],
+      }),
+    );
+    expect(motion.layers).toEqual([]);
+    expect(diagnostics.map((item) => [item.code, item.path])).toEqual([
+      ['VALUE_INVALID', ['scenes', 0, 'motion', 'layers', 0, 'stagger']],
+      ['CAPABILITY_UNSUPPORTED', ['scenes', 0, 'motion', 'layers', 1, 'stagger']],
+      ['VALUE_INVALID', ['scenes', 0, 'motion', 'layers', 2, 'stagger', 'order']],
+    ]);
+  });
+
+  it('fades callouts with annotation tracks and reports unknown callouts', () => {
+    const { motion, diagnostics } = resolve(
+      scene(
+        { callouts: [{ calloutId: 'label', range: [0.2, 0.6] }] },
+        { story: { annotation: { durationMs: 900 } } },
+      ),
+    );
+    expect(diagnostics).toEqual([]);
+    expect(motion.callouts).toEqual([
+      {
+        mode: 'play',
+        range: [0.2, 0.6],
+        durationMs: 900,
+        calloutId: 'label',
+        keyframes: [
+          { at: 0, value: 0, easing: 'linear' },
+          { at: 1, value: 1, easing: 'ease-out' },
+        ],
+        final: 1,
+      },
+    ]);
+    const missing = resolve(
+      scene({
+        callouts: [
+          { calloutId: 'nope', to: 0 },
+          { calloutId: 'label', mode: 'scrub', from: 1, to: 0 },
+        ],
+      }),
+    );
+    expect(missing.motion.callouts.map((track) => [track.calloutId, track.final])).toEqual([
+      ['label', 0],
+    ]);
+    expect(missing.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'REFERENCE_MISSING',
+        path: ['scenes', 0, 'motion', 'callouts', 0, 'calloutId'],
+        ids: { sceneId: 's', annotationId: 'nope' },
+      }),
+    ]);
   });
 });

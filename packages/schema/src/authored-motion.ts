@@ -6,6 +6,7 @@ import {
   MotionModeSchema,
   ProgressSchema,
   RangeSchema,
+  STAGGER_ORDERS,
   type Easing,
 } from './motion.js';
 import { IdSchema } from './project.js';
@@ -134,47 +135,70 @@ export const CameraMotionSchema = z
     });
   });
 
+const valueTrack = {
+  ...TrackSettings,
+  range: RangeSchema.optional(),
+  from: z.number().finite().min(0).max(1).optional(),
+  to: z.number().finite().min(0).max(1).optional(),
+  keyframes: z
+    .array(
+      z
+        .object({
+          at: ProgressSchema,
+          value: z.number().finite().min(0).max(1),
+          easing: AuthoredEasingSchema.optional(),
+        })
+        .strict(),
+    )
+    .min(1)
+    .optional(),
+};
+
+function checkValueTrack(
+  value: { from?: number; to?: number; keyframes?: readonly { at: number }[] },
+  ctx: z.RefinementCtx,
+): void {
+  if (value.keyframes && (value.from !== undefined || value.to !== undefined))
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['keyframes'],
+      message: 'Use either from/to or keyframes in one track.',
+    });
+  value.keyframes?.forEach((frame, index) => {
+    if (index > 0 && frame.at < value.keyframes![index - 1]!.at)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['keyframes', index, 'at'],
+        message: 'Keyframes must be in ascending progress order.',
+      });
+  });
+}
+
 export const LayerMotionSchema = z
   .object({
-    ...TrackSettings,
-    range: RangeSchema.optional(),
+    ...valueTrack,
     /** A layer of the same scene. */
     layerId: IdSchema,
     property: z.enum(LAYER_TRACK_PROPERTIES),
     /** `data` tracks play once by default; `ambient` tracks loop and get a pause control. */
     type: z.enum(['data', 'ambient']).optional(),
-    from: z.number().finite().min(0).max(1).optional(),
-    to: z.number().finite().min(0).max(1).optional(),
-    keyframes: z
-      .array(
-        z
-          .object({
-            at: ProgressSchema,
-            value: z.number().finite().min(0).max(1),
-            easing: AuthoredEasingSchema.optional(),
-          })
-          .strict(),
-      )
-      .min(1)
+    /** Offset each feature of a play or loop track, in feature order (default `data`). */
+    stagger: z
+      .object({
+        delayMs: z.number().finite().positive().max(10000),
+        order: z.enum(STAGGER_ORDERS).optional(),
+      })
+      .strict()
       .optional(),
   })
   .strict()
-  .superRefine((value, ctx) => {
-    if (value.keyframes && (value.from !== undefined || value.to !== undefined))
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['keyframes'],
-        message: 'Use either from/to or keyframes in one layer track.',
-      });
-    value.keyframes?.forEach((frame, index) => {
-      if (index > 0 && frame.at < value.keyframes![index - 1]!.at)
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['keyframes', index, 'at'],
-          message: 'Keyframes must be in ascending progress order.',
-        });
-    });
-  });
+  .superRefine(checkValueTrack);
+
+/** Fades one callout, named by its annotation ID; it plays once by default. */
+export const CalloutMotionSchema = z
+  .object({ ...valueTrack, calloutId: IdSchema })
+  .strict()
+  .superRefine(checkValueTrack);
 
 const sceneSettings = {
   /** Viewport heights the card rests while its tracks run, so long camera flights get more scroll. */
@@ -188,6 +212,7 @@ const sceneTracks = {
   /** One move, or moves sequenced by `range` (an even split when ranges are omitted). */
   camera: z.union([CameraMotionSchema, z.array(CameraMotionSchema).min(1).max(8)]).optional(),
   layers: z.array(LayerMotionSchema).optional(),
+  callouts: z.array(CalloutMotionSchema).optional(),
 };
 
 /** Story-wide defaults in mapbard.json. */
@@ -197,6 +222,7 @@ export const StoryMotionSchema = z
     camera: TrackDefaultsSchema.optional(),
     data: TrackDefaultsSchema.optional(),
     ambient: TrackDefaultsSchema.optional(),
+    annotation: TrackDefaultsSchema.optional(),
   })
   .strict();
 
@@ -228,6 +254,7 @@ export type Trigger = z.infer<typeof TriggerSchema>;
 export type TrackDefaults = z.infer<typeof TrackDefaultsSchema>;
 export type CameraMotion = z.infer<typeof CameraMotionSchema>;
 export type LayerMotion = z.infer<typeof LayerMotionSchema>;
+export type CalloutMotion = z.infer<typeof CalloutMotionSchema>;
 export type StoryMotion = z.infer<typeof StoryMotionSchema>;
 export type MotionPreset = z.infer<typeof MotionPresetSchema>;
 export type AuthoredSceneMotion = z.infer<typeof AuthoredSceneMotionSchema>;

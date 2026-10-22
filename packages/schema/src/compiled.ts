@@ -280,6 +280,8 @@ export const CAPABILITY_IDS = [
   'motion.layer-opacity',
   'motion.line-reveal',
   'motion.highlight',
+  'motion.stagger',
+  'motion.callout',
   'layer.constant',
   'color.categorical',
   'color.equal-interval',

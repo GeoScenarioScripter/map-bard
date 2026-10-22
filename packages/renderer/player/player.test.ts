@@ -57,6 +57,14 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
       events.push(`track:${id}:${property}:${Math.round(value * 1000) / 1000}`);
     },
     drawnSymbols: () => [],
+    staggerCount: () => 3,
+    setLayerFeatureValues: (id, property, _stagger, valueAt) => {
+      const values = [0, 1, 2].map((rank) => Math.round(valueAt(rank) * 1000) / 1000);
+      events.push(`stagger:${id}:${property}:${values.join(',')}`);
+    },
+    setCalloutOpacity: (id, value) => {
+      events.push(`callout:${id}:${Math.round(value * 1000) / 1000}`);
+    },
   };
   const view: SceneView = {
     showScene: (_scene, _media, onControl) => {
@@ -333,6 +341,45 @@ describe('motion playback', () => {
     expect(pending()).toBe(0);
     player.update('a', 1);
     expect(cameras.at(-1)).toEqual(camera(8));
+  });
+
+  it('staggers a play track feature by feature and fades callouts with their tracks', () => {
+    const staggered = withMotion((story) => {
+      story.scenes[0]!.motion.layers = [
+        { ...fade('mb:1:a:5:sites'), stagger: { delayMs: 250, order: 'data' } },
+      ];
+      story.scenes[0]!.motion.callouts = [
+        {
+          mode: 'play',
+          range: [0.2, 1],
+          durationMs: 400,
+          delayMs: 1100,
+          calloutId: 'where-one',
+          keyframes: [
+            { at: 0, value: 0, easing: 'linear' },
+            { at: 1, value: 1, easing: 'linear' },
+          ],
+          final: 1,
+        },
+      ];
+    });
+    const { player, events, tick, pending } = harness(staggered);
+    player.enter('a');
+    expect(events).toContain('stagger:mb:1:a:5:sites:opacity:0,0,0');
+    expect(events).toContain('callout:where-one:0');
+    player.update('a', 0.5, true);
+    tick(500);
+    // Three features, 250 ms apart, 1000 ms each: the clock spans 1500 ms.
+    expect(events.filter((item) => item.startsWith('stagger:')).at(-1)).toBe(
+      'stagger:mb:1:a:5:sites:opacity:0.5,0.25,0',
+    );
+    tick(1000);
+    expect(events.filter((item) => item.startsWith('stagger:')).at(-1)).toBe(
+      'stagger:mb:1:a:5:sites:opacity:1,1,1',
+    );
+    // The callout waited 1100 ms, then fades in over 400 ms.
+    expect(events.filter((item) => item.startsWith('callout:')).at(-1)).toBe('callout:where-one:1');
+    expect(pending()).toBe(0);
   });
 
   it('hands the camera over between scenes by the later scene transition in both directions', () => {

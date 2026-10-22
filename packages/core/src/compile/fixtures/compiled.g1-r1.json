@@ -220,7 +220,8 @@
             "bearing": 0
           }
         },
-        "layers": []
+        "layers": [],
+        "callouts": []
       },
       "callouts": [
         {
@@ -307,7 +308,8 @@
             "bearing": 0
           }
         },
-        "layers": []
+        "layers": [],
+        "callouts": []
       },
       "callouts": [
         {

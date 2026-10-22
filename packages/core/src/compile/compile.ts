@@ -929,6 +929,7 @@ export function compileProject(
         ...(project.authoredMotion ? { authored: project.authoredMotion } : {}),
         layers,
         controls,
+        calloutIds: annotations.map((annotation) => annotation.id),
         sourceIds: project.project.resources.data.map((resource) => resource.id),
         feature: (sourceId, featureId) => {
           const match = featureMap.get(sourceId)?.find((entry) => entry.id === featureId);

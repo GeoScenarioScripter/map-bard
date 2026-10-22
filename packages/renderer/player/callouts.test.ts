@@ -139,6 +139,26 @@ describe('callout overlay', () => {
     expect(listeners.size).toBe(0);
   });
 
+  it('fades callouts by track, hiding a fully faded one from readers and placement', () => {
+    const { layer, container } = overlay();
+    layer.show([free, gauge], () => []);
+    const [first, second] = container.byClass('mb-callout') as [FakeElement, FakeElement];
+    const mark = container.byClass('mb-callout-mark')[0]!;
+    layer.setOpacity(gauge.id, 0);
+    expect(first.hidden).toBe(true);
+    expect(mark.style.display).toBe('none');
+    expect(second.hidden).toBe(false);
+    layer.setOpacity(gauge.id, 0.5);
+    expect(first.hidden).toBe(false);
+    expect(first.style.opacity).toBe('0.5');
+    expect(mark.style.opacity).toBe('0.5');
+    expect(mark.style.display).toBe('');
+    layer.setOpacity(gauge.id, 1);
+    expect(first.style.opacity).toBe('');
+    // Unknown IDs and calls after removal are ignored.
+    layer.setOpacity('missing', 0);
+  });
+
   it('re-places labels every frame against panels and nearby symbols', () => {
     let panels = [] as { left: number; top: number; right: number; bottom: number }[];
     const { layer, container, frame } = overlay(() => panels);

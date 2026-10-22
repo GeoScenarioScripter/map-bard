@@ -383,4 +383,47 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
       false,
     );
   });
+
+  it('ranks staggered features and drives their paint through feature state', () => {
+    const states: [unknown, Record<string, number>][] = [];
+    const paints: Record<string, unknown> = {};
+    const sources = new Map<string, Record<string, unknown>>();
+    const layers = new Set<string>();
+    const map = {
+      getSource: (id: string) => sources.get(id),
+      addSource: (id: string, source: Record<string, unknown>) => sources.set(id, source),
+      getLayer: (id: string) => layers.has(id),
+      getStyle: () => ({ layers: [] }),
+      addLayer: (layer: { id: string }) => layers.add(layer.id),
+      setPaintProperty: (_id: string, name: string, value: unknown) => {
+        paints[name] = value;
+      },
+      setFeatureState: (target: { id: unknown }, state: Record<string, number>) =>
+        states.push([target.id, state]),
+    };
+    const adapter = createMapLibreAdapter(
+      story,
+      sourceData,
+      map as unknown as Parameters<typeof createMapLibreAdapter>[2],
+      {} as Parameters<typeof createMapLibreAdapter>[3],
+    );
+    const id = 'mb:1:a:5:sites';
+    adapter.bindLayer(story.scenes[0]!.layers[0]!);
+    expect(sources.get('period-a')).toMatchObject({ generateId: true });
+    const byValue = { delayMs: 100, order: 'descending', attribute: 'value' } as const;
+    expect(adapter.staggerCount(id, byValue)).toBe(7);
+    adapter.setLayerFeatureValues(id, 'opacity', byValue, (rank) => rank / 10);
+    // Generated IDs follow source order; the missing value starts last.
+    expect(states.map(([feature]) => feature)).toEqual([5, 4, 3, 2, 1, 0, 6]);
+    expect(states[1]).toEqual([4, { ['mb:' + id + ':opacity']: 0.1 }]);
+    const perFeature = ['coalesce', ['feature-state', 'mb:' + id + ':opacity'], 1];
+    expect(paints['circle-opacity']).toEqual(['*', 0.8, perFeature]);
+    expect(paints['circle-stroke-opacity']).toEqual(perFeature);
+    // A property without a staggered track keeps plain numbers.
+    adapter.setLayerProperty(id, 'highlight', 0.5);
+    expect(paints['circle-stroke-width']).toBe(2.5);
+    states.length = 0;
+    adapter.setLayerFeatureValues(id, 'opacity', { delayMs: 100, order: 'data' }, () => 1);
+    expect(states.map(([feature]) => feature)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
 });

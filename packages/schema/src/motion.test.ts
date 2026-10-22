@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CameraTrackSchema, LayerTrackSchema, SceneMotionSchema } from './motion.js';
+import {
+  CalloutTrackSchema,
+  CameraTrackSchema,
+  LayerTrackSchema,
+  SceneMotionSchema,
+} from './motion.js';
 
 const camera = { center: [-77, 39] as [number, number], zoom: 8, pitch: 0, bearing: 0 };
 
@@ -64,8 +69,64 @@ describe('compiled motion tracks', () => {
         final: camera,
       },
       layers: [track],
+      callouts: [],
     };
     expect(SceneMotionSchema.safeParse(motion).success).toBe(true);
     expect(SceneMotionSchema.safeParse({ ...motion, layers: [track, track] }).success).toBe(false);
+  });
+
+  it('staggers only timed tracks, and ranks by an attribute unless in data order', () => {
+    const track = {
+      mode: 'play',
+      range: [0, 1],
+      durationMs: 600,
+      runtimeLayerId: 'mb:1:a:5:sites',
+      property: 'opacity',
+      keyframes: [
+        { at: 0, value: 0, easing: 'linear' },
+        { at: 1, value: 1, easing: 'ease-out' },
+      ],
+      final: 1,
+    };
+    const ok = (value: unknown) => LayerTrackSchema.safeParse(value).success;
+    expect(ok({ ...track, stagger: { delayMs: 120, order: 'data' } })).toBe(true);
+    expect(ok({ ...track, stagger: { delayMs: 120, order: 'ascending', attribute: 'v' } })).toBe(
+      true,
+    );
+    expect(ok({ ...track, stagger: { delayMs: 120, order: 'ascending' } })).toBe(false);
+    expect(ok({ ...track, mode: 'scrub', stagger: { delayMs: 120, order: 'data' } })).toBe(false);
+    expect(
+      ok({ ...track, property: 'line-reveal', stagger: { delayMs: 120, order: 'data' } }),
+    ).toBe(false);
+  });
+
+  it('allows one track per callout in a scene', () => {
+    const fade = {
+      mode: 'play',
+      range: [0, 0.5],
+      durationMs: 400,
+      calloutId: 'hancock',
+      keyframes: [
+        { at: 0, value: 0, easing: 'linear' },
+        { at: 1, value: 1, easing: 'ease-out' },
+      ],
+      final: 1,
+    };
+    expect(CalloutTrackSchema.safeParse(fade).success).toBe(true);
+    const motion = {
+      scrollLength: 1,
+      trigger: 0.5,
+      reducedMotion: 'step',
+      camera: {
+        mode: 'scrub',
+        range: [0, 1],
+        keyframes: [{ at: 0, ...camera, easing: 'linear' }],
+        final: camera,
+      },
+      layers: [],
+      callouts: [fade],
+    };
+    expect(SceneMotionSchema.safeParse(motion).success).toBe(true);
+    expect(SceneMotionSchema.safeParse({ ...motion, callouts: [fade, fade] }).success).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CameraTrack, LayerTrack } from '@mapbard/schema';
-import { approachCamera, effectiveTrack, trackFrame } from './motion.js';
+import { approachCamera, effectiveTrack, staggerSpan, staggerT, trackFrame } from './motion.js';
 
 const view = { center: [0, 0] as [number, number], zoom: 5, pitch: 0, bearing: 0 };
 const cameraTrack: CameraTrack = {
@@ -58,5 +58,25 @@ describe('track policies', () => {
     expect(approachCamera(from, to, 0.5, 'ease').bearing).toBeCloseTo(0);
     expect(approachCamera(from, to, 0.5, 'fly').zoom).toBeLessThan(5);
     expect(approachCamera(from, to, 1, 'fly')).toEqual(to);
+  });
+});
+
+describe('stagger', () => {
+  const staggered: LayerTrack = { ...layerTrack, stagger: { delayMs: 100, order: 'data' } };
+
+  it('spans the track plus one delay per later feature and offsets each rank', () => {
+    expect(staggerSpan(staggered, 4)).toBe(1200);
+    expect(staggerSpan(staggered, 1)).toBe(900);
+    expect(staggerT(staggered, 4, 0.5, 0)).toBeCloseTo(600 / 900);
+    expect(staggerT(staggered, 4, 0.5, 3)).toBeCloseTo(300 / 900);
+    expect(staggerT(staggered, 4, 1, 3)).toBe(1);
+    expect(staggerT(staggered, 4, 0, 0)).toBe(0);
+  });
+
+  it('drops the stagger under reduced motion unless the scene keeps motion', () => {
+    expect(effectiveTrack(staggered, 'keep', true).stagger).toEqual(staggered.stagger);
+    expect('stagger' in effectiveTrack(staggered, 'shorten', true)).toBe(false);
+    expect('stagger' in effectiveTrack(staggered, 'step', true)).toBe(false);
+    expect(effectiveTrack(staggered, 'step', false)).toBe(staggered);
   });
 });

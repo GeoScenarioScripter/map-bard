@@ -4,6 +4,7 @@ import type { Padding, Rect } from './layout.js';
 export type CameraFrame = { padding: Padding; zoomOffset: number };
 import { createCalloutOverlay, type SymbolPoint } from './callouts.js';
 import { layerStyle, matchesLayerFilter, pointRadius } from './resolved-style.js';
+import type { Stagger } from '@mapbard/schema';
 import type {
   CompiledLayer,
   CompiledScene,
@@ -22,7 +23,15 @@ type Bound = {
   paint: Record<string, unknown>;
   /** Motion track values: opacity factor, highlight strength, reveal fraction. */
   motion: { opacity: number; highlight: number };
+  /** Properties a staggered track drives per feature, through feature state. */
+  staggered: Set<'opacity' | 'highlight'>;
 };
+
+type Value = number | unknown[];
+const isNumber = (value: Value): value is number => typeof value === 'number';
+const times = (a: Value, b: Value): Value => (isNumber(a) && isNumber(b) ? a * b : ['*', a, b]);
+const plus = (a: Value, b: Value): Value => (isNumber(a) && isNumber(b) ? a + b : ['+', a, b]);
+const minus = (a: Value, b: Value): Value => (isNumber(a) && isNumber(b) ? a - b : ['-', a, b]);
 
 function hexChannels(color: string): [number, number, number] | undefined {
   const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
@@ -119,6 +128,86 @@ export function createMapLibreAdapter(
   const hiddenLayers = new Set<string>();
   let overlay: ReturnType<typeof createCalloutOverlay> | undefined;
   const pointLayers = new Map<string, CompiledLayer>();
+  const boundLayers = new Map<string, CompiledLayer>();
+
+  /** Generated feature IDs (source order) of a layer's drawn features, in stagger order. */
+  const rankCache = new Map<string, number[]>();
+  function rankedIds(layer: CompiledLayer, stagger: Stagger): number[] {
+    const key = `${layer.runtimeId}\u0000${stagger.order}\u0000${stagger.attribute ?? ''}`;
+    let ids = rankCache.get(key);
+    if (!ids) {
+      const features = (data[layer.sourceId] as { features?: unknown[] } | undefined)?.features;
+      const drawn = (features ?? []).flatMap((feature, index) => {
+        const properties =
+          ((feature ?? {}) as { properties?: Record<string, unknown> | null }).properties ?? {};
+        return matchesLayerFilter(layer.filter, properties) ? [{ index, properties }] : [];
+      });
+      if (stagger.order !== 'data' && stagger.attribute) {
+        const sign = stagger.order === 'ascending' ? 1 : -1;
+        const value = (entry: (typeof drawn)[number]) => {
+          const raw = entry.properties[stagger.attribute!];
+          return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+        };
+        // Missing values start last; ties keep source order.
+        drawn.sort((a, b) => {
+          const left = value(a);
+          const right = value(b);
+          if (left === undefined || right === undefined)
+            return left === right ? a.index - b.index : left === undefined ? 1 : -1;
+          return sign * (left - right) || a.index - b.index;
+        });
+      }
+      ids = drawn.map((entry) => entry.index);
+      rankCache.set(key, ids);
+    }
+    return ids;
+  }
+
+  const stateKey = (runtimeLayerId: string, property: string) => `mb:${runtimeLayerId}:${property}`;
+
+  /** A motion value: the layer's number, or per-feature state falling back to it. */
+  function motionValue(runtimeLayerId: string, binding: Bound, property: 'opacity' | 'highlight') {
+    return binding.staggered.has(property)
+      ? [
+          'coalesce',
+          ['feature-state', stateKey(runtimeLayerId, property)],
+          binding.motion[property],
+        ]
+      : binding.motion[property];
+  }
+
+  /** Write the paint a motion property drives, from the layer's current motion values. */
+  function applyMotion(
+    runtimeLayerId: string,
+    binding: Bound,
+    property: 'opacity' | 'highlight',
+  ): void {
+    const paint = (name: string, next: unknown) =>
+      map.setPaintProperty(runtimeLayerId, name as PaintName, next as PaintValue);
+    const base = (name: string, fallback: number) => {
+      const authored = binding.paint[name];
+      return typeof authored === 'number' ? authored : fallback;
+    };
+    const { type } = binding;
+    const fade = motionValue(runtimeLayerId, binding, 'opacity');
+    const strength = motionValue(runtimeLayerId, binding, 'highlight');
+    const mix = (value: Value) =>
+      isNumber(value)
+        ? mixColor(labelHalo, ink, value)
+        : ['interpolate', ['linear'], value, 0, labelHalo, 1, ink];
+    // Each property writes only its own paint, so reader controls on other properties keep working.
+    const opacity = times(base(`${type}-opacity`, 1), fade);
+    if (type === 'fill') {
+      paint('fill-opacity', plus(opacity, times(times(minus(1, opacity), 0.5), strength)));
+      if (property === 'highlight') paint('fill-outline-color', mix(strength));
+    } else if (property === 'opacity') {
+      paint(`${type}-opacity`, opacity);
+      if (type === 'circle') paint('circle-stroke-opacity', fade);
+    } else if (type === 'circle') {
+      paint('circle-stroke-width', plus(base('circle-stroke-width', 1), times(3, strength)));
+      paint('circle-stroke-color', mix(strength));
+    } else paint('line-width', times(base('line-width', 2.5), plus(1, times(0.8, strength))));
+  }
 
   type Drawn = { runtimeId: string; at: [number, number]; radius: (size?: number) => number };
   function drawnPoints(layers: readonly CompiledLayer[]): Drawn[] {
@@ -188,6 +277,8 @@ export function createMapLibreAdapter(
           type: 'geojson',
           data: sourceData,
           ...(metricSources.has(layer.sourceId) ? { lineMetrics: true } : {}),
+          // Feature state (staggered tracks) needs IDs; the source order is a stable one.
+          generateId: true,
         } as GeoData);
       }
       const specification = layerStyle(layer, scale, accent, labelHalo);
@@ -205,7 +296,9 @@ export function createMapLibreAdapter(
         type: specification.type,
         paint: specification.paint,
         motion: { opacity: 1, highlight: 0 },
+        staggered: new Set(),
       });
+      boundLayers.set(layer.runtimeId, layer);
       if (layer.geometry === 'point') pointLayers.set(layer.runtimeId, layer);
       sourceUsers.set(layer.sourceId, (sourceUsers.get(layer.sourceId) ?? 0) + 1);
     },
@@ -215,6 +308,7 @@ export function createMapLibreAdapter(
       if (map.getLayer(runtimeId)) map.removeLayer(runtimeId);
       bound.delete(runtimeId);
       pointLayers.delete(runtimeId);
+      boundLayers.delete(runtimeId);
       radiusOverride.delete(runtimeId);
       hiddenLayers.delete(runtimeId);
       const remaining = (sourceUsers.get(existing.sourceId) ?? 1) - 1;
@@ -294,10 +388,6 @@ export function createMapLibreAdapter(
       const paint = (name: string, next: unknown) =>
         map.setPaintProperty(runtimeLayerId, name as PaintName, next as PaintValue);
       const { type, motion } = binding;
-      const base = (name: string, fallback: number) => {
-        const authored = binding.paint[name];
-        return typeof authored === 'number' ? authored : fallback;
-      };
       if (property === 'line-reveal') {
         if (type !== 'line') throw new Error(`line-reveal needs a line layer ${runtimeLayerId}`);
         const color = binding.paint['line-color'];
@@ -311,19 +401,28 @@ export function createMapLibreAdapter(
         return;
       }
       motion[property] = value;
-      // Each property writes only its own paint, so reader controls on other properties keep working.
-      const opacity = base(`${type}-opacity`, 1) * motion.opacity;
-      if (type === 'fill') {
-        paint('fill-opacity', opacity + (1 - opacity) * 0.5 * motion.highlight);
-        if (property === 'highlight')
-          paint('fill-outline-color', mixColor(labelHalo, ink, motion.highlight));
-      } else if (property === 'opacity') {
-        paint(`${type}-opacity`, opacity);
-        if (type === 'circle') paint('circle-stroke-opacity', motion.opacity);
-      } else if (type === 'circle') {
-        paint('circle-stroke-width', base('circle-stroke-width', 1) + 3 * motion.highlight);
-        paint('circle-stroke-color', mixColor(labelHalo, ink, motion.highlight));
-      } else paint('line-width', base('line-width', 2.5) * (1 + 0.8 * motion.highlight));
+      applyMotion(runtimeLayerId, binding, property);
+    },
+    staggerCount(runtimeLayerId, stagger) {
+      const layer = boundLayers.get(runtimeLayerId);
+      if (!layer) throw new Error(`Missing active layer ${runtimeLayerId}`);
+      return rankedIds(layer, stagger).length;
+    },
+    setLayerFeatureValues(runtimeLayerId, property, stagger, valueAt) {
+      const binding = bound.get(runtimeLayerId);
+      const layer = boundLayers.get(runtimeLayerId);
+      if (!binding || !layer) throw new Error(`Missing active layer ${runtimeLayerId}`);
+      const key = stateKey(runtimeLayerId, property);
+      rankedIds(layer, stagger).forEach((id, rank) =>
+        map.setFeatureState({ source: binding.sourceId, id }, { [key]: valueAt(rank) }),
+      );
+      if (!binding.staggered.has(property)) {
+        binding.staggered.add(property);
+        applyMotion(runtimeLayerId, binding, property);
+      }
+    },
+    setCalloutOpacity(calloutId, value) {
+      overlay?.setOpacity(calloutId, value);
     },
   };
   return adapter;

@@ -140,6 +140,9 @@ export function createCalloutOverlay(
   map: Projector,
   options: CalloutOverlayOptions = {},
 ) {
+  /** Opacity of each callout of the shown scene, set by callout tracks; 1 when untracked. */
+  let setOpacity: ((id: string, value: number) => void) | undefined;
+
   function show(callouts: readonly Callout[], symbols: () => readonly SymbolPoint[]): MarkerHandle {
     const ordered = [...callouts].sort((a, b) => a.priority - b.priority);
     const root = document.createElement('div');
@@ -171,13 +174,22 @@ export function createCalloutOverlay(
     root.append(graphics, list);
     container.appendChild(root);
     let previous = new Map<string, string>();
+    const opacity = new Map<string, number>();
+    // A faded-out callout is hidden from readers and leaves its space to the others.
+    const shown = () => parts.filter((part) => (opacity.get(part.callout.id) ?? 1) > 0);
 
     function update(): void {
+      const live = shown();
+      for (const part of parts)
+        if (!live.includes(part)) {
+          part.label.hidden = true;
+          part.group.style.display = 'none';
+        }
       // Read every size first, then write, so a frame lays out once.
       const frame = container.getBoundingClientRect();
       const viewport = { width: frame.width, height: frame.height };
       // Fractional sizes: rounding down would let a label graze its neighbours.
-      const sizes = parts.map(({ label }) => {
+      const sizes = live.map(({ label }) => {
         const box = label.getBoundingClientRect();
         return { width: box.width, height: box.height };
       });
@@ -187,15 +199,33 @@ export function createCalloutOverlay(
         right: box.right - frame.left,
         bottom: box.bottom - frame.top,
       }));
-      const requests = calloutRequests(ordered, map.project, sizes);
+      const requests = calloutRequests(
+        live.map((part) => part.callout),
+        map.project,
+        sizes,
+      );
       const placements = placeCallouts(
         requests,
         { viewport, panels, symbols: nearbySymbols(symbols(), map.project, viewport, requests) },
         previous,
       );
       previous = new Map(placements.map((item) => [item.id, item.position]));
-      placements.forEach((placement, index) => draw(parts[index]!, requests[index]!, placement));
+      placements.forEach((placement, index) => draw(live[index]!, requests[index]!, placement));
     }
+
+    setOpacity = (id, value) => {
+      const part = parts.find((item) => item.callout.id === id);
+      if (!part) return;
+      const was = opacity.get(id) ?? 1;
+      opacity.set(id, value);
+      const fade = value < 1 ? String(value) : '';
+      part.label.style.opacity = fade;
+      part.group.style.opacity = fade;
+      if (was > 0 && value > 0) return;
+      // Shown or hidden: unhide before measuring, then let every callout re-place.
+      if (value > 0) part.label.hidden = false;
+      update();
+    };
 
     function draw(
       part: (typeof parts)[number],
@@ -234,8 +264,15 @@ export function createCalloutOverlay(
         stop();
         resized?.disconnect();
         root.remove();
+        setOpacity = undefined;
       },
     };
   }
-  return { show };
+  return {
+    show,
+    /** Fade a shown callout; 0 hides it. Ignored when its scene is not shown. */
+    setOpacity(id: string, value: number) {
+      setOpacity?.(id, Math.max(0, Math.min(1, value)));
+    },
+  };
 }

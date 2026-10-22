@@ -1,10 +1,10 @@
 {
   "lockVersion": "0.2.0",
   "projectId": "potomac-daily-discharge",
-  "revision": 7,
+  "revision": 8,
   "inputs": {
     "manifestSha256": "sha256:160d6c5374b3dd4244bdf02871b0aca2ecd8489bd7f27f7e1ef3c96cc8c20ac3",
-    "storySha256": "sha256:508a250a70d5de54f7b45656f99e7209003ab950215a89bad3ac486cfb12ccf1",
+    "storySha256": "sha256:a16415cef72dbdcf13c7522c6fbc21f96bda04b1ddc47c92823b0d66684090d2",
     "resources": [
       {
         "id": "potomac-2024",
@@ -52,8 +52,8 @@
           "sample": ["DC", "MD", "PA", "VA", "WV"]
         }
       ],
-      "extent": [-83.67541300020784, 36.54073799988352, -74.68951599985573, 42.26985999994247],
       "crs": "EPSG:4326",
+      "extent": [-83.67541300020784, 36.54073799988352, -74.68951599985573, 42.26985999994247],
       "attributeStats": {
         "name": {
           "present": 5,
@@ -76,8 +76,8 @@
           "sample": ["Potomac River"]
         }
       ],
-      "extent": [-78.59045164378917, 38.04042414606486, -76.32587484772613, 39.69828655400445],
       "crs": "EPSG:4326",
+      "extent": [-78.59045164378917, 38.04042414606486, -76.32587484772613, 39.69828655400445],
       "attributeStats": {
         "name": {
           "present": 52,
@@ -204,9 +204,9 @@
           "sample": ["Published USGS station-local daily mean; Eastern time calendar date"]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [-78.17788888888889, 38.949777777777776, -77.12763888888888, 39.69755555555555],
       "temporalExtent": ["2024-10-01", "2025-03-11T06:31:13.773492+00:00"],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,
@@ -391,9 +391,9 @@
           "sample": ["Published USGS station-local daily mean; Eastern time calendar date"]
         }
       ],
+      "crs": "EPSG:4326",
       "extent": [-78.17788888888889, 38.949777777777776, -77.12763888888888, 39.69755555555555],
       "temporalExtent": ["2025-10-01", "2026-01-14T18:37:02.329200+00:00"],
-      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,

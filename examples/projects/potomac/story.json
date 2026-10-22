@@ -112,8 +112,7 @@
         "layers": [
           {
             "layerId": "gauges",
-            "property": "opacity",
-            "range": [0.2, 1]
+            "property": "opacity"
           },
           {
             "layerId": "river-context",

@@ -51,3 +51,62 @@ export function occlusionFindings({ viewport, targets, panels }) {
   }
   return findings;
 }
+
+/** How far a circle reaches into a rect: its radius minus the centre's distance to the rect. */
+export function circleDepth(circle, rect) {
+  const x = Math.min(Math.max(circle.x, rect.x), rect.x + rect.width);
+  const y = Math.min(Math.max(circle.y, rect.y), rect.y + rect.height);
+  return circle.r - Math.hypot(x - circle.x, y - circle.y);
+}
+
+/** Callout labels must be whole, uncovered and clear of each other and of every halo. */
+export const CALLOUT_TOLERANCE = 0.5;
+
+/**
+ * Callouts are { id, rect, halos: [{ x, y, r }] } with the label's client rect and the halo
+ * circles around the symbols it points at. Occluders are everything drawn over or beside the
+ * map that a label must not touch (panels, the story column, map controls). A label must sit
+ * fully on screen, touch no occluder, no other label and no halo, its own included.
+ */
+export function calloutFindings({ viewport, callouts, occluders }) {
+  const findings = [];
+  const screen = { x: 0, y: 0, width: viewport.width, height: viewport.height };
+  const halos = callouts.flatMap((callout) =>
+    callout.halos.map((halo, index) => ({ ...halo, id: `${callout.id}#${index}` })),
+  );
+  for (const [index, callout] of callouts.entries()) {
+    const outside = area(callout.rect) - overlapArea(callout.rect, screen);
+    if (outside >= 1)
+      findings.push({ kind: 'callout-offscreen', callout: callout.id, area: round(outside) });
+    for (const occluder of occluders) {
+      const covered = overlapArea(callout.rect, occluder.rect);
+      if (covered >= 1)
+        findings.push({
+          kind: 'callout-occluded',
+          callout: callout.id,
+          by: occluder.id,
+          area: round(covered),
+        });
+    }
+    for (const other of callouts.slice(index + 1)) {
+      const overlap = overlapArea(callout.rect, other.rect);
+      if (overlap >= 1)
+        findings.push({
+          kind: 'callout-overlap',
+          callouts: [callout.id, other.id],
+          area: round(overlap),
+        });
+    }
+    for (const halo of halos) {
+      const depth = circleDepth(halo, callout.rect);
+      if (depth > CALLOUT_TOLERANCE)
+        findings.push({
+          kind: 'callout-covers-target',
+          callout: callout.id,
+          target: halo.id,
+          depth: round(depth),
+        });
+    }
+  }
+  return findings;
+}

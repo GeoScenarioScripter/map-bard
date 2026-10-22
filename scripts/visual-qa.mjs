@@ -1,4 +1,4 @@
-/* global document, setTimeout, window */
+/* global document, getComputedStyle, setTimeout, window */
 // Visual QA capture for a built publication (docs/m2-visual.md, item A).
 //
 //   node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live] [--fail-on-findings]
@@ -9,7 +9,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { EMPTY_STYLE, launchBrowser } from '../tests/browser.mjs';
-import { occlusionFindings } from './lib/occlusion.mjs';
+import { calloutFindings, occlusionFindings } from './lib/occlusion.mjs';
 
 const VIEWPORTS = [
   { id: 'desktop', width: 1440, height: 900, isMobile: false },
@@ -50,12 +50,36 @@ function collectRects() {
       ? { x: box.x, y: box.y, width: box.width, height: box.height }
       : undefined;
   };
-  const targets = [...document.querySelectorAll('.mb-annotation-marker, .mb-marker')]
-    .map((element, index) => ({
+  // Callouts: the label's real rect and the halo rings around the symbols it points at.
+  const callouts = [...document.querySelectorAll('.mb-callout')]
+    .map((label, index) => {
+      const id = label.dataset.calloutId || `callout-${index}`;
+      const mark = document.querySelectorAll('.mb-callout-mark')[index];
+      const halos = mark
+        ? [...mark.querySelectorAll('.mb-callout-halo, .mb-callout-dot')]
+            .map((circle) => circle.getBoundingClientRect())
+            .filter((box) => box.width > 0)
+            .map((box) => ({
+              x: box.x + box.width / 2,
+              y: box.y + box.height / 2,
+              r: box.width / 2,
+            }))
+        : [];
+      return { id, rect: label.hidden ? undefined : visible(label), halos };
+    })
+    .filter((item) => item.rect);
+  const targets = [
+    ...callouts.flatMap((callout) =>
+      callout.halos.map((halo, index) => ({
+        id: `${callout.id}#${index}`,
+        rect: { x: halo.x - halo.r, y: halo.y - halo.r, width: 2 * halo.r, height: 2 * halo.r },
+      })),
+    ),
+    ...[...document.querySelectorAll('.mb-marker')].map((element, index) => ({
       id: element.getAttribute('aria-label') || `marker-${index}`,
       rect: visible(element),
-    }))
-    .filter((item) => item.rect);
+    })),
+  ].filter((item) => item.rect);
   const media = document.querySelector('#media');
   const panels = [
     ['scene-card', document.querySelector('.scene.is-active .scene-card')],
@@ -66,7 +90,20 @@ function collectRects() {
   ]
     .map(([id, element]) => ({ id, rect: visible(element) }))
     .filter((item) => item.rect);
-  return { targets, panels };
+  // Labels sit under the story and map controls, so those hide them too. The story only
+  // counts when it paints a background (the sidecar column), not as a transparent scroller.
+  const story = document.querySelector('#story');
+  const opaque =
+    story && !/rgba\(.*,\s*0\)|transparent/.test(getComputedStyle(story).backgroundColor);
+  const occluders = [
+    ...panels,
+    ...(opaque ? [{ id: 'story-column', rect: visible(story) }] : []),
+    ...[...document.querySelectorAll('#map .maplibregl-ctrl')].map((element, index) => ({
+      id: `map-control-${index}`,
+      rect: visible(element),
+    })),
+  ].filter((item) => item.rect);
+  return { targets, panels, callouts, occluders };
 }
 
 async function captureViewport(browser, options, story, viewport, log) {
@@ -126,7 +163,10 @@ async function captureViewport(browser, options, story, viewport, log) {
         IDLE_TIMEOUT_MS,
       );
       const geometry = await page.evaluate(collectRects);
-      const findings = occlusionFindings({ viewport, ...geometry });
+      const findings = [
+        ...occlusionFindings({ viewport, ...geometry }),
+        ...calloutFindings({ viewport, ...geometry }),
+      ];
       if (!idle) findings.unshift({ kind: 'idle-timeout', timeoutMs: IDLE_TIMEOUT_MS });
       const screenshot = `${sceneId}-${viewport.id}.png`;
       await page.screenshot({ path: join(options.out, screenshot) });

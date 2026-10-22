@@ -79,8 +79,9 @@ threebox's ideas: geographic object placement, model loading and picking.
 **Bundle strategy:** the build continues to emit classic IIFE scripts, so
 stories still open from `file://`. The player core stays small. Separate chunks
 (`tier-deck.js`, `tier-three.js`, `charts.js`) are written only when the compiled
-story needs them. Budgets: core ≤ 300 KB gzip including MapLibre, ≤ 1.2 MB gzip
-with all tiers. CI reports the size per story.
+story needs them. Budgets: core ≤ 450 KB gzip of JavaScript including MapLibre
+and its worker (raised from 300 KB on 2026-10-22, since MapLibre 6.1 alone is
+384 KB), ≤ 1.2 MB gzip with all tiers. CI reports the size per story.
 
 ## Motion model: scroll-driven tracks
 

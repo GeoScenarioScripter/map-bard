@@ -1,6 +1,7 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-21. Status: **active**. Waves 1–3 are complete; Wave 4 is next. Part of the
+Updated 2026-10-22. Status: **active**. Waves 1–3 are complete; Wave 4 is planned
+(staggered, see below) and not started. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -238,29 +239,210 @@ the callout overlay and legends and does not edit the scroll module.
 
 ## Wave 4
 
-### J. `mapbard check --visual`, goldens and CI
+Planned 2026-10-22; not started. J, K and L touch each other's results:
+K's flights need J's sweep to be verified, the goldens must capture K's final
+look, and L documents everything. So the wave is staggered like Wave 3:
 
-- `check --visual [--update]` runs the Wave 1 capture through the CLI and
-  returns findings in the JSON envelope. `playwright-core` becomes a CLI
-  dependency; a missing browser gives a diagnostic with the remedy.
-- Goldens per showcase story with a perceptual-diff tolerance (`pixelmatch`,
-  ISC, and `pngjs`, MIT), updated only with `--update`.
-- CI job on Linux with SwiftShader: offline Potomac goldens, a "tiles
-  unavailable" run, and JS/data size per story against the budgets in
-  visual-engine.md.
+| Step | Work                                                              | Runs                             |
+| ---- | ----------------------------------------------------------------- | -------------------------------- |
+| 4.1  | J1: visual QA moves into the CLI, with the flight sweep           | Lead, first                      |
+| 4.2  | J2: goldens, size budgets, "tiles unavailable" run, CI job ‖ K    | Parallel worktrees on top of 4.1 |
+| 4.3  | Commit the goldens for K's final look; owner scores both variants | Lead; needs the owner            |
+| 4.4  | L: skill pack, capabilities, READMEs, changeset                   | Lead, last                       |
 
-### K. Potomac V1 redesign and scoring
+J2 owns `packages/cli/src/visual/` (except the capture code from 4.1),
+`.github/workflows/` and the budget numbers. K owns `examples/`, the
+compiler's colour defaults, the player's callout hiding and attribution, and
+the narration-length critic rule. Neither edits the other's files; K uses
+`check --visual` as 4.1 left it.
 
-Apply V1 to the example: atlas or night theme, terrain with hillshade,
-`reveal-from-overview` intro, `fly-along` the river in 2024, the shared size
-scale, collision-free callouts and a `limits` push-in on Little Falls. The
-owner scores it; the score and any defects go in STATUS.md. Target ≥ 75.
+Owner decisions (2026-10-22):
 
-### L. Skill pack and release
+- **Size budget.** MapLibre 6.1 alone is 384 KB gzip (252 KB main thread,
+  132 KB worker), so the 300 KB core budget could never pass. The core budget
+  is now **≤ 450 KB gzip** for the page's JavaScript, worker included. The
+  all-tiers budget stays at 1.2 MB. Going over the budget is a warning, not
+  an error. Today's Potomac is about 408 KB.
+- **Two Potomac variants, both kept as examples:** atlas and night (see K).
 
-Update `skills/mapbard` (format guide, technique pages, motion and layout
-references, new diagnostic codes), `mapbard capabilities`, and package READMEs;
-then release with a changeset. Push and publish only when the owner asks.
+Owner checkpoints: scoring in 4.3 and before V1 closes. "QA passes in CI"
+needs a push, so the CI part of V1's done-when waits until the owner asks for
+one. Publishing happens only when the owner asks.
+
+### J1. Visual QA in the CLI, with the flight sweep (step 4.1)
+
+- **Move, don't fork.** `scripts/visual-qa.mjs` and `scripts/lib/occlusion.mjs`
+  become TypeScript in `packages/cli/src/visual/`: `capture.ts` (browser,
+  network modes, seek, rect collection), `occlusion.ts` (the pure geometry,
+  unchanged rules), `contact-sheet.ts` and `report.ts`.
+  `tests/occlusion.test.mjs` moves into the package. `scripts/visual-qa.mjs`
+  stays as a thin wrapper so the STATUS commands still work.
+  `tests/browser.mjs` keeps the shared launcher. The CLI gets its own copy of
+  the launcher, because packages never import repository files.
+- **`mapbard check --visual`** runs the normal `check`. If `check` reports
+  no errors, it builds into `.mapbard-visual/build/` (offline by default),
+  captures into `.mapbard-visual/captures/` and returns the findings as
+  diagnostics in the usual envelope. The result holds the counts and the
+  paths to `report.json` and `contact-sheet.png`. Options:
+  `--network offline|stub|live` (offline needs no basemap stub and makes
+  zero requests), `--fail-on-warnings`, and `--update` (J2). Add
+  `.mapbard-visual/` to the `init` template's `.gitignore` and to the
+  preview watcher's ignore list.
+- **Dependency.** `playwright-core` 1.64.1 (Apache-2.0) becomes a CLI
+  dependency, loaded with a dynamic `import()` only by `--visual`. No browser
+  is bundled. Without Chrome, `MAPBARD_CHROME_PATH` or Playwright's
+  Chromium, it reports a `VISUAL_BROWSER_MISSING` diagnostic with the
+  install remedy (exit 1, not a crash).
+- **Diagnostic codes** (schema): `VISUAL_OCCLUSION` (target, symbol or
+  callout covered or overlapping), `VISUAL_RUNTIME` (console or page error,
+  undeclared or offline request, idle timeout, seek mismatch),
+  `VISUAL_BROWSER_MISSING`, plus J2's `VISUAL_GOLDEN_MISMATCH` and
+  `BUDGET_EXCEEDED`. Each carries `sceneId`. The message names the viewport,
+  `p` and the overlapping element, and the remedy points at the
+  matching layout, camera or callout setting.
+- **Flight sweep.** Each scene is still captured at p = 0, 0.5 and 1 with
+  screenshots. For each camera track, the sweep also samples geometry (no
+  screenshot unless a sample has a finding) every 0.05 across the track's
+  `range`. Each finding is tagged `phase: "rest"` or `"flight"`. Flight
+  samples are those inside a track's range where the camera moves.
+- **Severity.** Every rest finding is an error, as today. In flight, callout
+  findings (`callout-occluded`, `callout-overlap`, `callout-covers-*`,
+  `callout-offscreen`) stay errors: a label must never be covered. In
+  flight, `symbol-occluded` and `target-occluded` become warnings. The map
+  moves under the panels, and K fixes what is worth fixing. `--fail-on-warnings`
+  makes them gate too.
+- **Deterministic GPU.** Visual runs launch Chromium with
+  `--use-angle=swiftshader --enable-unsafe-swiftshader` on every OS, so
+  Windows and Linux use the same software rasteriser.
+
+Done when: `mapbard check --visual` on both Potomac variants matches today's
+`scripts/visual-qa.mjs` findings at the rest positions. The sweep reproduces
+the recorded mid-flight overlaps (about 24 on the 2024 flight), each tagged
+with the right phase. CLI tests cover argument parsing, the missing-browser
+diagnostic, finding-to-diagnostic mapping and phase tagging, using a fake
+capture so they don't need a browser. The browser smoke still passes.
+
+### J2. Goldens, budgets, "tiles unavailable" and CI (step 4.2)
+
+- **Goldens.** `check --visual --update` writes
+  `goldens/<scene>-p<P>-<viewport>.png` and `goldens/manifest.json` (MapBard
+  version, Chromium version, platform, viewport list, tolerance) in the
+  project. They come only from offline builds, so goldens never depend on
+  live tiles. Without `--update`, each rest capture is compared with
+  `pixelmatch` (ISC) and `pngjs` (MIT), with per-pixel threshold 0.1. A
+  capture fails when more than the manifest's `maxDiffRatio` of its pixels
+  differ. The ratio is set at three times the noise measured over five
+  repeated runs on one machine, and the measurement is recorded in the
+  manifest. A mismatch is `VISUAL_GOLDEN_MISMATCH` (error) and writes
+  `<name>.diff.png` next to the capture. If the manifest's platform differs
+  from the current one, mismatches are warnings, unless a measured
+  cross-platform diff (Windows SwiftShader vs Linux CI) shows the goldens
+  match across platforms. Linux is the canonical golden platform. About
+  2.8 MB of PNGs per story, so each `--update` is a deliberate commit.
+- **"Tiles unavailable" run.** New `--network unavailable`: an online build
+  with every request aborted, style URLs included. It must reach
+  `data-mb-state="ready"`, show `#mb-basemap-notice`, draw the local context
+  layers and log no page errors. Otherwise it reports `VISUAL_RUNTIME`.
+- **Budgets** in `@mapbard/knowledge`: core JavaScript (MapLibre main and
+  worker, player, compiled app) ≤ 450 KB gzip, and ≤ 1.2 MB gzip with every
+  tier. `check --visual` and `build` report the gzip size of each part, plus
+  data and media sizes (reported only, no budget yet).
+  `BUDGET_EXCEEDED` is a warning.
+- **Frame sample.** `check --visual --frames` runs the frame probe from
+  `scripts/frame-probe.mjs` (moved into the CLI) during each camera track and
+  reports p95/p99 frame intervals. It is info only: software WebGL measures
+  main-thread cost, not GPU frame rate.
+- **CI.** A new `visual` job on `ubuntu-latest`: build, then
+  `check --visual --network offline` with goldens gating for both Potomac
+  variants, a `--network unavailable` run, and the budget report. It always
+  uploads `.mapbard-visual/` as an artifact. A `workflow_dispatch` input
+  `update_goldens` runs with `--update` and uploads the new goldens, so the
+  owner can commit Linux goldens from a Windows machine. The three-OS
+  `verify` job stays as it is.
+
+Done when: goldens round-trip (an `--update` followed by a check passes; a
+changed colour fails with a diff image). Unit tests cover the diff ratio,
+the manifest and budget arithmetic. The unavailable run passes on Potomac.
+The workflow passes `actionlint`, or is checked by hand if actionlint isn't
+available. Running it in CI waits for a push.
+
+### K. Potomac V1 redesign, two variants (step 4.2)
+
+- **Variants.** `examples/projects/potomac` becomes the **atlas** variant
+  with terrain and hillshade. The new `examples/projects/potomac-night` is
+  the **night** variant. They share the same data, media and story text.
+  Identical files are stored once by git, so the copy costs nothing in the
+  repository. A root test asserts the two have identical resource hashes and
+  that their `story.json` and `mapbard.json` differ only in `theme`,
+  `basemap.style` and layer colours.
+- **Context colours from the theme.** When a layer omits
+  `constant.color`, the compiler takes it from theme tokens (fill: `land` at
+  a low default opacity, line: `water`, points: `accent`), resolved in
+  `@mapbard/knowledge` and emitted in the compiled spec. Both variants drop
+  their hard-coded hex colours. The opaque state fill (`#dce8df` at 0.96)
+  becomes a light outline, so the basemap tint and hillshade show.
+- **Bigger symbols.** Optional `maxRadius` (px, 4–48, default 16) on size
+  encodings and shared size scales. Potomac sets it so Point of Rocks 2024
+  reads clearly and the 2025 circles stay visible (about a tenth of the
+  area). Nested-circle legends and callout halos follow the new radius.
+- **Basemap.** Atlas and night provider styles with theme tint; Mapterhorn
+  terrain with hillshade; sky on, so the pitched flight shows a horizon.
+  Offline builds drop terrain with the existing diagnostic and keep the
+  context layers. `reveal-from-overview` starts wide enough to show the
+  Chesapeake region before closing in on the river.
+- **Flight overlaps.** The player hides (fades) a callout when no placement
+  candidate clears every occluder, and when its target is more than 20%
+  under a panel, instead of drawing it colliding. Potomac's 2024 callouts
+  fade out over the flight's range and back in for the closing overview.
+  Target: zero callout findings at every sweep sample, and fewer in-flight
+  symbol warnings than today's 24, with each remaining one listed in
+  STATUS.md.
+- **Attribution.** The MapBard credit line leaves out a provider credit that
+  the style's own source attribution already shows, so OpenFreeMap appears
+  once.
+- **Phone narration.** New critic warning `TEXT_OVERFLOW_LIKELY`: it
+  estimates a card's line count from the layout's phone sheet and the
+  theme's type scale, and warns when narration would scroll inside the
+  sheet. Potomac's 2024 and limits narration is tightened or split, keeping
+  every value, date and qualification, until the warning clears.
+- **README.** It describes the size scale (not the old equal-interval colour
+  scale), the two variants and how to run `check --visual`.
+
+Done when: both variants build online and offline with a clean critic. On
+both, `check --visual` has 0 errors (rest and flight) at stub, offline and
+unavailable. A live run with OpenFreeMap tiles and Mapterhorn terrain has
+inspected screenshots of tint, hillshade, sky and pitch. The frame probe
+p99 is no worse than today's 8.5 ms.
+
+### 4.3 Goldens and scoring
+
+Commit the goldens for both variants from the final look (Linux ones from
+the CI artifact once CI runs). For the owner, prepare a one-page scoring
+sheet per variant: the seven quality-bar areas, each with evidence (contact
+sheets, sweep results, live screenshots, frame numbers, critic output) and
+known gaps. The owner gives the score. Defects the owner names are fixed
+before L. The scores go in STATUS.md. The target is ≥ 75 for each variant.
+
+### L. Skill pack and release (step 4.4)
+
+- `skills/mapbard`: `format.md` (theme, layout, basemap terrain, sky and
+  projection, motion, callouts, size scales and `maxRadius`, colour
+  defaults); `techniques.md` (graduated symbols, motion presets and when not
+  to use them); new `motion.md` and `layout.md` references; `diagnostics.md`
+  with every code added in M2 (the critic codes, `TEXT_OVERFLOW_LIKELY`,
+  `VISUAL_*`, `BUDGET_EXCEEDED`) and their remedies; `SKILL.md` adds
+  `check --visual` to the workflow, with the contact sheet read as advisory.
+- `mapbard capabilities` lists themes, layouts, motion presets and modes,
+  and whether visual checks can run. A test asserts that every capability ID
+  the compiler accepts is listed.
+- Package READMEs for the new commands and fields. A changeset bumps all
+  five packages to 0.2.0 (compiled spec 0.3.0 and new authored fields). The
+  tarball install smoke passes.
+- Push and publish only when the owner asks. Release through the existing
+  workflow.
+
+V1 closes when both variants score ≥ 75 and the `visual` CI job passes.
+Then V2 gets its detailed section here.
 
 ## Later slices (outline)
 

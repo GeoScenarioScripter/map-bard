@@ -1,8 +1,8 @@
 # MapBard — Status
 
-**Updated 2026-10-21. [M2 — Visual Engine](visual-engine.md) is active; its
+**Updated 2026-10-22. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-next is Wave 4.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+Wave 4 is planned in detail (steps 4.1–4.4) and not started.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -116,6 +116,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-22: Planned Wave 4 in m2-visual.md as four staggered steps: J1
+  moves visual QA into `mapbard check --visual` with a flight sweep; then J2
+  (goldens, budgets, tiles-unavailable run, CI job) and K (atlas and night
+  Potomac variants, both kept) run in parallel; then goldens and owner
+  scoring; then L. Owner raised the core JS budget to 450 KB gzip (MapLibre
+  6.1 is 384 KB). Docs only; no checks needed. Next: run step 4.1.
 - 2026-10-22: `fly-along` follows every part of its line features: parts
   form one network (ends within 25 m join; parts split where another ends on
   a vertex) and the camera takes the shortest route from the first feature's

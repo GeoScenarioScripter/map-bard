@@ -198,6 +198,14 @@ coordinates.
 
 ## Wave 3
 
+H and I share the player, the compiled spec and the QA script, so the wave is
+staggered. A foundation commit lands first: compiled spec 0.3.0 with a
+per-scene `motion` contract (`@mapbard/schema` `motion.ts`; the compiler emits
+a held camera from `core/src/compile/motion.ts`), and a per-frame hook on the
+map adapter (`onFrame`, `project`). H and I then run in parallel on top of it.
+H owns `motion.ts`, the scroll module and camera/layer track playback; I owns
+the callout overlay and legends and does not edit the scroll module.
+
 ### H. Motion engine (compiled 0.3.0)
 
 - **Scroll progress.** Replace the IntersectionObserver "winner" with a scroll

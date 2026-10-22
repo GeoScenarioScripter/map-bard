@@ -42,6 +42,8 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
       events.push('annotation:add');
       return marker;
     },
+    onFrame: () => () => {},
+    project: ([lng, lat]) => ({ x: lng, y: lat }),
     setControl: (id, property, value) => {
       events.push(`control:${id}:${property}:${value}`);
     },

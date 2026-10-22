@@ -143,6 +143,16 @@ export function createMapLibreAdapter(
       );
     },
     addAnnotation,
+    onFrame(listener) {
+      map.on('render', listener);
+      return () => {
+        map.off('render', listener);
+      };
+    },
+    project(at) {
+      const point = map.project([at[0], at[1]]);
+      return { x: point.x, y: point.y };
+    },
     /** Re-frame the active camera after the viewport or the rail changes size. */
     refit() {
       if (camera) map.jumpTo(cameraTarget(camera));

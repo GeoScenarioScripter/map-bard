@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export const PROJECT_VERSION = '0.1.0' as const;
 export const DESIGN_VERSION = '0.1.0' as const;
-export const COMPILED_VERSION = '0.1.0' as const;
+/** The player contract; 0.3.0 replaced step scenes with progress tracks. */
+export const COMPILED_VERSION = '0.3.0' as const;
 
 export const IdSchema = z.string().min(1);
 export const DigestSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/);

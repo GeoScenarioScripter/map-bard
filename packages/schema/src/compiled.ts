@@ -8,6 +8,7 @@ import {
 } from './geo-narrative.js';
 import { ResolvedLayoutSchema } from './layout.js';
 import { HexColorSchema, ResolvedThemeSchema } from './theme.js';
+import { SceneMotionSchema } from './motion.js';
 import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
 import {
   COMPILED_VERSION,
@@ -133,7 +134,8 @@ const ResolvedControlSchema = z
 
 export const CompiledSchema = z
   .object({
-    compiledVersion: z.enum([COMPILED_VERSION, '0.2.0']),
+    /** Regenerated on every build and never read back, so older versions need no migration. */
+    compiledVersion: z.literal(COMPILED_VERSION),
     contractVersions: z
       .object({
         project: z.enum([PROJECT_VERSION, '0.2.0']),
@@ -210,6 +212,7 @@ export const CompiledSchema = z
           layers: z.array(ResolvedLayerSchema),
           annotations: z.array(AnnotationSchema.extend({ sceneId: IdSchema }).strict()),
           controls: z.array(ResolvedControlSchema),
+          motion: SceneMotionSchema,
         })
         .strict(),
     ),
@@ -236,17 +239,17 @@ export const CompiledSchema = z
   })
   .strict()
   .superRefine((value, ctx) => {
-    const v2 = value.compiledVersion === '0.2.0';
+    const { project, narrative, design } = value.contractVersions;
+    const v2 = project === '0.2.0';
     if (
-      value.contractVersions.project !== value.compiledVersion ||
-      value.contractVersions.narrative !== value.compiledVersion ||
-      value.contractVersions.design !== value.compiledVersion ||
+      narrative !== project ||
+      design !== project ||
       (v2 ? typeof value.basemap === 'string' : typeof value.basemap !== 'string')
     )
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['contractVersions'],
-        message: 'Compiled versions and basemap must agree.',
+        message: 'Contract versions and basemap must agree.',
       });
   });
 

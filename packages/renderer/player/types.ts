@@ -18,6 +18,10 @@ export interface MapAdapter {
   unbindLayer(runtimeId: string): void;
   addMarker(anchor: CompiledScene['mediaAnchors'][number], popupHtml: string): MarkerHandle;
   addAnnotation(annotation: CompiledAnnotation): MarkerHandle;
+  /** Runs after every rendered frame, including each frame of a camera move; returns an unsubscribe. */
+  onFrame(listener: () => void): () => void;
+  /** Screen position of a map coordinate, in CSS pixels from the map container's top left. */
+  project(at: readonly [number, number]): { x: number; y: number };
   setControl(
     runtimeLayerId: string,
     property: CompiledControl['property'],

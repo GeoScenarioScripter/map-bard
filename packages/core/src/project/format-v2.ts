@@ -519,7 +519,7 @@ export async function recordProjectCompilation(
   if (!loaded.ok) return loaded;
   if (
     !CompiledSchema.safeParse(compiled).success ||
-    compiled.compiledVersion !== '0.2.0' ||
+    compiled.contractVersions.project !== '0.2.0' ||
     canonical(compiled.input) !== canonical(loaded.value.input)
   )
     return problem(

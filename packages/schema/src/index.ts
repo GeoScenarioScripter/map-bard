@@ -7,6 +7,7 @@ export * from './theme.js';
 export * from './layout.js';
 export * from './project.js';
 export * from './design.js';
+export * from './motion.js';
 export * from './compiled.js';
 export * from './diagnostics.js';
 export * from './project-validation.js';

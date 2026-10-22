@@ -192,7 +192,7 @@ export function parseCompiled(input: unknown): Result<Compiled> {
       ? input.compiledVersion
       : undefined;
   const diagnostics =
-    rawVersion === COMPILED_VERSION || rawVersion === '0.2.0'
+    rawVersion === COMPILED_VERSION
       ? []
       : version(input, 'compiledVersion', COMPILED_VERSION, 'compiled');
   if (diagnostics.length) return { ok: false, diagnostics };

@@ -1,5 +1,5 @@
 {
-  "compiledVersion": "0.1.0",
+  "compiledVersion": "0.3.0",
   "contractVersions": {
     "project": "0.1.0",
     "narrative": "0.1.0",
@@ -195,7 +195,33 @@
           "default": 0.8,
           "range": [0, 1]
         }
-      ]
+      ],
+      "motion": {
+        "scrollLength": 1,
+        "trigger": 0.5,
+        "reducedMotion": "step",
+        "camera": {
+          "mode": "scrub",
+          "range": [0, 1],
+          "keyframes": [
+            {
+              "center": [-77.2, 39.2],
+              "zoom": 8,
+              "pitch": 0,
+              "bearing": 0,
+              "at": 0,
+              "easing": "linear"
+            }
+          ],
+          "final": {
+            "center": [-77.2, 39.2],
+            "zoom": 8,
+            "pitch": 0,
+            "bearing": 0
+          }
+        },
+        "layers": []
+      }
     },
     {
       "id": "b",
@@ -242,7 +268,33 @@
           "sceneId": "b"
         }
       ],
-      "controls": []
+      "controls": [],
+      "motion": {
+        "scrollLength": 1,
+        "trigger": 0.5,
+        "reducedMotion": "step",
+        "camera": {
+          "mode": "scrub",
+          "range": [0, 1],
+          "keyframes": [
+            {
+              "center": [-77.2, 39.2],
+              "zoom": 8,
+              "pitch": 0,
+              "bearing": 0,
+              "at": 0,
+              "easing": "linear"
+            }
+          ],
+          "final": {
+            "center": [-77.2, 39.2],
+            "zoom": 8,
+            "pitch": 0,
+            "bearing": 0
+          }
+        },
+        "layers": []
+      }
     }
   ],
   "scales": [

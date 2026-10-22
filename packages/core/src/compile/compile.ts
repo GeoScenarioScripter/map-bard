@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import {
   CapabilityCatalogSchema,
+  COMPILED_VERSION,
   CompiledSchema,
   FontFamilySchema,
   type CapabilityCatalog,
@@ -39,6 +40,7 @@ import {
   type ScaleInput,
   type ScaleKey,
 } from './scales.js';
+import { resolveSceneMotion } from './motion.js';
 
 export const COMPILER_VERSION = 's1-w3-a.1';
 
@@ -901,6 +903,7 @@ export function compileProject(
       layers,
       annotations,
       controls,
+      motion: resolveSceneMotion(scene),
     });
   }
 
@@ -1177,7 +1180,7 @@ export function compileProject(
   }
   if (diagnostics.some((entry) => entry.severity === 'error')) return { ok: false, diagnostics };
   const candidate: Compiled = {
-    compiledVersion: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
+    compiledVersion: COMPILED_VERSION,
     contractVersions: {
       project: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',
       narrative: project.authoredFormat === '0.2.0' ? '0.2.0' : '0.1.0',

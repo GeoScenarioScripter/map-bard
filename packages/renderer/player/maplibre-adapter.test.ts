@@ -240,4 +240,33 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     expect(events.filter((item) => item === 'marker:remove')).toHaveLength(3);
     expect(story).toEqual(parsed.value);
   });
+
+  it('runs frame listeners on every render until unsubscribed and projects coordinates', () => {
+    const listeners = new Set<() => void>();
+    const map = {
+      on: (event: string, listener: () => void) => {
+        expect(event).toBe('render');
+        listeners.add(listener);
+      },
+      off: (event: string, listener: () => void) => {
+        expect(event).toBe('render');
+        listeners.delete(listener);
+      },
+      project: ([lng, lat]: [number, number]) => ({ x: lng * 10, y: lat * 20 }),
+    };
+    const adapter = createMapLibreAdapter(
+      story,
+      sourceData,
+      map as unknown as Parameters<typeof createMapLibreAdapter>[2],
+      {} as Parameters<typeof createMapLibreAdapter>[3],
+    );
+    const frame = vi.fn();
+    const stop = adapter.onFrame(frame);
+    for (const listener of listeners) listener();
+    for (const listener of listeners) listener();
+    expect(frame).toHaveBeenCalledTimes(2);
+    stop();
+    expect(listeners.size).toBe(0);
+    expect(adapter.project([1, 2])).toEqual({ x: 10, y: 40 });
+  });
 });

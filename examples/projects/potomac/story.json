@@ -65,6 +65,7 @@
         "camera": [
           {
             "preset": "reveal-from-overview",
+            "feature": ["potomac-river-context/mdimap-113", "potomac-river-context/mdimap-346"],
             "range": [0, 0.25]
           },
           {

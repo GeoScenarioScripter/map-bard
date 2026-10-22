@@ -504,9 +504,12 @@ function buildMove(
     const target = overrides(sceneCamera, move);
     let start: CameraState | undefined = move.from ? resolveCamera(move.from) : undefined;
     if (!start) {
-      const points = input.layers.flatMap((layer) =>
-        input.sourceGeometries(layer.sourceId).flatMap((geometry) => positions(geometry)),
-      );
+      // Named features frame the overview; otherwise every feature of the scene's layers.
+      const points = features.length
+        ? features.flatMap((entry) => positions(entry.geometry))
+        : input.layers.flatMap((layer) =>
+            input.sourceGeometries(layer.sourceId).flatMap((geometry) => positions(geometry)),
+          );
       const box = bounds(points);
       if (!box) {
         problem(

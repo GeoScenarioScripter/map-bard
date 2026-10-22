@@ -99,7 +99,10 @@ export const CameraMotionSchema = z
     ...TrackSettings,
     range: RangeSchema.optional(),
     preset: z.enum(CAMERA_PRESETS).optional(),
-    /** `push-in` and `fly-along` target; `fly-along` accepts an ordered list of line features. */
+    /**
+     * `push-in` and `fly-along` target; `fly-along` accepts an ordered list of line features.
+     * For `reveal-from-overview`, the features whose extent the overview frames.
+     */
     feature: z.union([FeatureRefSchema, z.array(FeatureRefSchema).min(1)]).optional(),
     /** Preset view overrides; keyframes inherit missing fields from the previous keyframe. */
     zoom: z.number().finite().optional(),
@@ -107,7 +110,7 @@ export const CameraMotionSchema = z
     bearing: z.number().finite().optional(),
     /** `orbit` turn in degrees (negative turns anticlockwise). */
     degrees: z.number().finite().min(-1440).max(1440).optional(),
-    /** `reveal-from-overview` start; defaults to the extent of the scene's layers. */
+    /** `reveal-from-overview` start; else the extent of `feature`, else of the scene's layers. */
     from: CameraSchema.strict().optional(),
     /** `fly-along` direction against the line's coordinate order. */
     reverse: z.boolean().optional(),

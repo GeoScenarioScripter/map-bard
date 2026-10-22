@@ -141,6 +141,25 @@ describe('motion compilation', () => {
     expect(keyed.camera.keyframes.map((frame) => frame.zoom)).toEqual([6, 9]);
   });
 
+  it('frames a reveal-from-overview on named features instead of every layer', () => {
+    // A close scene view, so neither overview is capped just outside it.
+    const close = {
+      scene: { id: 's', camera: { center: [-77.5, 39.3] as [number, number], zoom: 12 } },
+    };
+    const all = resolve(scene({ camera: { preset: 'reveal-from-overview' } }), close).motion;
+    const { motion, diagnostics } = resolve(
+      scene({ camera: { preset: 'reveal-from-overview', feature: ['gauges/a', 'gauges/b'] } }),
+      close,
+    );
+    expect(diagnostics).toEqual([]);
+    const [start] = motion.camera.keyframes;
+    expect(start!.center[0]).toBeCloseTo(-77.3, 5);
+    expect(start!.center[1]).toBeCloseTo(39.15, 1);
+    // The gauges span less than the river, so their overview is closer.
+    expect(start!.zoom).toBeGreaterThan(all.camera.keyframes[0]!.zoom);
+    expect(start!.zoom).toBeLessThan(11.5);
+  });
+
   it('reports unknown presets, sources and features with their paths', () => {
     expect(resolve(scene({ preset: 'missing' })).diagnostics).toEqual([
       expect.objectContaining({

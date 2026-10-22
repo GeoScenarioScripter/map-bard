@@ -1,56 +1,38 @@
-/* global document, innerHeight, performance, requestAnimationFrame, window */
 // Frame-interval probe for a built publication: scroll the whole story like a reader and
-// report requestAnimationFrame intervals.
+// report requestAnimationFrame intervals, overall and while each scrub camera track moves.
+// The probe lives in the CLI (`mapbard check --visual --frames`, packages/cli/src/visual/);
+// this wrapper runs it on any built publication directory.
 //
-//   node scripts/frame-probe.mjs <publication-dir> [width] [height]
+//   node scripts/frame-probe.mjs <publication-dir> [width] [height] [--swiftshader]
 //
-// Headless Chrome renders WebGL in software, so this measures main-thread cost (player,
-// callout placement, MapLibre render calls), not the frame rate of a real GPU.
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { launchBrowser } from '../tests/browser.mjs';
+// Without --swiftshader, Chromium keeps its default WebGL path, as the numbers in STATUS.md
+// before Wave 4 did; `check --visual --frames` uses SwiftShader, which is much slower at
+// desktop size. Either way this measures main-thread cost (player, callout placement, MapLibre
+// render calls), not the frame rate of a real GPU.
+import { resolve } from 'node:path';
+import { launchBrowser, probeFrames } from 'mapbard';
 
-const [, , publication, width = '1440', height = '900'] = process.argv;
+const args = process.argv.slice(2);
+const swiftshader = args.includes('--swiftshader');
+const [publication, width = '1440', height = '900'] = args.filter((arg) => !arg.startsWith('--'));
 if (!publication) {
-  console.error('Usage: node scripts/frame-probe.mjs <publication-dir> [width] [height]');
+  console.error(
+    'Usage: node scripts/frame-probe.mjs <publication-dir> [width] [height] [--swiftshader]',
+  );
   process.exit(2);
 }
-const STEPS = 240;
-const browser = await launchBrowser();
+const browser = await launchBrowser(
+  process.env,
+  swiftshader ? undefined : ['--allow-file-access-from-files'],
+);
 try {
-  const page = await browser.newPage({ viewport: { width: +width, height: +height } });
-  await page.goto(pathToFileURL(join(resolve(publication), 'index.html')).href);
-  await page.waitForSelector('html[data-mb-state="ready"]', { timeout: 30000 });
-  await page.evaluate(() => {
-    window.__mbFrames = [];
-    let last = performance.now();
-    const tick = (now) => {
-      window.__mbFrames.push(now - last);
-      last = now;
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+  const report = await probeFrames(browser, {
+    publication: resolve(publication),
+    // The probe has always used the network as the build declares it.
+    network: 'live',
+    viewport: { width: +width, height: +height },
   });
-  const total = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
-  for (let step = 0; step < STEPS; step++) {
-    await page.mouse.wheel(0, total / STEPS);
-    await page.waitForTimeout(16);
-  }
-  // The first frames include start-up work.
-  const frames = (await page.evaluate(() => window.__mbFrames.slice(5))).sort((a, b) => a - b);
-  const at = (q) => +frames[Math.min(frames.length - 1, Math.floor(q * frames.length))].toFixed(1);
-  const mean = frames.reduce((sum, value) => sum + value, 0) / frames.length;
-  console.log(
-    JSON.stringify({
-      viewport: `${width}x${height}`,
-      frames: frames.length,
-      meanFps: +(1000 / mean).toFixed(1),
-      p50Ms: at(0.5),
-      p95Ms: at(0.95),
-      p99Ms: at(0.99),
-      over50Ms: frames.filter((value) => value > 50).length,
-    }),
-  );
+  console.log(JSON.stringify(report));
 } finally {
   await browser.close();
 }

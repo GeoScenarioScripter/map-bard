@@ -11,6 +11,8 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { promisify } from 'node:util';
+import { gzip } from 'node:zlib';
 import { basename, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -24,7 +26,12 @@ import {
   registerMedia,
   slugify,
 } from '@mapbard/core';
-import { STAGE1_CAPABILITIES } from '@mapbard/knowledge';
+import {
+  STAGE1_CAPABILITIES,
+  budgetDiagnostics,
+  sizeReport,
+  type SizeReport,
+} from '@mapbard/knowledge';
 import { renderCompiled, writeCompiledBundle } from '@mapbard/renderer';
 import type { Diagnostic, ProjectV2, StoryV2 } from '@mapbard/schema';
 
@@ -491,6 +498,38 @@ export async function prepare(root: string, offline: boolean, refresh: boolean) 
   };
 }
 
+const gzipped = promisify(gzip);
+/** Text that servers gzip; fonts, images and video are already compressed and count as is. */
+const COMPRESSIBLE = new Set(['.js', '.css', '.html', '.json', '.geojson', '.svg', '.txt']);
+
+/** Raw and gzip sizes of a built publication's files, against the size budgets. */
+export async function measurePublication(
+  directory: string,
+  files: readonly string[],
+): Promise<SizeReport> {
+  return sizeReport(
+    await Promise.all(
+      files.map(async (path) => {
+        const bytes = await readFile(join(directory, path));
+        return {
+          path,
+          bytes: bytes.length,
+          gzipBytes: COMPRESSIBLE.has(extname(path).toLowerCase())
+            ? (await gzipped(bytes, { level: 9 })).length
+            : bytes.length,
+        };
+      }),
+    ),
+  );
+}
+
+/** Each budgeted JavaScript part on its own, then the totals by kind and the budgets. */
+export const sizeSummary = (sizes: SizeReport) => ({
+  parts: sizes.files.filter((file) => file.kind === 'core' || file.kind === 'tier'),
+  totals: sizes.totals,
+  budgets: sizes.budgets,
+});
+
 /**
  * Build a publication into `output`. `refresh` updates the lockfile first and `record` notes the
  * compiled inputs in it afterwards; `check --visual` turns both off, so it never edits the project.
@@ -621,13 +660,20 @@ export async function build(
     }
   }
   if (record) await recordProjectCompilation(root, prepared.compiled);
+  const sizes = await measurePublication(out, written.value.written);
   return {
     result: {
       directory: out,
       verification,
       files: [...written.value.written, 'verification.json'],
+      sizes: sizeSummary(sizes),
     },
-    diagnostics: [...prepared.diagnostics, ...publication.diagnostics, ...cleanupDiagnostics],
+    diagnostics: [
+      ...prepared.diagnostics,
+      ...publication.diagnostics,
+      ...cleanupDiagnostics,
+      ...budgetDiagnostics(sizes),
+    ],
   };
 }
 

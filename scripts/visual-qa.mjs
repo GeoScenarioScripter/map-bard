@@ -2,10 +2,11 @@
 // (`mapbard check --visual`, packages/cli/src/visual/); this wrapper runs it on any built
 // publication directory, as the STATUS commands do.
 //
-//   node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live] [--fail-on-findings]
+//   node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live|unavailable] [--fail-on-findings]
 //
 // stub (default) answers the declared basemap style URLs with an empty style and blocks every
-// other request; offline blocks everything and reports any attempt; live uses the network.
+// other request; offline blocks everything and reports any attempt; live uses the network;
+// unavailable aborts every request, style URLs included (give it an online build).
 import { writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { captureStory, launchBrowser, NETWORK_MODES, writeContactSheet } from 'mapbard';
@@ -21,7 +22,7 @@ function parseArgs(argv) {
   }
   if (positional.length !== 2 || !NETWORK_MODES.includes(options.network)) {
     console.error(
-      'Usage: node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live] [--fail-on-findings]',
+      'Usage: node scripts/visual-qa.mjs <publication-dir> <out-dir> [--network stub|offline|live|unavailable] [--fail-on-findings]',
     );
     process.exit(2);
   }

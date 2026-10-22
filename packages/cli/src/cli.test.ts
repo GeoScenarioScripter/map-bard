@@ -73,6 +73,20 @@ describe('CLI binary', () => {
     expect(online.envelope.result.verification.input.resources).toHaveLength(1);
     expect(await readFile(join(root, 'online', 'compiled-data.js'), 'utf8')).toContain('locations');
     expect(online.envelope.result.verification.requiredHosts).toContain('tiles.openfreemap.org');
+    // Every build reports its sizes; MapLibre alone is well over 300 KB gzip, under the budget.
+    const { sizes } = online.envelope.result;
+    expect(sizes.parts.map((part: { path: string }) => part.path)).toEqual([
+      'compiled-app.js',
+      'player.js',
+      'vendor/maplibre-gl-worker.js',
+      'vendor/maplibre-gl.js',
+    ]);
+    expect(sizes.budgets.core.gzipBytes).toBeGreaterThan(300 * 1024);
+    expect(sizes.budgets.core.ok).toBe(true);
+    expect(sizes.totals.data.bytes).toBeGreaterThan(0);
+    expect(online.envelope.diagnostics.map((entry: { code: string }) => entry.code)).not.toContain(
+      'BUDGET_EXCEEDED',
+    );
     const offline = await cli('--project', root, 'build', '--offline', '--out', 'offline');
     expect(offline.code).toBe(0);
     expect(offline.envelope.result.verification.requiredNetwork).toEqual([]);
@@ -261,6 +275,19 @@ describe('CLI binary', () => {
     const stray = await cli('check', '--network', 'stub');
     expect(stray.code).toBe(2);
     expect(stray.envelope.diagnostics[0].remedy).toContain('--visual');
+    for (const flag of ['--update', '--frames']) expect((await cli('check', flag)).code).toBe(2);
+    const liveGoldens = await cli('check', '--visual', '--update', '--network', 'stub');
+    expect(liveGoldens.code).toBe(2);
+    expect(liveGoldens.envelope.diagnostics[0].message).toContain('offline');
+    const unavailable = await cli(
+      '--project',
+      'nowhere',
+      'check',
+      '--visual',
+      '--network',
+      'unavailable',
+    );
+    expect(unavailable.code).toBe(1);
     const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
     created.push(scratch);
     const potomac = fileURLToPath(new URL('../../../examples/projects/potomac/', import.meta.url));

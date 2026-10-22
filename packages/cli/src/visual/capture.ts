@@ -1,7 +1,8 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Browser } from 'playwright-core';
+import type { Browser, Page } from 'playwright-core';
+import { PNG } from 'pngjs';
 import type { SceneMotion } from '@mapbard/schema';
 import { geometryFindings, type Finding } from './occlusion.js';
 import {
@@ -16,9 +17,11 @@ import { phaseAt, samplePositions, type Phase } from './phase.js';
 
 /**
  * offline blocks every request and reports any attempt; stub answers the declared basemap style
- * URLs with an empty style and blocks everything else; live uses the network.
+ * URLs with an empty style and blocks everything else; live uses the network; unavailable is an
+ * online build with every request aborted, style URLs included, so the story must fall back to
+ * its local layers and say so.
  */
-export const NETWORK_MODES = ['offline', 'stub', 'live'] as const;
+export const NETWORK_MODES = ['offline', 'stub', 'live', 'unavailable'] as const;
 export type NetworkMode = (typeof NETWORK_MODES)[number];
 
 export const VIEWPORTS = [
@@ -44,7 +47,27 @@ export type SampleFinding =
 export type PageFinding =
   | { kind: 'console-error'; message: string }
   | { kind: 'page-error'; message: string }
-  | { kind: 'offline-request'; urls: string[] };
+  | { kind: 'offline-request'; urls: string[] }
+  | { kind: 'basemap-notice-missing'; viewport: CaptureViewport['id'] }
+  | { kind: 'map-blank'; viewport: CaptureViewport['id']; drawn: number };
+
+/** With the basemap unavailable, at least this share of map pixels must show the local layers. */
+export const MIN_DRAWN_SHARE = 0.001;
+
+/**
+ * The share of pixels that differ from the most common colour: with every overlay hidden and no
+ * basemap, that is what the story's own layers drew over the background.
+ */
+export function drawnShare(png: Buffer): number {
+  const { data, width, height } = PNG.sync.read(png);
+  const counts = new Map<number, number>();
+  for (let index = 0; index < data.length; index += 4) {
+    const colour = (data[index]! << 16) | (data[index + 1]! << 8) | data[index + 2]!;
+    counts.set(colour, (counts.get(colour) ?? 0) + 1);
+  }
+  const background = Math.max(...counts.values());
+  return (width * height - background) / (width * height);
+}
 
 /**
  * One position of one scene at one viewport. Captures (p = 0, 0.5, 1) always have a screenshot;
@@ -90,11 +113,65 @@ const styleUrls = (story: PublishedStory): Set<string> => {
   );
 };
 
-type Log = { consoleErrors: string[]; pageErrors: string[]; remoteRequests: Set<string> };
+/** Apply a network mode to a page before it loads the story. */
+export async function routeNetwork(
+  page: Page,
+  network: NetworkMode,
+  story: PublishedStory,
+): Promise<void> {
+  if (network === 'live') return;
+  const styles = styleUrls(story);
+  await page.route(/^https?:\/\//, async (route) => {
+    if (network === 'stub' && styles.has(route.request().url()))
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
+        body: EMPTY_STYLE,
+      });
+    else await route.abort();
+  });
+}
+
+/** Where a capture run reads its publication and writes its screenshots, and its network. */
+export type CaptureOptions = {
+  publication: string;
+  out: string;
+  network: NetworkMode;
+};
+
+/**
+ * With every request aborted, the story must show the basemap notice and still draw its own
+ * layers. The map is screenshotted with every overlay hidden, so panels do not count as drawn.
+ */
+async function fallback(page: Page, viewport: CaptureViewport): Promise<PageFinding[]> {
+  const findings: PageFinding[] = [];
+  if (!(await page.locator('#mb-basemap-notice').isVisible()))
+    findings.push({ kind: 'basemap-notice-missing', viewport: viewport.id });
+  await page.evaluate(waitIdle, IDLE_TIMEOUT_MS);
+  const hide = await page.addStyleTag({
+    content:
+      'body > :not(#map), #map > :not(.maplibregl-canvas-container) { visibility: hidden !important; }',
+  });
+  const drawn = drawnShare(await page.screenshot());
+  await hide.evaluate((element) => (element as unknown as { remove(): void }).remove());
+  if (drawn < MIN_DRAWN_SHARE) findings.push({ kind: 'map-blank', viewport: viewport.id, drawn });
+  return findings;
+}
+
+type Log = {
+  consoleErrors: string[];
+  pageErrors: string[];
+  remoteRequests: Set<string>;
+  pageFindings: PageFinding[];
+};
+
+/** Chromium logs each request the run aborted; with the network unavailable that is expected. */
+const ABORTED_REQUEST = /^Failed to load resource: net::ERR_/;
 
 async function captureViewport(
   browser: Browser,
-  options: { publication: string; out: string; network: NetworkMode },
+  options: CaptureOptions,
   story: PublishedStory,
   viewport: CaptureViewport,
   log: Log,
@@ -111,24 +188,14 @@ async function captureViewport(
   await page.addInitScript(enableCapture);
   page.on('pageerror', (error) => log.pageErrors.push(`${viewport.id}: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') log.consoleErrors.push(`${viewport.id}: ${message.text()}`);
+    if (message.type() !== 'error') return;
+    if (options.network === 'unavailable' && ABORTED_REQUEST.test(message.text())) return;
+    log.consoleErrors.push(`${viewport.id}: ${message.text()}`);
   });
   page.on('request', (request) => {
     if (/^https?:\/\//.test(request.url())) log.remoteRequests.add(request.url());
   });
-  if (options.network !== 'live') {
-    const styles = styleUrls(story);
-    await page.route(/^https?:\/\//, async (route) => {
-      if (options.network === 'stub' && styles.has(route.request().url()))
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          headers: { 'access-control-allow-origin': '*' },
-          body: EMPTY_STYLE,
-        });
-      else await route.abort();
-    });
-  }
+  await routeNetwork(page, options.network, story);
   const samples: { capture: boolean; sample: Sample }[] = [];
   try {
     await page.goto(pathToFileURL(join(options.publication, 'index.html')).href);
@@ -171,6 +238,9 @@ async function captureViewport(
             findings,
           },
         });
+        // In the first scene, where the rail shows (the title panel hides it).
+        if (options.network === 'unavailable' && samples.length === 1)
+          log.pageFindings.push(...(await fallback(page, viewport)));
       }
   } finally {
     await context.close();
@@ -184,11 +254,16 @@ async function captureViewport(
  */
 export async function captureStory(
   browser: Browser,
-  options: { publication: string; out: string; network: NetworkMode },
+  options: CaptureOptions,
 ): Promise<CaptureReport> {
   await mkdir(options.out, { recursive: true });
   const story = await readPublishedStory(options.publication);
-  const log: Log = { consoleErrors: [], pageErrors: [], remoteRequests: new Set() };
+  const log: Log = {
+    consoleErrors: [],
+    pageErrors: [],
+    remoteRequests: new Set(),
+    pageFindings: [],
+  };
   const samples: { capture: boolean; sample: Sample }[] = [];
   for (const viewport of VIEWPORTS)
     samples.push(...(await captureViewport(browser, options, story, viewport, log)));
@@ -199,6 +274,7 @@ export async function captureStory(
     ...(options.network === 'offline' && remoteRequests.length
       ? [{ kind: 'offline-request' as const, urls: remoteRequests }]
       : []),
+    ...log.pageFindings,
   ];
   const captures = samples.filter((entry) => entry.capture).map((entry) => entry.sample);
   const sweep = samples.filter((entry) => !entry.capture).map((entry) => entry.sample);

@@ -19,6 +19,7 @@ import {
 } from './operations.js';
 import { NETWORK_MODES, type NetworkMode } from './visual/capture.js';
 import { checkVisual, VISUAL_DIRECTORY } from './visual/check.js';
+import { GOLDEN_DIRECTORY } from './visual/goldens.js';
 
 export * from './visual/index.js';
 
@@ -28,7 +29,13 @@ const cliVersion = (
   }
 ).version;
 type Global = { json?: boolean; limit?: string; project?: string };
-type CheckFlags = { visual?: boolean; network: NetworkMode; failOnWarnings?: boolean };
+type CheckFlags = {
+  visual?: boolean;
+  network: NetworkMode;
+  failOnWarnings?: boolean;
+  update?: boolean;
+  frames?: boolean;
+};
 const rootOf = (options: Global): string => resolve(options.project ?? '.');
 /**
  * Bound list output: diagnostics, a list result and the lists directly inside an object result.
@@ -98,6 +105,7 @@ const ignoredChange = (file: string, output: string): boolean => {
   return (
     first.startsWith(output) ||
     first === VISUAL_DIRECTORY ||
+    first === GOLDEN_DIRECTORY ||
     first === '.git' ||
     first === 'node_modules' ||
     file === 'mapbard.lock.json'
@@ -306,13 +314,21 @@ export async function run(argv: string[] = process.argv): Promise<number> {
         .default('offline'),
     )
     .option('--fail-on-warnings', 'With --visual, treat visual warnings as errors')
+    .option('--update', 'With --visual (offline), rewrite the goldens/ directory from this run')
+    .option('--frames', 'With --visual, also sample frame intervals during camera tracks')
     .action(async (local: CheckFlags, command: Command) => {
       const options = command.optsWithGlobals() as Global;
       const visualOnly = command.options
         .filter((option) => option.long !== '--visual')
         .map((option) => option.attributeName())
         .filter((name) => command.getOptionValueSource(name) === 'cli');
-      if (!local.visual && visualOnly.length) {
+      const usage =
+        !local.visual && visualOnly.length
+          ? '--network, --fail-on-warnings, --update and --frames only apply to visual checks.'
+          : local.update && local.network !== 'offline'
+            ? 'Goldens come only from offline runs, so --update needs --network offline.'
+            : undefined;
+      if (usage) {
         emit(
           'check',
           {
@@ -321,8 +337,10 @@ export async function run(argv: string[] = process.argv): Promise<number> {
                 'VALUE_INVALID',
                 'project',
                 [],
-                '--network and --fail-on-warnings only apply to visual checks.',
-                'Add --visual, or drop those options.',
+                usage,
+                local.visual
+                  ? 'Drop --network, or drop --update.'
+                  : 'Add --visual, or drop those options.',
               ),
             ],
           },
@@ -336,6 +354,8 @@ export async function run(argv: string[] = process.argv): Promise<number> {
           checkVisual(rootOf(options), {
             network: local.network,
             failOnWarnings: Boolean(local.failOnWarnings),
+            update: Boolean(local.update),
+            frames: Boolean(local.frames),
           }),
         );
       await execute('check', options, async () => {

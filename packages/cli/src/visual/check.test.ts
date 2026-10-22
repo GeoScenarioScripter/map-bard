@@ -1,7 +1,8 @@
-import { cp, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PNG } from 'pngjs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BrowserMissingError, launchBrowser } from './browser.js';
 import { checkVisual, type CaptureRunner } from './check.js';
@@ -19,6 +20,13 @@ async function project(): Promise<string> {
   for (const entry of ['mapbard.json', 'story.json', 'mapbard.lock.json', 'data', 'media'])
     await cp(join(potomac, entry), join(root, entry), { recursive: true });
   return root;
+}
+
+/** A small solid screenshot stand-in. */
+function solidPng([r, g, b]: [number, number, number]): Buffer {
+  const png = new PNG({ width: 8, height: 6 });
+  for (let index = 0; index < 48; index++) png.data.set([r, g, b, 255], index * 4);
+  return PNG.sync.write(png);
 }
 
 /** A capture that never opens a browser: one flight warning and one rest error. */
@@ -115,6 +123,55 @@ describe('check --visual', () => {
     });
     expect(called).toBe(false);
     expect(outcome.diagnostics[0]?.code).toBe('INPUT_STALE');
+  });
+
+  it('writes goldens with --update, then gates offline runs on them', async () => {
+    const root = await project();
+    let colour: [number, number, number] = [40, 80, 120];
+    const pngCapture: CaptureRunner = async (options) => {
+      const captured = await fakeCapture(options);
+      await writeFile(join(options.out, 'limits-p100-phone.png'), solidPng(colour));
+      const noise = [];
+      for (let run = 1; run <= (options.noiseRuns ?? 0); run++) {
+        const out = join(options.out, `noise-${run}`);
+        await mkdir(out, { recursive: true });
+        await writeFile(join(out, 'limits-p100-phone.png'), solidPng(colour));
+        noise.push({ out, captures: captured.report.captures });
+      }
+      return { ...captured, browserVersion: '140.0.0.0', noise };
+    };
+    const updated = await checkVisual(root, { network: 'offline', update: true }, pngCapture);
+    expect(updated.result).toMatchObject({
+      visual: { goldens: { status: 'updated', captures: 1, noise: { maxDiffRatio: 0 } } },
+    });
+    const manifest = JSON.parse(await readFile(join(root, 'goldens', 'manifest.json'), 'utf8'));
+    expect(manifest).toMatchObject({
+      chromium: '140.0.0.0',
+      platform: process.platform,
+      captures: ['limits-p100-phone.png'],
+    });
+    await expect(stat(join(root, '.mapbard-visual', 'captures', 'noise-1'))).rejects.toThrow();
+
+    const same = await checkVisual(root, { network: 'offline' }, pngCapture);
+    expect(same.diagnostics.map((entry) => entry.code)).not.toContain('VISUAL_GOLDEN_MISMATCH');
+    expect(same.result).toMatchObject({
+      visual: { goldens: { status: 'match', compared: 1, mismatched: 0 } },
+    });
+
+    colour = [200, 80, 120];
+    const changed = await checkVisual(root, { network: 'offline' }, pngCapture);
+    expect(changed.diagnostics.at(-1)).toMatchObject({
+      code: 'VISUAL_GOLDEN_MISMATCH',
+      severity: 'error',
+      ids: { sceneId: 'limits' },
+    });
+    expect(
+      await stat(join(root, '.mapbard-visual', 'captures', 'limits-p100-phone.diff.png')),
+    ).toBeTruthy();
+
+    // Stub and live runs use other basemaps than the goldens, so they never compare.
+    const stub = await checkVisual(root, { network: 'stub' }, pngCapture);
+    expect(stub.result).toMatchObject({ visual: { goldens: { status: 'skipped' } } });
   });
 
   it('reports a missing browser as a diagnostic, not a crash', async () => {

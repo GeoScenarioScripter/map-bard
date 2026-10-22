@@ -18,8 +18,12 @@ export class BrowserMissingError extends Error {
 /**
  * Headless Chromium: `MAPBARD_CHROME_PATH` when set, else Playwright's own build, else the
  * system Chrome. `playwright-core` loads only here, so commands without `--visual` never need it.
+ * `args` replaces the visual flags, as the frame probe script does to keep the default GPU path.
  */
-export async function launchBrowser(env: NodeJS.ProcessEnv = process.env): Promise<Browser> {
+export async function launchBrowser(
+  env: NodeJS.ProcessEnv = process.env,
+  args: readonly string[] = VISUAL_BROWSER_ARGS,
+): Promise<Browser> {
   let chromium: typeof import('playwright-core').chromium;
   try {
     ({ chromium } = await import('playwright-core'));
@@ -27,7 +31,7 @@ export async function launchBrowser(env: NodeJS.ProcessEnv = process.env): Promi
     throw new BrowserMissingError(`playwright-core could not be loaded: ${String(error)}`);
   }
   const executablePath = env.MAPBARD_CHROME_PATH;
-  const options = { headless: true, args: VISUAL_BROWSER_ARGS };
+  const options = { headless: true, args: [...args] };
   if (executablePath) {
     try {
       return await chromium.launch({ ...options, executablePath });

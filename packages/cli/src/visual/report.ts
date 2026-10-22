@@ -176,6 +176,20 @@ function pageDiagnostic(finding: PageFinding): Diagnostic {
         message: `The offline build made ${finding.urls.length} network request(s): ${finding.urls.slice(0, 3).join(', ')}${finding.urls.length > 3 ? ', …' : ''}`,
         remedy: 'Remove online sources from the offline build; every asset it loads must be local.',
       };
+    case 'basemap-notice-missing':
+      return {
+        ...base,
+        message: `With the network unavailable, ${finding.viewport} showed no basemap notice (#mb-basemap-notice).`,
+        remedy:
+          'Rebuild with this CLI version; the player must tell readers when the online basemap is missing. If it persists, report a MapBard bug.',
+      };
+    case 'map-blank':
+      return {
+        ...base,
+        message: `With the network unavailable, the ${finding.viewport} map drew almost nothing over its background (${(finding.drawn * 100).toFixed(2)}% of pixels).`,
+        remedy:
+          'Give the story local context layers (data resources in the project), so it still reads without the online basemap.',
+      };
   }
 }
 

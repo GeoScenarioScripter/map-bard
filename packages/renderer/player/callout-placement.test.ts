@@ -6,7 +6,9 @@ import {
   circleTouchesBox,
   overlap,
   placeCallouts,
+  placeShownCallouts,
   segmentCrossesBox,
+  targetCover,
   type CalloutRequest,
   type PlacementField,
 } from './callout-placement.js';
@@ -214,5 +216,51 @@ describe('placeCallouts', () => {
     const [placement] = placeCallouts([request('a', 100, 50, { width: 400 })], field);
     expect(placement!.collisions).toBeGreaterThan(0);
     expect(placement!.hidden).toBe(false);
+  });
+});
+
+describe('shown callouts', () => {
+  it('hides a callout whose target is a fifth under a panel or off screen', () => {
+    // Halo box 26 px square at (500, 300); the panel covers its left 6 px (23%).
+    const panel: PlacementField = {
+      ...open,
+      panels: [{ left: 300, top: 0, right: 493, bottom: 700 }],
+    };
+    expect(targetCover({ x: 500, y: 300, r: 10 }, panel)).toBeCloseTo(6 / 26, 5);
+    expect(placeShownCallouts([request('a', 500, 300)], panel)[0]!.hidden).toBe(true);
+    // A 4 px graze (15%) keeps it.
+    const graze = { ...open, panels: [{ left: 300, top: 0, right: 491, bottom: 700 }] };
+    expect(placeShownCallouts([request('a', 500, 300)], graze)[0]!.hidden).toBe(false);
+    // Off the screen edge counts the same way.
+    expect(placeShownCallouts([request('a', 5, 300)], open)[0]!.hidden).toBe(true);
+  });
+
+  it('drops the least important colliding callout and places the rest cleanly', () => {
+    const tight: PlacementField = {
+      viewport: { width: 300, height: 120 },
+      panels: [],
+      symbols: [],
+    };
+    const requests = [
+      request('first', 200, 60, { width: 150 }),
+      request('second', 230, 60, { width: 150, priority: 1 }),
+    ];
+    expect(placeCallouts(requests, tight).some((item) => item.collisions > 0)).toBe(true);
+    const [first, second] = placeShownCallouts(requests, tight);
+    expect(first).toMatchObject({ hidden: false, collisions: 0 });
+    expect(second!.hidden).toBe(true);
+    // The hidden callout's symbol is still drawn, and the shown label keeps off it.
+    expect(circleTouchesBox({ x: 230, y: 60, r: 10 }, first!.box)).toBe(false);
+  });
+
+  it('keeps every callout when all place cleanly', () => {
+    const placements = placeShownCallouts(
+      [request('a', 300, 300), request('b', 700, 300, { priority: 1 })],
+      open,
+    );
+    expect(placements.map((item) => [item.hidden, item.collisions])).toEqual([
+      [false, 0],
+      [false, 0],
+    ]);
   });
 });

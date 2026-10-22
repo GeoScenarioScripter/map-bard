@@ -450,7 +450,71 @@ export function placeCallouts(
       const { id, position, box, leader, collisions } = scored;
       return { id, position, box, leader, collisions, hidden: false };
     }
-    const { position, box, leader } = candidates(request)[0]!;
-    return { id: request.id, position, box, leader, collisions: 0, hidden: true };
+    return hiddenPlacement(request);
   });
+}
+
+function hiddenPlacement(request: CalloutRequest): CalloutPlacement {
+  const { position, box, leader } = candidates(request)[0]!;
+  return { id: request.id, position, box, leader, collisions: 0, hidden: true };
+}
+
+/** Gap between a target symbol and its halo ring, in CSS pixels; the halo is what readers see. */
+export const HALO_GAP = 3;
+/** A callout steps aside once this share of a target's halo is under a panel or off screen. */
+export const TARGET_COVER_LIMIT = 0.2;
+
+/** The largest share of a target's halo box that one panel covers, or that lies off screen. */
+export function targetCover(target: Circle, field: PlacementField): number {
+  const r = target.r + HALO_GAP;
+  const box = { left: target.x - r, top: target.y - r, right: target.x + r, bottom: target.y + r };
+  const area = boxArea(box);
+  if (!area) return 0;
+  const screen = { left: 0, top: 0, right: field.viewport.width, bottom: field.viewport.height };
+  return Math.max(
+    1 - overlap(box, screen) / area,
+    ...field.panels.map((panel) => overlap(box, panel) / area),
+  );
+}
+
+/**
+ * Placement for the callouts a reader can trust: a callout whose target is a fifth or more
+ * under a panel or off screen is hidden, and while any placed callout still collides with
+ * something, the least important colliding one (highest priority value, then last ID) is
+ * hidden and the rest placed again. A label is never drawn covered or covering; it comes
+ * back as soon as the camera gives it room.
+ */
+export function placeShownCallouts(
+  requests: readonly CalloutRequest[],
+  field: PlacementField,
+  previous: ReadonlyMap<string, string> = new Map(),
+): CalloutPlacement[] {
+  let shown = requests.filter((request) =>
+    request.targets.every((target) => targetCover(target, field) < TARGET_COVER_LIMIT),
+  );
+  for (;;) {
+    // A hidden callout's targets stay drawn, so the shown labels must keep off them too.
+    const symbols = [
+      ...field.symbols,
+      ...requests
+        .filter((request) => !shown.includes(request))
+        .flatMap((request) => request.targets),
+    ];
+    const placements = placeCallouts(shown, { ...field, symbols }, previous);
+    const colliding = placements
+      .map((placement, index) => ({ placement, request: shown[index]! }))
+      .filter(({ placement }) => !placement.hidden && placement.collisions > 0)
+      .map(({ request }) => request);
+    if (!colliding.length) {
+      const byId = new Map(placements.map((placement) => [placement.id, placement]));
+      return requests.map((request) => byId.get(request.id) ?? hiddenPlacement(request));
+    }
+    const drop = colliding.reduce((last, request) =>
+      request.priority > last.priority ||
+      (request.priority === last.priority && request.id > last.id)
+        ? request
+        : last,
+    );
+    shown = shown.filter((request) => request !== drop);
+  }
 }

@@ -18,6 +18,19 @@ export class FakeElement {
 
   constructor(readonly tagName: string) {}
 
+  readonly classList = {
+    add: (name: string) => {
+      if (!this.classList.contains(name)) this.className = `${this.className} ${name}`.trim();
+    },
+    remove: (name: string) => {
+      this.className = this.className
+        .split(' ')
+        .filter((item) => item && item !== name)
+        .join(' ');
+    },
+    contains: (name: string) => this.className.split(' ').includes(name),
+  };
+
   setAttribute(name: string, value: string): void {
     this.attributes.set(name, String(value));
     if (name === 'class') this.className = String(value);

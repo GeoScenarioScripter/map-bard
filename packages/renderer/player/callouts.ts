@@ -1,8 +1,9 @@
 // DOM overlay for annotation callouts: a label, a leader line and a halo around each target,
 // positioned from the map projection on every rendered frame.
 import {
+  HALO_GAP,
   LEADER_RINGS,
-  placeCallouts,
+  placeShownCallouts,
   type Box,
   type CalloutPlacement,
   type CalloutRequest,
@@ -21,8 +22,7 @@ export interface CalloutOverlayOptions {
 }
 
 const SVG = 'http://www.w3.org/2000/svg';
-/** Gap between a target symbol and its halo ring, in CSS pixels. */
-export const HALO_GAP = 3;
+export { HALO_GAP };
 /** Radius of the dot drawn at a free anchor that has no symbol. */
 export const ANCHOR_DOT = 3.5;
 /** Symbols this far outside the screen cannot reach a label. */
@@ -175,6 +175,7 @@ export function createCalloutOverlay(
     container.appendChild(root);
     let previous = new Map<string, string>();
     const opacity = new Map<string, number>();
+    const measured = new Map<string, { width: number; height: number }>();
     // A faded-out callout is hidden from readers and leaves its space to the others.
     const shown = () => parts.filter((part) => (opacity.get(part.callout.id) ?? 1) > 0);
 
@@ -188,10 +189,19 @@ export function createCalloutOverlay(
       // Read every size first, then write, so a frame lays out once.
       const frame = container.getBoundingClientRect();
       const viewport = { width: frame.width, height: frame.height };
-      // Fractional sizes: rounding down would let a label graze its neighbours.
-      const sizes = live.map(({ label }) => {
-        const box = label.getBoundingClientRect();
-        return { width: box.width, height: box.height };
+      // Fractional sizes: rounding down would let a label graze its neighbours. A label hidden
+      // for lack of room keeps the size it had, so it can be placed again without showing.
+      const sizes = live.map(({ callout, label }) => {
+        let cached = measured.get(callout.id);
+        if (!label.hidden || !cached) {
+          const hidden = label.hidden;
+          label.hidden = false;
+          const box = label.getBoundingClientRect();
+          label.hidden = hidden;
+          cached = { width: box.width, height: box.height };
+          measured.set(callout.id, cached);
+        }
+        return cached;
       });
       const panels = (options.panels?.() ?? []).map((box) => ({
         left: box.left - frame.left,
@@ -204,7 +214,7 @@ export function createCalloutOverlay(
         map.project,
         sizes,
       );
-      const placements = placeCallouts(
+      const placements = placeShownCallouts(
         requests,
         { viewport, panels, symbols: nearbySymbols(symbols(), map.project, viewport, requests) },
         previous,
@@ -232,9 +242,18 @@ export function createCalloutOverlay(
       request: CalloutRequest,
       placement: CalloutPlacement,
     ): void {
+      // A callout that comes back fades in (CSS), instead of popping into place.
+      const returning = part.label.hidden && !placement.hidden;
       part.label.hidden = placement.hidden;
       part.group.style.display = placement.hidden ? 'none' : '';
       if (placement.hidden) return;
+      if (returning) {
+        part.label.classList.remove('is-entering');
+        part.group.classList.remove('is-entering');
+        void part.label.getBoundingClientRect();
+        part.label.classList.add('is-entering');
+        part.group.classList.add('is-entering');
+      }
       part.label.dataset.position = placement.position;
       part.label.dataset.collisions = String(placement.collisions);
       part.label.style.transform = `translate(${Math.round(placement.box.left)}px, ${Math.round(placement.box.top)}px)`;

@@ -1,8 +1,8 @@
 # MapBard — Status
 
 **Updated 2026-10-21. [M2 — Visual Engine](visual-engine.md) is active; its
-execution plan is [m2-visual.md](m2-visual.md). Waves 1 and 2 are complete;
-next is Wave 3.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
+next is Wave 4.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -12,7 +12,9 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - `@mapbard/core`: load and validate a project with source hashes; compile it
   to a resolved spec (equal-interval, quantile, natural-breaks and manual
   color classes; category and size scales; shared color and size scales;
-  legend titles and display units; resolved theme and layout; annotations,
+  legend titles and display units; resolved theme and layout; callouts with
+  target symbol radii; motion tracks from authored `motion`, `motionPresets`
+  and the presets `reveal-from-overview`, `push-in`, `orbit` and `fly-along`;
   controls, capability diagnostics), a static critic (`critiqueProject`);
   ingest/profiling helpers in
   `inspect/`. Format 0.2 loads from `mapbard.json` and `story.json`, with text
@@ -24,7 +26,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   token-driven (generated `theme.css`, bundled OFL Inter and Source Serif 4);
   layouts `sidecar`, `overlay-cards` and `full-bleed` with a phone bottom
   sheet, camera padding and responsive zoom; theme-tinted OpenFreeMap and
-  VersaTiles styles, hillshade, sky and globe projection.
+  VersaTiles styles, hillshade, sky and globe projection. Compiled spec 0.3.0:
+  scroll progress over each card's rest phase drives camera and layer tracks
+  (scrub, play, loop, step; reduced motion; a pause control for loops).
+  Callouts (label, leader, halo) are placed every frame clear of panels, map
+  controls, other callouts and symbols; legends per technique, scale bars and
+  a north arrow while rotated.
 - `@mapbard/knowledge`: capability list, encoding prerequisites, display
   formatters (units, numbers, titles), theme presets (`editorial-light`,
   `night`, `atlas`, `newsroom`), layout frames, WCAG contrast, five critic
@@ -32,26 +39,28 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   palette contrast) and provider catalog for OpenFreeMap, VersaTiles,
   Mapterhorn and AWS Terrarium.
 - Visual QA: `node scripts/visual-qa.mjs <publication> <out>` captures each
-  scene at desktop and phone sizes, writes a contact sheet, and reports
-  console errors, remote requests and occlusion findings, including targets
-  clipped by the screen edge. The compiled page
-  exposes `data-mb-state` and a read-only `window.MapBardStory` hook.
+  scene at p = 0, 0.5 and 1 at desktop and phone sizes, writes a contact
+  sheet, and reports console errors, remote requests and occlusion findings
+  (panels, map controls, edge clipping, callout overlap and callouts covering
+  targets). The compiled page exposes `data-mb-state` and a read-only
+  `window.MapBardStory` hook; `seek` exists only with `MAPBARD_CAPTURE`.
 - `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check`, `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
 - Example: `examples/projects/potomac` (format 0.2, Potomac, three scenes,
-  gauges as graduated symbols on one shared size scale), built with `mapbard build` in online and offline modes. The format 0.1
+  gauges as graduated symbols on one shared size scale; an overview reveal,
+  a fly-along of the river and a push-in on Little Falls), built with `mapbard build` in online and offline modes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
 - Release packages: `mapbard` and `@mapbard/core` at 0.1.2, and `schema`,
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 148 routine tests (schema 24, knowledge 20, core 57, renderer 35, CLI 6,
-  root integration 5, browser smoke 1), lint and Windows tarball install smoke
-  pass. A live OpenFreeMap style and multiple vector tiles loaded in headless
+- Checks: 229 routine tests (schema 35, knowledge 20, core 70, renderer 74, CLI 6,
+  root integration 23, browser smoke 1) and lint pass; the Windows tarball
+  install smoke last passed before M2. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
 ## Known issues
@@ -60,14 +69,23 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   [visual-engine.md](visual-engine.md#why-the-current-output) (M2). Fixed
   in Wave 1: raw legend IDs, caret units, and the encoding that hid the 2025
   drop. Fixed in Wave 2: all 6 layout findings; Potomac's QA report is clean
-  at desktop and phone sizes (stub-online and offline). Open: annotation
-  marker buttons sit on top of small 2025 symbols (Wave 3, item I); the
-  largest symbol radius is 16 px. Potomac still uses its own context colours
+  at desktop and phone sizes (stub-online and offline). Fixed in Wave 3:
+  annotation buttons over small symbols; QA is clean at p = 0, 0.5 and 1.
+  Open: the largest symbol radius is 16 px, and at the 2024 overview the
+  three gauge symbols overlap each other. Potomac still uses its own context colours
   (an opaque state fill), which hide most of the basemap tint and hillshade;
   the K redesign picks a theme and context styling.
 - Long narration scrolls inside the phone bottom sheet and the full-bleed
   caption card, which are capped at the reserved height. The critic does not
   warn about it yet.
+- Motion limits: `stagger` and annotation tracks are not built; `fly-along`
+  uses the longest part of each multi-line segment and bridges gaps with
+  straight lines. Callout placement was checked at settled captures, not
+  measured for frame rate during camera flights, and projects every point of
+  a scene's point layers each frame (fine for Potomac, untuned for thousands).
+  QA cannot see symbols without a callout, because they have no DOM element.
+- Every `mapbard build` of Potomac rewrites `mapbard.lock.json` with
+  different formatting from the committed file.
 - With a live provider style, the attribution shows OpenFreeMap twice (the
   style's own source credit and MapBard's credit line).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
@@ -85,6 +103,17 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-21: Ran M2 Wave 3, staggered. A foundation commit moved the compiled
+  spec to 0.3.0 with scene `motion` and an adapter frame hook; then H and I
+  ran in parallel worktrees and merged. H: authored motion and presets,
+  compiled camera/layer tracks, scroll progress over each card's rest phase,
+  reduced motion and a pause control, QA captures at p = 0, 0.5 and 1. I:
+  compiled callouts, collision-aware projected callouts, legends per
+  technique, scale bars, north arrow, callout and map-control QA findings.
+  Lead fix: phone camera padding clears the attribution and scale bars.
+  Build, 229 tests, lint and browser smoke pass; Potomac visual QA has 0
+  findings at 18 captures (stub-online, and offline with zero requests).
+  Contact sheets and phone captures were inspected. Next: Wave 4 (J, K, L).
 - 2026-10-21: Ran M2 Wave 2. D: theme presets resolved at compile time,
   generated theme.css, token-only style.css, bundled OFL fonts with licences.
   E: sidecar, overlay-cards and full-bleed layouts with a phone bottom sheet,

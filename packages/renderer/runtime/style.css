@@ -179,15 +179,16 @@ h3 {
   padding-top: 15px;
   border-top: 1px solid var(--mb-rule);
 }
-/* A scene is `scrollLength` viewports tall (set inline from the compiled motion). Its card
-   holds still in a one-viewport sticky frame while the camera tracks scrub through it. */
+/* A scene is `scrollLength` + 1 viewports tall (set inline from the compiled motion). Its
+   card rests in a one-viewport sticky frame for exactly `scrollLength` viewports, while the
+   tracks run from p = 0 to 1; the extra viewport is the transit to and from the next card. */
 .scene {
-  min-height: calc(var(--mb-scroll-length, 1) * 100vh);
+  min-height: calc((var(--mb-scroll-length, 1) + 1) * 100vh);
 }
 .scene-sticky {
   position: sticky;
   top: 0;
-  height: min(100vh, calc(var(--mb-scroll-length, 1) * 100vh));
+  height: 100vh;
   display: flex;
   align-items: center;
 }

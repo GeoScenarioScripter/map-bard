@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { LngLatSchema } from './geo-narrative.js';
 import { IdSchema } from './project.js';
 
-/** Scene progress `p`: 0 when a scene reaches its trigger line, 1 after `scrollLength` viewports. */
+/** Scene progress `p`: 0 when the scene's card arrives at rest, 1 when it starts to leave, `scrollLength` viewports later. */
 export const ProgressSchema = z.number().finite().min(0).max(1);
 
 export const NAMED_EASINGS = ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'expo-out'] as const;
@@ -138,9 +138,13 @@ export const LayerTrackSchema = z
 
 export const SceneMotionSchema = z
   .object({
-    /** Scene length in viewport heights. */
+    /** Viewport heights of scroll the card rests while p runs 0 to 1; the section adds one viewport of transit. */
     scrollLength: z.number().finite().min(0.5).max(20),
-    /** Viewport fraction from the top where the scene starts (0 top, 0.5 centre). */
+    /**
+     * Where in the one-viewport transit between two cards the scene becomes active: the
+     * viewport fraction from the top that its section top crosses (0 when its card arrives
+     * at rest, 0.5 midway). The camera hand-over starts there.
+     */
     trigger: ProgressSchema,
     reducedMotion: z.enum(['step', 'shorten', 'keep']),
     camera: CameraTrackSchema,

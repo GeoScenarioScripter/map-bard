@@ -1,50 +1,73 @@
 import { describe, expect, it, vi } from 'vitest';
 import { sceneProgress, trackScenes } from './scroll.js';
 
-const metrics = (tops: number[], heights: number[], trigger = 0.5) =>
-  tops.map((top, index) => ({ sceneId: `s${index}`, top, height: heights[index]!, trigger }));
+// 1000 px viewport and sticky frame; scene 0 rests for two viewports, scene 1 for one.
+const metrics = (tops: number[], trigger = 0.5) =>
+  tops.map((top, index) => ({
+    sceneId: `s${index}`,
+    top,
+    height: index === 0 ? 3000 : 2000,
+    frame: 1000,
+    trigger,
+  }));
 
 describe('scroll progress', () => {
-  it('reports the scene whose top crossed its trigger and its progress through its height', () => {
-    // 1000 px viewport, trigger at 500 px; scene 0 is two viewports tall.
-    expect(sceneProgress(metrics([900, 2900], [2000, 1000]), 1000)).toEqual({
+  it('runs p over the card rest phase and switches scenes midway through the transit', () => {
+    // Scene 0 still arriving (below its trigger line): first scene, not armed.
+    expect(sceneProgress(metrics([900, 3900]), 1000)).toEqual({
       sceneId: 's0',
       p: 0,
       armed: false,
     });
-    expect(sceneProgress(metrics([500, 2500], [2000, 1000]), 1000)).toEqual({
-      sceneId: 's0',
-      p: 0,
-      armed: true,
-    });
-    expect(sceneProgress(metrics([-500, 1500], [2000, 1000]), 1000)).toEqual({
+    // Past the trigger but still arriving: active, clamped to p = 0.
+    expect(sceneProgress(metrics([400, 3400]), 1000)).toEqual({ sceneId: 's0', p: 0, armed: true });
+    // The card rests from top 0 to top -2000.
+    expect(sceneProgress(metrics([0, 3000]), 1000)).toEqual({ sceneId: 's0', p: 0, armed: true });
+    expect(sceneProgress(metrics([-1000, 2000]), 1000)).toEqual({
       sceneId: 's0',
       p: 0.5,
       armed: true,
     });
-    expect(sceneProgress(metrics([-1500, 500], [2000, 1000]), 1000)).toEqual({
+    expect(sceneProgress(metrics([-2000, 1000]), 1000)).toEqual({
+      sceneId: 's0',
+      p: 1,
+      armed: true,
+    });
+    // Transit: scene 0 leaves at p = 1 until scene 1 crosses the middle, then scene 1 arrives at p = 0.
+    expect(sceneProgress(metrics([-2400, 600]), 1000)).toEqual({
+      sceneId: 's0',
+      p: 1,
+      armed: true,
+    });
+    expect(sceneProgress(metrics([-2600, 400]), 1000)).toEqual({
       sceneId: 's1',
       p: 0,
       armed: true,
     });
+    expect(sceneProgress(metrics([-3500, -500]), 1000)).toEqual({
+      sceneId: 's1',
+      p: 0.5,
+      armed: true,
+    });
     // Past the last scene it stays at its end.
-    expect(sceneProgress(metrics([-4000, -2000], [2000, 1000]), 1000)).toEqual({
+    expect(sceneProgress(metrics([-6000, -3000]), 1000)).toEqual({
       sceneId: 's1',
       p: 1,
       armed: true,
     });
-    // A top trigger starts the scene at the viewport top.
-    expect(sceneProgress(metrics([300], [1000], 0), 1000)?.armed).toBe(false);
-    expect(sceneProgress(metrics([-250], [1000], 0), 1000)?.p).toBe(0.25);
+    // A top trigger switches only once the incoming card is at rest.
+    expect(sceneProgress(metrics([-2900, 100], 0), 1000)?.sceneId).toBe('s0');
+    expect(sceneProgress(metrics([-3000, 0], 0), 1000)?.sceneId).toBe('s1');
     expect(sceneProgress([], 1000)).toBeUndefined();
   });
 
-  it('follows scroll and resize through one frame-throttled path and pins for capture', () => {
-    const tops: Record<string, number> = { a: 900, b: 1900 };
+  it('follows scroll and resize through one frame-throttled path and pins rest positions', () => {
+    const tops: Record<string, number> = { a: 900, b: 2900 };
     const element = (id: string) =>
       ({
         dataset: { sceneId: id },
-        getBoundingClientRect: () => ({ top: tops[id]!, height: 1000 }),
+        getBoundingClientRect: () => ({ top: tops[id]!, height: 2000 }),
+        querySelector: () => ({ getBoundingClientRect: () => ({ height: 1000 }) }),
       }) as unknown as HTMLElement;
     const listeners = new Map<string, () => void>();
     const frames: (() => void)[] = [];
@@ -69,34 +92,31 @@ describe('scroll progress', () => {
       scope,
     );
     expect(update).toHaveBeenLastCalledWith('a', 0, false);
-    tops.a = 0;
-    tops.b = 1000;
+    tops.a = -500;
+    tops.b = 1500;
     listeners.get('scroll')!();
     listeners.get('scroll')!();
     expect(frames).toHaveLength(1);
     frames.shift()!();
     expect(update).toHaveBeenLastCalledWith('a', 0.5, true);
-    tops.a = -600;
+    tops.a = -1600;
     tops.b = 400;
     listeners.get('resize')!();
     frames.shift()!();
-    expect(update).toHaveBeenLastCalledWith('b', 0.1, true);
+    expect(update).toHaveBeenLastCalledWith('b', 0, true);
     expect(update).toHaveBeenCalledTimes(3);
 
     scope.scrollY = 3000;
     tracker.pin('a', 1);
-    // Scene a's top is 600 px above the viewport: its trigger plus 999 px into it, never the next scene.
-    expect(scope.scrollTo).toHaveBeenCalledWith({
-      top: 3000 - 600 - 500 + 999,
-      behavior: 'instant',
-    });
-    tops.a = -2000;
-    tops.b = -600;
+    // Scene a's section top is 1600 px above the viewport: the end of its 1000 px rest.
+    expect(scope.scrollTo).toHaveBeenCalledWith({ top: 3000 - 1600 + 1000, behavior: 'instant' });
+    tops.a = -1000;
+    tops.b = 1000;
     listeners.get('scroll')!();
     frames.shift()!();
     expect(update).toHaveBeenCalledTimes(3);
     tracker.release();
-    expect(update).toHaveBeenLastCalledWith('b', 1, true);
+    expect(update).toHaveBeenLastCalledWith('a', 1, true);
 
     tracker.dispose();
     expect(listeners.size).toBe(0);

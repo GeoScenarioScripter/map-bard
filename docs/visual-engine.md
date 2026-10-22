@@ -115,23 +115,28 @@ specific one wins:
 4. Scene-level `motion` in `story.json`.
 5. Per-track overrides on a camera, layer or annotation.
 
-| Setting            | Meaning                                                                                           |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| `mode`             | `scrub`, `play`, `loop` or `step`, per track type (`camera`, `data`, `ambient`, `annotation`)     |
-| `easing`           | Named (`linear`, `ease-in-out`, `expo-out`, …), `cubic-bezier(…)` or `spring(stiffness, damping)` |
-| `duration`         | For `play`/`loop`, in ms                                                                          |
-| `delay`, `stagger` | Offset tracks and stagger per feature (e.g. columns rising one after another)                     |
-| `scrollLength`     | Scene length in viewport heights, so long camera flights get more scroll                          |
-| `range`            | The progress window `[start, end]` a track occupies, so tracks can be sequenced inside one scene  |
-| `trigger`          | Where in the viewport a scene starts (`top`, `center`, a fraction)                                |
-| `keyframes`        | Explicit camera or property keyframes at progress positions, which take precedence over presets   |
-| `reducedMotion`    | `step` (default), `shorten` (fast cross-fades) or `keep`, honouring `prefers-reduced-motion`      |
+| Setting            | Meaning                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `mode`             | `scrub`, `play`, `loop` or `step`, per track type (`camera`, `data`, `ambient`, `annotation`)      |
+| `easing`           | Named (`linear`, `ease-in-out`, `expo-out`, …), `cubic-bezier(…)` or `spring(stiffness, damping)`  |
+| `durationMs`       | For `play`/`loop`, in ms                                                                           |
+| `delayMs`, stagger | Offset tracks (`delayMs`); stagger per feature (columns rising one after another) is not built yet |
+| `scrollLength`     | Viewport heights the card rests while `p` runs 0 → 1, so long camera flights get more scroll       |
+| `range`            | The progress window `[start, end]` a track occupies, so tracks can be sequenced inside one scene   |
+| `trigger`          | When a scene becomes active in the one-viewport transit between cards (`top`, `center`, fraction)  |
+| `keyframes`        | Explicit camera or property keyframes at progress positions, which take precedence over presets    |
+| `reducedMotion`    | `step` (default), `shorten` (fast cross-fades) or `keep`, honouring `prefers-reduced-motion`       |
 
 Short form: `"camera": {"preset": "fly-along", "feature":
-"river-context/potomac", "pitch": 60}`. Full control: explicit `keyframes` plus
-any setting above. Readers always get a pause control for looping animation
-(WCAG 2.2.2). The M5 workbench will capture keyframes from the live map. The
-critic warns about motion that hides content, such as a camera flight that
+"<sourceId>/<featureId>", "pitch": 60}` (for example
+`"potomac-river-context/mdimap-132"`; `fly-along` also takes a list of line
+features in travel order). Each scene section is `scrollLength` + 1 viewports
+tall: its card rests for `scrollLength` viewports (p = 0 to 1), and the extra
+viewport is the transit in which the outgoing card leaves, the incoming card
+arrives, the active scene switches at `trigger` and the camera hands over.
+Full control: explicit `keyframes` plus any setting above. Readers always get
+a pause control for looping animation (WCAG 2.2.2). The M5 workbench will
+capture keyframes from the live map. The critic warns about motion that hides content, such as a camera flight that
 outruns its narration.
 
 ## Technique catalog v1

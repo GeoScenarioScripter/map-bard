@@ -131,7 +131,7 @@ function html(compiled: Compiled): string {
   const scenes = compiled.scenes
     .map(
       (scene) =>
-        // A scene is `scrollLength` viewports tall; the scroll module reads progress through it.
+        // A scene is `scrollLength` + 1 viewports tall: its card rests for `scrollLength`, then transits.
         `<section class="scene" data-scene-id="${escapeHtml(scene.id)}" style="--mb-scroll-length: ${scene.motion.scrollLength}"><div class="scene-sticky"><div class="scene-card"><h2>${escapeHtml(scene.title)}</h2><div class="scene-narration">${scene.narration
           .split(/\n\s*\n/)
           .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)

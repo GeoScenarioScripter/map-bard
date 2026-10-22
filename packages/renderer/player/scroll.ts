@@ -1,20 +1,28 @@
 /** Scroll position in, active scene and progress out. Wheel, touch and keyboard all scroll the page, so they share this one path. */
 export type SceneMetrics = {
   sceneId: string;
-  /** Element top relative to the viewport, in CSS pixels. */
+  /** Section top relative to the viewport, in CSS pixels. */
   top: number;
+  /** Section height: the rest phase plus one sticky frame. */
   height: number;
-  /** Viewport fraction from the top where the scene starts. */
+  /** Height of the sticky frame that holds the card at rest (one viewport). */
+  frame: number;
+  /** Viewport fraction from the top that the section top crosses to make the scene active. */
   trigger: number;
 };
 
 export type ScrollState = { sceneId: string; p: number; armed: boolean };
 
 /**
- * The active scene is the last one whose top has crossed its trigger line;
- * `p` runs from 0 there to 1 when its bottom does (its height is
- * `scrollLength` viewports). Before the first scene starts, it is shown at
- * p = 0 and not yet armed, so timed tracks wait.
+ * A scene section is `scrollLength + 1` viewports tall and holds its card in
+ * a one-viewport sticky frame. The card rests (sidecar centred, phones and
+ * full-bleed in the bottom band) while the section top runs from 0 to
+ * -scrollLength viewports: that is p = 0 to p = 1, clamped outside. Between
+ * two rests lies one viewport of transit, the outgoing card leaving and the
+ * incoming one arriving; the active scene switches when the incoming section
+ * top crosses its `trigger` line (0.5: midway), and the camera hand-over
+ * starts there. Before the first scene is active it is shown at p = 0, not
+ * yet armed, so timed tracks wait; after the last it stays at p = 1.
  */
 export function sceneProgress(
   scenes: readonly SceneMetrics[],
@@ -27,8 +35,8 @@ export function sceneProgress(
   });
   if (current < 0) return { sceneId: scenes[0]!.sceneId, p: 0, armed: false };
   const scene = scenes[current]!;
-  const raw = (scene.trigger * viewportHeight - scene.top) / Math.max(1, scene.height);
-  return { sceneId: scene.sceneId, p: Math.max(0, Math.min(1, raw)), armed: true };
+  const rest = Math.max(1, scene.height - scene.frame);
+  return { sceneId: scene.sceneId, p: Math.max(0, Math.min(1, -scene.top / rest)), armed: true };
 }
 
 type ScrollScope = {
@@ -63,12 +71,19 @@ export function trackScenes(
   let scheduled = false;
   let pinned = false;
 
+  /** The sticky frame's height, measured so mobile viewport units and innerHeight cannot disagree. */
+  function frameOf(element: HTMLElement): number {
+    const frame = element.querySelector?.('.scene-sticky');
+    const height = frame?.getBoundingClientRect().height;
+    return height && height > 0 ? height : scope.innerHeight;
+  }
+
   function measure(): void {
     if (pinned) return;
     const state = sceneProgress(
       tracked.map(({ element, sceneId, trigger }) => {
         const box = element.getBoundingClientRect();
-        return { sceneId, top: box.top, height: box.height, trigger };
+        return { sceneId, top: box.top, height: box.height, frame: frameOf(element), trigger };
       }),
       scope.innerHeight,
     );
@@ -97,7 +112,7 @@ export function trackScenes(
     /** Re-read the scroll position now. */
     measure,
     /**
-     * Capture only: scroll to where `sceneId` has progress `p` and stop
+     * Capture only: scroll to where `sceneId` rests at progress `p` and stop
      * following scroll until `release`, so the caller can hold that state.
      */
     pin(sceneId: string, p: number): void {
@@ -105,9 +120,8 @@ export function trackScenes(
       if (!entry) throw new Error(`Unknown scene ${sceneId}`);
       pinned = true;
       const box = entry.element.getBoundingClientRect();
-      // Stay a pixel inside the scene at p = 1, where the next scene would otherwise start.
-      const offset = Math.min(Math.max(0, p) * box.height, Math.max(0, box.height - 1));
-      const top = scope.scrollY + box.top - entry.trigger * scope.innerHeight + offset;
+      const rest = Math.max(0, box.height - frameOf(entry.element));
+      const top = scope.scrollY + box.top + Math.max(0, Math.min(1, p)) * rest;
       scope.scrollTo?.({ top: Math.max(0, top), behavior: 'instant' });
     },
     release(): void {

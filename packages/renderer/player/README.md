@@ -44,8 +44,10 @@ elements with `data-scene-id` and distinct media, control and legend hosts. Give
 the legend host class `mb-legend-host`; the included runtime stylesheet styles it.
 `trackScenes(player, elements, story.scenes)` reports the active scene and its
 progress on every scroll or resize frame (wheel, touch and keyboard all scroll
-the page): a scene starts when its top crosses its `trigger` line and ends a
-scene height (`scrollLength` viewports) later. It returns `measure`, `pin` and
+the page). Each section is `scrollLength` + 1 viewports tall and holds its card
+in a one-viewport sticky frame: p runs 0 to 1 while the card rests, and the
+scene becomes active when its top crosses its `trigger` line during the
+one-viewport transit from the previous card. It returns `measure`, `pin` and
 `release` (capture only) and `dispose`. Call `dispose()` and
 `player.dispose()` on page teardown. Native buttons open media marker
 popups; checkboxes and sliders are keyboard operable. Slider arrow keys move by

@@ -49,7 +49,11 @@ export const AuthoredEasingSchema = z.union([
     ),
 ]);
 
-/** Where a scene starts: the viewport top, its centre, or a fraction from the top. */
+/**
+ * When a scene becomes active during the transit from the previous card: `top` (0) once its
+ * card arrives at rest, `center` (0.5, the default) midway, or a viewport fraction from the top
+ * that the scene's section top crosses.
+ */
 export const TriggerSchema = z.union([z.enum(['top', 'center']), ProgressSchema]);
 
 const TrackSettings = {
@@ -170,7 +174,7 @@ export const LayerMotionSchema = z
   });
 
 const sceneSettings = {
-  /** Scene length in viewport heights, so long camera flights get more scroll. */
+  /** Viewport heights the card rests while its tracks run, so long camera flights get more scroll. */
   scrollLength: z.number().finite().min(0.5).max(20).optional(),
   trigger: TriggerSchema.optional(),
   /** Under `prefers-reduced-motion`: `step` (default) jumps to final states, `shorten` keeps fast fades, `keep` plays as authored. */

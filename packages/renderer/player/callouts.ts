@@ -202,13 +202,18 @@ export function createCalloutOverlay(
 
     const stop = map.onFrame(update);
     update();
-    // Web fonts change label sizes without a map frame.
-    document.fonts?.ready.then(() => {
-      if (root.isConnected) update();
-    });
+    // Web fonts and viewport changes resize labels without a map frame.
+    const resized =
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(() => {
+            if (root.isConnected) update();
+          })
+        : undefined;
+    for (const { label } of parts) resized?.observe(label);
     return {
       remove() {
         stop();
+        resized?.disconnect();
         root.remove();
       },
     };

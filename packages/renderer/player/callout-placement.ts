@@ -38,16 +38,28 @@ export interface CalloutPlacement {
   hidden: boolean;
 }
 
-/** Candidate directions in preference order: beside the target reads best, then diagonals. */
+/**
+ * Candidate directions in preference order: beside the target reads best, then diagonals,
+ * then above and below; then the same sides with the label slid along the leader's end
+ * (`align` -1 slides up or left, 1 down or right), for tight spaces.
+ */
 const DIRECTIONS = [
-  { name: 'right', dx: 1, dy: 0 },
-  { name: 'left', dx: -1, dy: 0 },
-  { name: 'upper-right', dx: 1, dy: -1 },
-  { name: 'lower-right', dx: 1, dy: 1 },
-  { name: 'upper-left', dx: -1, dy: -1 },
-  { name: 'lower-left', dx: -1, dy: 1 },
-  { name: 'above', dx: 0, dy: -1 },
-  { name: 'below', dx: 0, dy: 1 },
+  { name: 'right', dx: 1, dy: 0, align: 0 },
+  { name: 'left', dx: -1, dy: 0, align: 0 },
+  { name: 'upper-right', dx: 1, dy: -1, align: 0 },
+  { name: 'lower-right', dx: 1, dy: 1, align: 0 },
+  { name: 'upper-left', dx: -1, dy: -1, align: 0 },
+  { name: 'lower-left', dx: -1, dy: 1, align: 0 },
+  { name: 'above', dx: 0, dy: -1, align: 0 },
+  { name: 'below', dx: 0, dy: 1, align: 0 },
+  { name: 'right-high', dx: 1, dy: 0, align: -1 },
+  { name: 'right-low', dx: 1, dy: 0, align: 1 },
+  { name: 'left-high', dx: -1, dy: 0, align: -1 },
+  { name: 'left-low', dx: -1, dy: 0, align: 1 },
+  { name: 'above-left', dx: 0, dy: -1, align: -1 },
+  { name: 'above-right', dx: 0, dy: -1, align: 1 },
+  { name: 'below-left', dx: 0, dy: 1, align: -1 },
+  { name: 'below-right', dx: 0, dy: 1, align: 1 },
 ] as const;
 /** Leader lengths beyond the anchor symbol, nearest first. */
 export const LEADER_RINGS = [14, 40, 80] as const;
@@ -55,10 +67,13 @@ export const LEADER_RINGS = [14, 40, 80] as const;
 export const CLEARANCE = { edge: 8, panel: 8, label: 6, symbol: 3 } as const;
 const HARD = 1000;
 const SOFT = 400;
-const RING_COST = 8;
 const PREVIOUS_BONUS = 6;
 /** Where the leader starts, beyond the anchor symbol's edge. */
 const LEADER_GAP = 3;
+/** How far a slid label still reaches past its leader's end, so the leader meets it. */
+const SLIDE_OVERLAP = 12;
+/** Best-response rounds that try to clear collisions left by the greedy pass. */
+const REFINE_ROUNDS = 4;
 
 const inflate = (box: Box, by: number): Box => ({
   left: box.left - by,
@@ -128,6 +143,15 @@ export function segmentCrossesBox(a: Point, b: Point, box: Box): boolean {
 
 type Candidate = { position: string; box: Box; leader: { from: Point; to: Point }; order: number };
 
+/** One edge coordinate of a label of `size` placed at `attach` along one axis. */
+function edge(attach: number, direction: number, align: number, size: number): number {
+  if (direction > 0) return attach;
+  if (direction < 0) return attach - size;
+  if (align < 0) return attach + SLIDE_OVERLAP - size;
+  if (align > 0) return attach - SLIDE_OVERLAP;
+  return attach - size / 2;
+}
+
 /** Label boxes around one anchor, in preference order. */
 export function candidates(request: CalloutRequest): Candidate[] {
   const { anchor, anchorRadius, width, height } = request;
@@ -135,14 +159,14 @@ export function candidates(request: CalloutRequest): Candidate[] {
   LEADER_RINGS.forEach((ring, ringIndex) => {
     DIRECTIONS.forEach((direction, directionIndex) => {
       const length = Math.hypot(direction.dx, direction.dy);
-      const ux = direction.dx / length;
-      const uy = direction.dy / length;
       const reach = anchorRadius + ring;
-      const attach = { x: anchor.x + ux * reach, y: anchor.y + uy * reach };
-      const left =
-        direction.dx > 0 ? attach.x : direction.dx < 0 ? attach.x - width : attach.x - width / 2;
-      const top =
-        direction.dy > 0 ? attach.y : direction.dy < 0 ? attach.y - height : attach.y - height / 2;
+      const attach = {
+        x: anchor.x + (direction.dx / length) * reach,
+        y: anchor.y + (direction.dy / length) * reach,
+      };
+      // A side label slides vertically; an above/below label slides horizontally.
+      const left = edge(attach.x, direction.dx, direction.dy ? direction.align : 0, width);
+      const top = edge(attach.y, direction.dy, direction.dx ? direction.align : 0, height);
       const box = { left, top, right: left + width, bottom: top + height };
       const to = nearestPoint(box, anchor);
       const distance = Math.hypot(to.x - anchor.x, to.y - anchor.y) || 1;
@@ -155,7 +179,7 @@ export function candidates(request: CalloutRequest): Candidate[] {
         position: `${direction.name}-${ringIndex}`,
         box,
         leader: { from, to },
-        order: ringIndex * RING_COST + directionIndex,
+        order: ringIndex * DIRECTIONS.length + directionIndex,
       });
     });
   });
@@ -166,13 +190,17 @@ function isOnScreen(point: Point, viewport: PlacementField['viewport']): boolean
   return point.x >= 0 && point.y >= 0 && point.x <= viewport.width && point.y <= viewport.height;
 }
 
+type Scored = CalloutPlacement & { cost: number };
+
 /**
- * Place callouts greedily in priority order (then ID). Each candidate is scored against the
- * screen edge, the panels, labels and leaders already placed, every callout's targets, and
- * other symbols; a collision always costs more than any preference, so a clean position wins
- * whenever one exists. Ties keep the earlier candidate, so the result is deterministic.
- * `previous` maps callout IDs to their last position; keeping it is slightly favoured so
- * labels do not flicker between equal positions while the camera moves.
+ * Place callouts by priority (then ID). Each candidate is scored against the screen edge, the
+ * panels, other labels and leaders, every callout's targets, and other symbols; a collision
+ * always costs more than any preference, so a clean position wins whenever one exists. A
+ * greedy pass places each callout against those before it; if collisions remain, a few
+ * best-response rounds re-place each one against all the others, moving only on a strict
+ * improvement. Ties keep the earlier candidate, so the result is deterministic. `previous`
+ * maps IDs to last positions; keeping a clean one is slightly favoured so labels do not
+ * flicker while the camera moves.
  */
 export function placeCallouts(
   requests: readonly CalloutRequest[],
@@ -192,61 +220,80 @@ export function placeCallouts(
     request.targets.map((circle) => ({ ...circle, r: circle.r + CLEARANCE.symbol })),
   );
   const symbols = field.symbols.map((circle) => ({ ...circle, r: circle.r + CLEARANCE.symbol }));
-  const placed: CalloutPlacement[] = [];
-  const result = new Map<string, CalloutPlacement>();
-  for (const request of ordered) {
-    if (!isOnScreen(request.anchor, field.viewport)) {
-      const { position, box, leader } = candidates(request)[0]!;
-      result.set(request.id, {
-        id: request.id,
-        position,
-        box,
-        leader,
-        collisions: 0,
-        hidden: true,
-      });
-      continue;
+  const options = new Map(visible.map((request) => [request.id, candidates(request)]));
+
+  function score(request: CalloutRequest, candidate: Candidate, others: readonly Scored[]): Scored {
+    let collisions = 0;
+    let cost = candidate.order;
+    const hit = (weight: number, area: number) => {
+      if (area <= 0) return;
+      collisions++;
+      cost += weight + area;
+    };
+    const { box, leader } = candidate;
+    hit(HARD, boxArea(box) - overlap(box, screen));
+    for (const panel of panels) {
+      hit(HARD, overlap(box, panel));
+      hit(SOFT, segmentCrossesBox(leader.from, leader.to, panel) ? 1 : 0);
     }
-    let best: CalloutPlacement | undefined;
-    let bestCost = Infinity;
-    for (const candidate of candidates(request)) {
-      let collisions = 0;
-      let cost = candidate.order;
-      const hit = (weight: number, area: number) => {
-        if (area <= 0) return;
-        collisions++;
-        cost += weight + area;
-      };
-      const { box, leader } = candidate;
-      hit(HARD, boxArea(box) - overlap(box, screen));
-      for (const panel of panels) {
-        hit(HARD, overlap(box, panel));
-        hit(SOFT, segmentCrossesBox(leader.from, leader.to, panel) ? 1 : 0);
-      }
-      for (const other of placed) {
-        hit(HARD, overlap(box, inflate(other.box, CLEARANCE.label)));
-        hit(SOFT, segmentCrossesBox(leader.from, leader.to, other.box) ? 1 : 0);
-        hit(SOFT, segmentCrossesBox(other.leader.from, other.leader.to, box) ? 1 : 0);
-      }
-      for (const circle of targets) hit(HARD, circleOverlap(circle, box));
-      for (const circle of symbols) hit(SOFT, circleOverlap(circle, box));
-      if (collisions === 0 && previous.get(request.id) === candidate.position)
-        cost -= PREVIOUS_BONUS;
-      if (cost < bestCost) {
-        bestCost = cost;
-        best = {
-          id: request.id,
-          position: candidate.position,
-          box,
-          leader,
-          collisions,
-          hidden: false,
-        };
-      }
+    for (const other of others) {
+      hit(HARD, overlap(box, inflate(other.box, CLEARANCE.label)));
+      hit(SOFT, segmentCrossesBox(leader.from, leader.to, other.box) ? 1 : 0);
+      hit(SOFT, segmentCrossesBox(other.leader.from, other.leader.to, box) ? 1 : 0);
     }
-    placed.push(best!);
-    result.set(request.id, best!);
+    for (const circle of targets) hit(HARD, circleOverlap(circle, box));
+    for (const circle of symbols) hit(SOFT, circleOverlap(circle, box));
+    if (collisions === 0 && previous.get(request.id) === candidate.position) cost -= PREVIOUS_BONUS;
+    const { position } = candidate;
+    return { id: request.id, position, box, leader, collisions, hidden: false, cost };
   }
-  // Report in the caller's order.
-  return requests.map((request) => result.get(request.id)!);
+
+  function best(request: CalloutRequest, others: readonly Scored[]): Scored {
+    let chosen: Scored | undefined;
+    for (const candidate of options.get(request.id)!) {
+      const scored = score(request, candidate, others);
+      if (!chosen || scored.cost < chosen.cost) chosen = scored;
+    }
+    return chosen!;
+  }
+
+  const placed = new Map<string, Scored>();
+  for (const request of visible) placed.set(request.id, best(request, [...placed.values()]));
+  const othersOf = (id: string) => [...placed.values()].filter((item) => item.id !== id);
+  const rescore = () => {
+    for (const request of visible) {
+      const current = placed.get(request.id)!;
+      const candidate = options
+        .get(request.id)!
+        .find((item) => item.position === current.position)!;
+      placed.set(request.id, score(request, candidate, othersOf(request.id)));
+    }
+  };
+  rescore();
+  for (let round = 0; round < REFINE_ROUNDS; round++) {
+    if (![...placed.values()].some((item) => item.collisions > 0)) break;
+    let changed = false;
+    for (const request of visible) {
+      const others = othersOf(request.id);
+      const current = placed.get(request.id)!;
+      const candidate = best(request, others);
+      if (candidate.cost < current.cost - 1e-9) {
+        placed.set(request.id, candidate);
+        changed = true;
+      }
+    }
+    rescore();
+    if (!changed) break;
+  }
+
+  // Report in the caller's order; off-screen anchors hide their callout and reserve nothing.
+  return requests.map((request) => {
+    const scored = placed.get(request.id);
+    if (scored) {
+      const { id, position, box, leader, collisions } = scored;
+      return { id, position, box, leader, collisions, hidden: false };
+    }
+    const { position, box, leader } = candidates(request)[0]!;
+    return { id: request.id, position, box, leader, collisions: 0, hidden: true };
+  });
 }

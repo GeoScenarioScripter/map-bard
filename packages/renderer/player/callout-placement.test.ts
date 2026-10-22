@@ -46,7 +46,7 @@ describe('callout placement geometry', () => {
 
   it('offers every direction at each leader length, beyond the anchor symbol', () => {
     const all = candidates(request('a', 500, 300));
-    expect(all).toHaveLength(8 * LEADER_RINGS.length);
+    expect(all).toHaveLength(16 * LEADER_RINGS.length);
     const right = all[0]!;
     expect(right.position).toBe('right-0');
     expect(right.box).toEqual({ left: 524, top: 280, right: 684, bottom: 320 });
@@ -55,6 +55,12 @@ describe('callout placement geometry', () => {
     const above = all.find((item) => item.position === 'above-1')!;
     expect(above.box.bottom).toBe(300 - 10 - LEADER_RINGS[1]);
     expect(above.box.left).toBe(420);
+    // Slid labels still reach past the leader's end, so the leader meets them.
+    const high = all.find((item) => item.position === 'right-high-0')!;
+    expect(high.box).toEqual({ left: 524, top: 272, right: 684, bottom: 312 });
+    expect(high.leader.to).toEqual({ x: 524, y: 300 });
+    const aboveLeft = all.find((item) => item.position === 'above-left-0')!;
+    expect(aboveLeft.box.right).toBe(512);
   });
 });
 
@@ -114,6 +120,25 @@ describe('placeCallouts', () => {
     const tie = placeCallouts([request('b', 500, 300), request('a', 505, 300)], open);
     expect(tie[1]!.position).toBe('right-0');
     expect(placeCallouts([low, high], open)).toEqual(result);
+  });
+
+  it('moves an earlier label when that is the only way to clear a later one', () => {
+    // In a short strip, the later callout near the right edge fits only to its left, where
+    // the first callout's preferred label sits; the refinement moves the first one aside.
+    const strip: PlacementField = {
+      viewport: { width: 400, height: 120 },
+      panels: [],
+      symbols: [],
+    };
+    const size = { anchorRadius: 0, targets: [], width: 100, height: 30 };
+    const [first, second] = placeCallouts(
+      [request('first', 200, 60, size), request('second', 330, 60, { ...size, priority: 1 })],
+      strip,
+    );
+    expect(first!.collisions).toBe(0);
+    expect(second!.collisions).toBe(0);
+    expect(first!.position).toBe('left-0');
+    expect(overlap(first!.box, second!.box)).toBe(0);
   });
 
   it('keeps a clean previous position so labels do not flicker', () => {

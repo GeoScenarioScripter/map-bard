@@ -10,7 +10,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { EMPTY_STYLE, launchBrowser } from '../tests/browser.mjs';
-import { calloutFindings, occlusionFindings } from './lib/occlusion.mjs';
+import { calloutFindings, occlusionFindings, symbolFindings } from './lib/occlusion.mjs';
 
 const VIEWPORTS = [
   { id: 'desktop', width: 1440, height: 900, isMobile: false },
@@ -116,7 +116,17 @@ function collectRects() {
     ...(opaque ? [{ id: 'story-column', rect: visible(story) }] : []),
     ...controls,
   ].filter((item) => item.rect);
-  return { targets, panels, controls, callouts, occluders };
+  // Shown point symbols that no callout points at (a callout's halo already rings the others).
+  const halos = callouts.flatMap((callout) => callout.halos);
+  const symbols = (window.MapBardStory.symbols ? window.MapBardStory.symbols() : [])
+    .filter((symbol) => !halos.some((halo) => Math.hypot(halo.x - symbol.x, halo.y - symbol.y) < 2))
+    .map((symbol, index) => ({
+      id: `${symbol.layerId}#${index}`,
+      x: symbol.x,
+      y: symbol.y,
+      r: symbol.radius,
+    }));
+  return { targets, panels, controls, callouts, occluders, symbols };
 }
 
 async function captureViewport(browser, options, story, viewport, log) {
@@ -184,6 +194,7 @@ async function captureViewport(browser, options, story, viewport, log) {
       const findings = [
         ...occlusionFindings({ viewport, ...geometry }),
         ...calloutFindings({ viewport, ...geometry }),
+        ...symbolFindings({ viewport, ...geometry }),
       ];
       if (!idle) findings.unshift({ kind: 'idle-timeout', timeoutMs: IDLE_TIMEOUT_MS });
       const screenshot = `${sceneId}-p${p * 100}-${viewport.id}.png`;
@@ -191,7 +202,14 @@ async function captureViewport(browser, options, story, viewport, log) {
       const shown = await page.evaluate(() => window.MapBardStory.progress());
       if (!shown || shown.sceneId !== sceneId || shown.p !== p)
         findings.unshift({ kind: 'seek-mismatch', expected: { sceneId, p }, shown });
-      captures.push({ sceneId, p, viewport: viewport.id, screenshot, findings });
+      captures.push({
+        sceneId,
+        p,
+        viewport: viewport.id,
+        screenshot,
+        symbolsChecked: geometry.symbols.length,
+        findings,
+      });
     }
   } finally {
     await context.close();

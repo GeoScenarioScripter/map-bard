@@ -56,6 +56,7 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
     setLayerProperty: (id, property, value) => {
       events.push(`track:${id}:${property}:${Math.round(value * 1000) / 1000}`);
     },
+    drawnSymbols: () => [],
   };
   const view: SceneView = {
     showScene: (_scene, _media, onControl) => {

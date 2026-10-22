@@ -32,6 +32,8 @@ export interface MapAdapter {
   bearing(): number;
   /** Apply a motion track value in [0, 1] to an active layer (opacity factor, reveal fraction, highlight strength). */
   setLayerProperty(runtimeLayerId: string, property: LayerTrackProperty, value: number): void;
+  /** Every shown point symbol as a screen circle (map container pixels), for visual QA. */
+  drawnSymbols(): { layerId: string; x: number; y: number; radius: number }[];
 }
 
 export interface SceneView {

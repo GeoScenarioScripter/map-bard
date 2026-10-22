@@ -4,7 +4,13 @@ import type { Padding, Rect } from './layout.js';
 export type CameraFrame = { padding: Padding; zoomOffset: number };
 import { createCalloutOverlay, type SymbolPoint } from './callouts.js';
 import { layerStyle, matchesLayerFilter, pointRadius } from './resolved-style.js';
-import type { CompiledScene, CompiledStory, MapAdapter, MarkerHandle } from './types.js';
+import type {
+  CompiledLayer,
+  CompiledScene,
+  CompiledStory,
+  MapAdapter,
+  MarkerHandle,
+} from './types.js';
 
 type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'>;
 type GeoData = Parameters<MapLibreMap['addSource']>[1];
@@ -112,12 +118,12 @@ export function createMapLibreAdapter(
   const radiusOverride = new Map<string, number>();
   const hiddenLayers = new Set<string>();
   let overlay: ReturnType<typeof createCalloutOverlay> | undefined;
+  const pointLayers = new Map<string, CompiledLayer>();
 
-  /** Every drawn point of the scene's point layers; placement keeps labels off them. */
-  function sceneSymbols(scene: CompiledScene): () => SymbolPoint[] {
-    const drawn: { runtimeId: string; at: [number, number]; radius: (size?: number) => number }[] =
-      [];
-    for (const layer of scene.layers) {
+  type Drawn = { runtimeId: string; at: [number, number]; radius: (size?: number) => number };
+  function drawnPoints(layers: readonly CompiledLayer[]): Drawn[] {
+    const drawn: Drawn[] = [];
+    for (const layer of layers) {
       if (layer.geometry !== 'point') continue;
       const scale = story.scales.find((item) => item.id === layer.scaleId);
       const source = data[layer.sourceId] as { features?: unknown[] } | undefined;
@@ -145,6 +151,12 @@ export function createMapLibreAdapter(
         }
       }
     }
+    return drawn;
+  }
+
+  /** Every drawn point of the scene's point layers; placement keeps labels off them. */
+  function sceneSymbols(scene: CompiledScene): () => SymbolPoint[] {
+    const drawn = drawnPoints(scene.layers);
     return () =>
       drawn
         .filter((item) => !hiddenLayers.has(item.runtimeId))
@@ -194,6 +206,7 @@ export function createMapLibreAdapter(
         paint: specification.paint,
         motion: { opacity: 1, highlight: 0 },
       });
+      if (layer.geometry === 'point') pointLayers.set(layer.runtimeId, layer);
       sourceUsers.set(layer.sourceId, (sourceUsers.get(layer.sourceId) ?? 0) + 1);
     },
     unbindLayer(runtimeId) {
@@ -201,6 +214,7 @@ export function createMapLibreAdapter(
       if (!existing) return;
       if (map.getLayer(runtimeId)) map.removeLayer(runtimeId);
       bound.delete(runtimeId);
+      pointLayers.delete(runtimeId);
       radiusOverride.delete(runtimeId);
       hiddenLayers.delete(runtimeId);
       const remaining = (sourceUsers.get(existing.sourceId) ?? 1) - 1;
@@ -256,6 +270,23 @@ export function createMapLibreAdapter(
     },
     bearing() {
       return map.getBearing();
+    },
+    drawnSymbols() {
+      // Shown layers only: hidden by a control, or faded out by a motion track, draws nothing.
+      const shown = [...pointLayers.values()].filter(
+        (layer) =>
+          !hiddenLayers.has(layer.runtimeId) &&
+          (bound.get(layer.runtimeId)?.motion.opacity ?? 1) > 0.05,
+      );
+      return drawnPoints(shown).map((item) => {
+        const { x, y } = adapter.project(item.at);
+        return {
+          layerId: item.runtimeId,
+          x,
+          y,
+          radius: item.radius(radiusOverride.get(item.runtimeId)),
+        };
+      });
     },
     setLayerProperty(runtimeLayerId, property, value) {
       const binding = bound.get(runtimeLayerId);

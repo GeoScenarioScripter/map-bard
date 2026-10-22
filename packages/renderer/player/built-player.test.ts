@@ -47,6 +47,7 @@ function harness(reducedMotion = false) {
     showCallouts: vi.fn(() => ({ remove: vi.fn() })),
     bearing: vi.fn(() => 0),
     setLayerProperty: vi.fn(),
+    drawnSymbols: vi.fn(() => []),
   };
   const disposeView = vi.fn();
   const view: SceneView = { showScene: vi.fn(() => disposeView), clear: vi.fn() };

@@ -112,3 +112,44 @@ export function calloutFindings({ viewport, callouts, occluders }) {
   }
   return findings;
 }
+
+/**
+ * Point symbols without a callout ({ id, x, y, r } screen circles from MapBardStory.symbols).
+ * The screen edge may cut them, as any map edge does, but panels, map controls and callout
+ * labels must not hide them.
+ */
+export function symbolFindings({ viewport, symbols, panels, controls = [], callouts = [] }) {
+  const findings = [];
+  const screen = { x: 0, y: 0, width: viewport.width, height: viewport.height };
+  for (const symbol of symbols) {
+    const box = {
+      x: symbol.x - symbol.r,
+      y: symbol.y - symbol.r,
+      width: 2 * symbol.r,
+      height: 2 * symbol.r,
+    };
+    const onScreen = overlapArea(box, screen);
+    if (onScreen <= 0) continue;
+    for (const cover of [...panels, ...controls]) {
+      const covered = overlapArea(box, cover.rect) / onScreen;
+      if (covered >= TARGET_COVER_RATIO)
+        findings.push({
+          kind: 'symbol-occluded',
+          symbol: symbol.id,
+          by: cover.id,
+          covered: round(covered),
+        });
+    }
+    for (const callout of callouts) {
+      const depth = circleDepth(symbol, callout.rect);
+      if (depth > CALLOUT_TOLERANCE)
+        findings.push({
+          kind: 'callout-covers-symbol',
+          callout: callout.id,
+          symbol: symbol.id,
+          depth: round(depth),
+        });
+    }
+  }
+  return findings;
+}

@@ -269,6 +269,11 @@ const app = `(() => {
           activeSceneId: () => player.activeSceneId(),
           progress: () => player.progress(),
           paused: () => player.isPaused(),
+          // Shown point symbols as viewport circles, so QA can check symbols without a callout.
+          symbols: () => {
+            const box = map.getContainer().getBoundingClientRect();
+            return adapter.drawnSymbols().map((symbol) => ({ ...symbol, x: symbol.x + box.left, y: symbol.y + box.top }));
+          },
           whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }),
         };
         // Capture pages opt in before load; only they may hold a scene at a chosen progress.

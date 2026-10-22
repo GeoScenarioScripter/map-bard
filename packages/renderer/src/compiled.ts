@@ -210,6 +210,8 @@ const app = `(() => {
       styleIndex++;
       if (styles[styleIndex]) { map.setStyle(styles[styleIndex].url); timer = setTimeout(failStyle, 12000); }
       else { notice('Online basemap unavailable; showing local story layers.'); map.setStyle(emptyStyle); }
+      // The next style may fail too: its error must move on down the fallback chain.
+      switching = false;
     };
     if (styles.length) timer = setTimeout(failStyle, 12000);
     map.on('style.load', () => {

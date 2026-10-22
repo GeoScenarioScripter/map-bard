@@ -115,17 +115,17 @@ specific one wins:
 4. Scene-level `motion` in `story.json`.
 5. Per-track overrides on a camera, layer or annotation.
 
-| Setting            | Meaning                                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------------------- |
-| `mode`             | `scrub`, `play`, `loop` or `step`, per track type (`camera`, `data`, `ambient`, `annotation`)      |
-| `easing`           | Named (`linear`, `ease-in-out`, `expo-out`, …), `cubic-bezier(…)` or `spring(stiffness, damping)`  |
-| `durationMs`       | For `play`/`loop`, in ms                                                                           |
-| `delayMs`, stagger | Offset tracks (`delayMs`); stagger per feature (columns rising one after another) is not built yet |
-| `scrollLength`     | Viewport heights the card rests while `p` runs 0 → 1, so long camera flights get more scroll       |
-| `range`            | The progress window `[start, end]` a track occupies, so tracks can be sequenced inside one scene   |
-| `trigger`          | When a scene becomes active in the one-viewport transit between cards (`top`, `center`, fraction)  |
-| `keyframes`        | Explicit camera or property keyframes at progress positions, which take precedence over presets    |
-| `reducedMotion`    | `step` (default), `shorten` (fast cross-fades) or `keep`, honouring `prefers-reduced-motion`       |
+| Setting              | Meaning                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `mode`               | `scrub`, `play`, `loop` or `step`, per track type (`camera`, `data`, `ambient`, `annotation`)                                 |
+| `easing`             | Named (`linear`, `ease-in-out`, `expo-out`, …), `cubic-bezier(…)` or `spring(stiffness, damping)`                             |
+| `durationMs`         | For `play`/`loop`, in ms                                                                                                      |
+| `delayMs`, `stagger` | Offset tracks (`delayMs`); `stagger` (`delayMs`, `order`) starts each feature of a play or loop layer track one after another |
+| `scrollLength`       | Viewport heights the card rests while `p` runs 0 → 1, so long camera flights get more scroll                                  |
+| `range`              | The progress window `[start, end]` a track occupies, so tracks can be sequenced inside one scene                              |
+| `trigger`            | When a scene becomes active in the one-viewport transit between cards (`top`, `center`, fraction)                             |
+| `keyframes`          | Explicit camera or property keyframes at progress positions, which take precedence over presets                               |
+| `reducedMotion`      | `step` (default), `shorten` (fast cross-fades) or `keep`, honouring `prefers-reduced-motion`                                  |
 
 Short form: `"camera": {"preset": "fly-along", "feature":
 "<sourceId>/<featureId>", "pitch": 60}` (for example

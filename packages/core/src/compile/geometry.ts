@@ -91,33 +91,141 @@ export function lineParts(geometry: Geometry | undefined): Position[][] {
   return [];
 }
 
+/** Line ends closer than this meet at one junction, in metres. */
+const JOIN_METRES = 25;
+
+type Edge = { from: number; to: number; points: Position[]; length: number };
+
 /**
- * Chain lines into one path in the given order: each contributes its longest
- * part, oriented to continue from the previous end; gaps are bridged straight.
+ * One travel path through line features listed in travel order. Every part of every
+ * feature joins one network: part ends within 25 m are one junction, and a part is split
+ * where another part ends on one of its vertices. The path is the shortest route from the
+ * free end of the first feature (the end farthest from the second) to the far end of the
+ * last, so it follows the channel past islands and split parts instead of cutting across
+ * them. Only gaps the data really has are bridged, straight between the nearest ends.
  */
 export function chainPath(lines: readonly Position[][][]): Position[] {
-  const longest = lines.map((parts) =>
-    parts.reduce<Position[]>(
-      (best, part) => (lineLength(part) > lineLength(best) ? part : best),
-      [],
-    ),
+  const features = lines
+    .map((parts) => parts.filter((part) => part.length >= 2))
+    .filter((parts) => parts.length > 0);
+  if (!features.length) return [];
+  const measure = metres(features[0]![0]![0]!);
+  const distance = (a: Position, b: Position) => measure(a, b).d;
+
+  const nodes: Position[] = [];
+  const findNode = (point: Position) =>
+    nodes.findIndex((node) => distance(node, point) <= JOIN_METRES);
+  const nodeAt = (point: Position) => {
+    const found = findNode(point);
+    if (found >= 0) return found;
+    nodes.push(point);
+    return nodes.length - 1;
+  };
+  // Junctions first, so interior vertices can split at them.
+  const featureNodes = features.map((parts) =>
+    parts.flatMap((part) => [nodeAt(part[0]!), nodeAt(part.at(-1)!)]),
   );
-  const pieces = longest.filter((part) => part.length >= 2);
-  if (!pieces.length) return [];
-  const distance = (a: Position, b: Position) => metres(a)(a, b).d;
-  let path = [...pieces[0]!];
-  if (pieces.length > 1) {
-    const next = pieces[1]!;
-    const end = Math.min(distance(path.at(-1)!, next[0]!), distance(path.at(-1)!, next.at(-1)!));
-    const start = Math.min(distance(path[0]!, next[0]!), distance(path[0]!, next.at(-1)!));
-    if (start < end) path.reverse();
+
+  const edges: Edge[] = [];
+  const addEdge = (points: Position[]) => {
+    const from = findNode(points[0]!);
+    const to = findNode(points.at(-1)!);
+    if (from !== to || points.length > 2)
+      edges.push({ from, to, points, length: lineLength(points) });
+  };
+  for (const part of features.flat()) {
+    let piece: Position[] = [part[0]!];
+    for (const point of part.slice(1, -1)) {
+      piece.push(point);
+      if (findNode(point) >= 0) {
+        addEdge(piece);
+        piece = [point];
+      }
+    }
+    piece.push(part.at(-1)!);
+    addEdge(piece);
   }
-  for (const piece of pieces.slice(1)) {
-    const tail = path.at(-1)!;
-    const oriented =
-      distance(tail, piece.at(-1)!) < distance(tail, piece[0]!) ? [...piece].reverse() : piece;
-    path = [...path, ...oriented];
+
+  // Bridge real gaps: join the closest ends of separate pieces until the network is one.
+  const group = nodes.map((_, index) => index);
+  const root = (index: number): number =>
+    group[index] === index ? index : (group[index] = root(group[index]!));
+  for (const edge of edges) group[root(edge.from)] = root(edge.to);
+  for (;;) {
+    let best: [number, number, number] | undefined;
+    for (let a = 0; a < nodes.length; a++)
+      for (let b = a + 1; b < nodes.length; b++) {
+        if (root(a) === root(b)) continue;
+        const gap = distance(nodes[a]!, nodes[b]!);
+        if (!best || gap < best[2]) best = [a, b, gap];
+      }
+    if (!best) break;
+    edges.push({
+      from: best[0],
+      to: best[1],
+      points: [nodes[best[0]]!, nodes[best[1]]!],
+      length: best[2],
+    });
+    group[root(best[0])] = root(best[1]);
   }
+
+  // The free ends: farthest from the neighbouring feature, or, for one feature, its most
+  // distant ends, starting from the end nearer the first coordinate of its longest part.
+  const farthestFrom = (candidates: number[], others: number[]) =>
+    candidates.reduce((best, node) => {
+      const reach = (from: number) =>
+        Math.min(...others.map((other) => distance(nodes[from]!, nodes[other]!)));
+      return reach(node) > reach(best) ? node : best;
+    });
+  let start: number;
+  let end: number;
+  if (featureNodes.length > 1) {
+    start = farthestFrom(featureNodes[0]!, featureNodes[1]!);
+    end = farthestFrom(featureNodes.at(-1)!, featureNodes.at(-2)!);
+  } else {
+    const ends = featureNodes[0]!;
+    [start, end] = [ends[0]!, ends[0]!];
+    for (const a of ends)
+      for (const b of ends)
+        if (distance(nodes[a]!, nodes[b]!) > distance(nodes[start]!, nodes[end]!))
+          [start, end] = [a, b];
+    const longest = features[0]!.reduce((best, part) =>
+      lineLength(part) > lineLength(best) ? part : best,
+    );
+    if (distance(nodes[end]!, longest[0]!) < distance(nodes[start]!, longest[0]!))
+      [start, end] = [end, start];
+  }
+
+  // Shortest route (Dijkstra; the network is small: a few hundred junctions at most).
+  const cost = nodes.map(() => Infinity);
+  const via: ({ edge: Edge; forward: boolean } | undefined)[] = nodes.map(() => undefined);
+  const done = nodes.map(() => false);
+  cost[start] = 0;
+  for (;;) {
+    let current = -1;
+    for (let index = 0; index < nodes.length; index++)
+      if (!done[index] && cost[index]! < Infinity && (current < 0 || cost[index]! < cost[current]!))
+        current = index;
+    if (current < 0 || current === end) break;
+    done[current] = true;
+    for (const edge of edges) {
+      const forward = edge.from === current;
+      if (!forward && edge.to !== current) continue;
+      const next = forward ? edge.to : edge.from;
+      if (cost[current]! + edge.length < cost[next]!) {
+        cost[next] = cost[current]! + edge.length;
+        via[next] = { edge, forward };
+      }
+    }
+  }
+  const steps: Position[][] = [];
+  for (let node = end; node !== start; ) {
+    const step = via[node];
+    if (!step) break;
+    steps.unshift(step.forward ? step.edge.points : [...step.edge.points].reverse());
+    node = step.forward ? step.edge.from : step.edge.to;
+  }
+  const path = steps.flat();
   return path.filter(
     (point, index) =>
       index === 0 || point[0] !== path[index - 1]![0] || point[1] !== path[index - 1]![1],

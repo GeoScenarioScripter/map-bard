@@ -66,7 +66,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 225 routine tests (schema 37, knowledge 20, core 74, renderer 79, CLI 6,
+- Checks: 229 routine tests (schema 37, knowledge 20, core 78, renderer 79, CLI 6,
   root integration 8, browser smoke 1) and lint pass; the Windows tarball
   install smoke last passed before M2. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -86,13 +86,19 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - Long narration scrolls inside the phone bottom sheet and the full-bleed
   caption card, which are capped at the reserved height. The critic does not
   warn about it yet.
-- Motion limits: `fly-along` uses the longest part of each multi-line segment
-  and bridges gaps with straight lines. `stagger` cannot apply to
+- Motion limits: `stagger` cannot apply to
   `line-reveal` or to scrub and step tracks (diagnostics say so). Frame
   timing is measured in headless Chrome with software WebGL, so it shows
   main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
+- Visual QA samples each scene at p = 0, 0.5 and 1 only. A one-off sweep of
+  Potomac's 2024 flight (p = 0.3 to 0.9 in 0.05 steps) found 24 overlaps
+  between samples, mostly on phones: gauges and callouts passing under the
+  card, legend, media or attribution while the camera flies close. The same
+  sweep found 22 before the fly-along path change, so it predates it. Likely
+  remedies: fade far callouts during flights with callout tracks, and let
+  QA sweep flights (Wave 4, J).
 - With a live provider style, the attribution shows OpenFreeMap twice (the
   style's own source credit and MapBard's credit line).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
@@ -110,6 +116,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-22: `fly-along` follows every part of its line features: parts
+  form one network (ends within 25 m join; parts split where another ends on
+  a vertex) and the camera takes the shortest route from the first feature's
+  free end to the last's far end. On Potomac the longest straight jump fell
+  from 9.8 km to 3.2 km (a real data gap); the old path kept as little as 25%
+  of a segment and cut across whole meanders. Potomac's flight zoom is 9.4,
+  which keeps QA clean with the new route. Build, 229 tests, lint and browser
+  smoke pass; Potomac QA 0 findings (stub-online and offline); paths drawn
+  and inspected. A flight sweep found pre-existing mid-flight overlaps (see
+  Known issues). Next: Wave 4 (J, K, L).
 - 2026-10-21: Closed the Wave 3 open items. The CLI-written lockfile keeps its
   own formatting (prettier ignores it). `reveal-from-overview` can frame
   named features, and Potomac's opening frames the river; graduated circles

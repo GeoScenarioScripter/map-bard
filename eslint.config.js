@@ -10,6 +10,7 @@ export default tseslint.config(
       '**/.mapbard-preview/**',
       'examples/projects/potomac/offline/**',
       '**/coverage/**',
+      '**/.claude/**',
     ],
   },
   js.configs.recommended,

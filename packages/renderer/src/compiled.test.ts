@@ -94,7 +94,17 @@ describe('compiled publication', () => {
     expect(result.value.files['index.html']).toContain('mb-legend-host');
     expect(result.value.files['compiled-app.js']).toContain('createMapLibreAdapter');
     expect(result.value.files['compiled-app.js']).toContain('map.scrollZoom.disable()');
-    expect(result.value.files['compiled-app.js']).toContain('window.MapBardStory = {');
+    expect(result.value.files['compiled-app.js']).toContain(
+      'window.MapBardStory = Object.freeze(story)',
+    );
+    // Seeking is a capture opt-in; readers' pages keep a read-only hook.
+    expect(result.value.files['compiled-app.js']).toContain('window.MAPBARD_CAPTURE === true');
+    expect(result.value.files['compiled-app.js']).toContain('api.trackScenes(player, scenes');
+    // Scene height follows scrollLength, and loops get a pause control.
+    expect(result.value.files['index.html']).toContain(
+      `data-scene-id="a" style="--mb-scroll-length: ${fixture.scenes[0]!.motion.scrollLength}"`,
+    );
+    expect(result.value.files['index.html']).toMatch(/<button id="mb-motion-toggle"[^>]*hidden>/);
     expect(result.value.files['compiled-app.js']).toContain("root.dataset.mbState = 'ready'");
     expect(result.value.files['compiled-data.js']).toContain('"period-a"');
     expect(result.value.files['compiled-data.js']).not.toContain('</script>');

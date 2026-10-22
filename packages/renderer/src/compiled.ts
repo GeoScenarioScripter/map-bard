@@ -131,10 +131,11 @@ function html(compiled: Compiled): string {
   const scenes = compiled.scenes
     .map(
       (scene) =>
-        `<section class="scene" data-scene-id="${escapeHtml(scene.id)}"><div class="scene-card"><h2>${escapeHtml(scene.title)}</h2><div class="scene-narration">${scene.narration
+        // A scene is `scrollLength` viewports tall; the scroll module reads progress through it.
+        `<section class="scene" data-scene-id="${escapeHtml(scene.id)}" style="--mb-scroll-length: ${scene.motion.scrollLength}"><div class="scene-sticky"><div class="scene-card"><h2>${escapeHtml(scene.title)}</h2><div class="scene-narration">${scene.narration
           .split(/\n\s*\n/)
           .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
-          .join('')}</div></div></section>`,
+          .join('')}</div></div></div></section>`,
     )
     .join('\n');
   const credits = compiled.resources
@@ -147,7 +148,7 @@ function html(compiled: Compiled): string {
   return `<!doctype html>
 <html lang="en" data-mb-theme="${compiled.theme.preset}" data-mb-layout="${compiled.layout.template}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(compiled.title)}</title><link rel="stylesheet" href="vendor/maplibre-gl.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"></head>
-<body><div id="map" aria-label="Story map"></div><div id="mb-rail" class="mb-rail"><aside id="legends" class="mb-legend-host" hidden></aside><aside id="controls" class="mb-controls" hidden></aside><aside id="media" class="mb-compiled-media"></aside></div>
+<body><div id="map" aria-label="Story map"></div><div id="mb-rail" class="mb-rail"><aside id="legends" class="mb-legend-host" hidden></aside><aside id="controls" class="mb-controls" hidden></aside><aside id="media" class="mb-compiled-media"></aside></div><button id="mb-motion-toggle" class="mb-motion-toggle" type="button" aria-pressed="false" hidden>Pause animation</button>
 <main id="story"><header class="mb-intro"><div class="mb-intro-panel"><h1>${escapeHtml(compiled.title)}</h1><p>${escapeHtml(compiled.intent)}</p><p class="mb-scroll-hint">Scroll to explore the story</p></div></header>
 ${scenes}<footer class="mb-outro"><div class="mb-intro-panel"><p>Made with MapBard.</p>${credits ? `<h2>Sources and qualifications</h2><ul>${credits}</ul>` : ''}</div></footer></main>
 <script src="vendor/maplibre-gl.js"></script><script src="compiled-data.js"></script><script src="player.js"></script><script src="compiled-app.js"></script></body></html>\n`;
@@ -188,7 +189,7 @@ const app = `(() => {
     maplibregl.setWorkerUrl('vendor/maplibre-gl-worker.js');
     const map = new maplibregl.Map({
       container: 'map', style: styles[0] ? styles[0].url : emptyStyle,
-      center: first.camera.center, zoom: first.camera.zoom, attributionControl: false,
+      center: first.camera.center, zoom: first.camera.zoom, attributionControl: false, maxPitch: 85,
     });
     map.scrollZoom.disable();
     // Map furniture follows the live camera: an auto scale bar, and a north arrow while rotated.
@@ -238,16 +239,33 @@ const app = `(() => {
         ];
         const adapter = api.createMapLibreAdapter(payload.story, payload.data, map, maplibregl, { frame, obstacles });
         const view = api.createDomView({ scenes, media: document.querySelector('#media'), controls: document.querySelector('#controls'), legends: document.querySelector('#legends') });
-        const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches });
+        // Looping motion always gets a visible pause control (WCAG 2.2.2).
+        const toggle = document.querySelector('#mb-motion-toggle');
+        const onMotionChange = (status) => {
+          toggle.hidden = !status.loop;
+          toggle.setAttribute('aria-pressed', String(status.paused));
+          toggle.textContent = status.paused ? 'Play animation' : 'Pause animation';
+        };
+        const player = api.createPlayer(payload.story, adapter, view, { reducedMotion: () => matchMedia('(prefers-reduced-motion: reduce)').matches, onMotionChange });
+        const onToggle = () => player.setPaused(!player.isPaused());
+        toggle.addEventListener('click', onToggle);
         player.enter(first.id);
-        const disconnect = api.observeScenes(player, scenes);
+        const tracker = api.trackScenes(player, scenes, payload.story.scenes);
         const stopNorth = api.createNorthArrow(north, adapter);
         // Readiness hook for visual QA and the workbench; reading it never changes playback.
-        window.MapBardStory = {
+        const story = {
           sceneIds: payload.story.scenes.map((scene) => scene.id),
           activeSceneId: () => player.activeSceneId(),
+          progress: () => player.progress(),
+          paused: () => player.isPaused(),
           whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }),
         };
+        // Capture pages opt in before load; only they may hold a scene at a chosen progress.
+        if (window.MAPBARD_CAPTURE === true) {
+          story.seek = (sceneId, p) => { tracker.pin(sceneId, p); player.seek(sceneId, p); };
+          story.release = () => tracker.release();
+        }
+        window.MapBardStory = Object.freeze(story);
         const refit = () => adapter.refit();
         addEventListener('resize', refit);
         // The title and credits panels own the screen: hide the rail while either crosses its middle.
@@ -257,7 +275,7 @@ const app = `(() => {
           root.toggleAttribute('data-mb-bookend', framing.size > 0);
         }, { rootMargin: '-50% 0px -50% 0px' });
         document.querySelectorAll('.mb-intro, .mb-outro').forEach((element) => bookends.observe(element));
-        cleanup = () => { disconnect(); stopNorth(); bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); delete window.MapBardStory; };
+        cleanup = () => { tracker.dispose(); stopNorth(); toggle.removeEventListener('click', onToggle); toggle.hidden = true; bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); delete window.MapBardStory; };
         switching = false;
         root.dataset.mbState = 'ready';
       } catch (error) { showError(error); map.remove(); }

@@ -28,13 +28,13 @@ function harness(reducedMotion = false) {
       createPlayer: typeof createPlayer;
       createDomView: unknown;
       createMapLibreAdapter: unknown;
-      observeScenes: unknown;
+      trackScenes: unknown;
     };
   } = {};
   runInNewContext(script, sandbox, { timeout: 1000 });
   expect(typeof sandbox.MapBardCompiledPlayer?.createDomView).toBe('function');
   expect(typeof sandbox.MapBardCompiledPlayer?.createMapLibreAdapter).toBe('function');
-  expect(typeof sandbox.MapBardCompiledPlayer?.observeScenes).toBe('function');
+  expect(typeof sandbox.MapBardCompiledPlayer?.trackScenes).toBe('function');
   if (!sandbox.MapBardCompiledPlayer) throw new Error('Built player global is missing');
   const map: MapAdapter = {
     setCamera: vi.fn(),
@@ -46,6 +46,7 @@ function harness(reducedMotion = false) {
     setControl: vi.fn(),
     showCallouts: vi.fn(() => ({ remove: vi.fn() })),
     bearing: vi.fn(() => 0),
+    setLayerProperty: vi.fn(),
   };
   const disposeView = vi.fn();
   const view: SceneView = { showScene: vi.fn(() => disposeView), clear: vi.fn() };
@@ -61,7 +62,7 @@ describe('G2 built classic-script IIFE (build first; not a browser check)', () =
     const { player, map, view, story, disposeView } = harness();
     player.enter('a');
     expect(map.bindLayer).toHaveBeenLastCalledWith(specimen.scenes[0]!.layers[0]);
-    expect(map.setCamera).toHaveBeenLastCalledWith(specimen.scenes[0]!.camera, 'cut');
+    expect(map.setCamera).toHaveBeenLastCalledWith(specimen.scenes[0]!.motion.camera.final, 'cut');
     player.setControl('opacity', 0.2);
     expect(map.setControl).toHaveBeenLastCalledWith('mb:1:a:5:sites', 'opacity', 0.2);
     player.enter('b');
@@ -84,7 +85,7 @@ describe('G2 built classic-script IIFE (build first; not a browser check)', () =
     const { player, map, view, api } = harness(true);
     player.enter('a');
     player.enter('b');
-    expect(map.setCamera).toHaveBeenLastCalledWith(specimen.scenes[1]!.camera, 'cut');
+    expect(map.setCamera).toHaveBeenLastCalledWith(specimen.scenes[1]!.motion.camera.final, 'cut');
     expect(() =>
       api.createPlayer(
         // @ts-expect-error Intentional untrusted-input version mutation.

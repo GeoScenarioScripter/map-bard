@@ -8,6 +8,36 @@ import type { CompiledScene, CompiledStory, MapAdapter, MarkerHandle } from './t
 
 type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'>;
 type GeoData = Parameters<MapLibreMap['addSource']>[1];
+type PaintName = Parameters<MapLibreMap['setPaintProperty']>[1];
+type PaintValue = Parameters<MapLibreMap['setPaintProperty']>[2];
+type Bound = {
+  sourceId: string;
+  type: 'circle' | 'line' | 'fill';
+  paint: Record<string, unknown>;
+  /** Motion track values: opacity factor, highlight strength, reveal fraction. */
+  motion: { opacity: number; highlight: number };
+};
+
+function hexChannels(color: string): [number, number, number] | undefined {
+  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+  if (!match) return undefined;
+  const hex = match[1]!.length === 3 ? [...match[1]!].map((c) => c + c).join('') : match[1]!;
+  return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+/** Blend two hex colours; `w` = 1 gives `to`. Non-hex input falls back to the nearer end. */
+export function mixColor(from: string, to: string, w: number): string {
+  const a = hexChannels(from);
+  const b = hexChannels(to);
+  if (!a || !b) return w < 0.5 ? from : to;
+  return `#${a
+    .map((channel, i) =>
+      Math.round(channel + (b[i]! - channel) * w)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+}
 
 function popupMarker(
   map: MapLibreMap,
@@ -48,9 +78,17 @@ export function createMapLibreAdapter(
     obstacles?: () => Rect[];
   } = {},
 ): MapAdapter & { refit(): void } {
-  const bound = new Map<string, { sourceId: string; type: 'circle' | 'line' | 'fill' }>();
+  const bound = new Map<string, Bound>();
   const sourceUsers = new Map<string, number>();
-  const { accent, labelHalo } = story.theme.colors;
+  const { accent, labelHalo, ink } = story.theme.colors;
+  // line-reveal draws with line-progress, which MapLibre only measures when the source asks for it.
+  const metricSources = new Set<string>();
+  for (const scene of story.scenes)
+    for (const track of scene.motion.layers)
+      if (track.property === 'line-reveal') {
+        const layer = scene.layers.find((item) => item.runtimeId === track.runtimeLayerId);
+        if (layer) metricSources.add(layer.sourceId);
+      }
   let camera: CompiledScene['camera'] | undefined;
   for (const scene of story.scenes) {
     for (const layer of scene.layers) {
@@ -134,7 +172,11 @@ export function createMapLibreAdapter(
       if (isNewSource) {
         const sourceData = data[layer.sourceId];
         if (!sourceData) throw new Error(`Missing GeoJSON source ${layer.sourceId}`);
-        map.addSource(layer.sourceId, { type: 'geojson', data: sourceData } as GeoData);
+        map.addSource(layer.sourceId, {
+          type: 'geojson',
+          data: sourceData,
+          ...(metricSources.has(layer.sourceId) ? { lineMetrics: true } : {}),
+        } as GeoData);
       }
       const specification = layerStyle(layer, scale, accent, labelHalo);
       try {
@@ -146,7 +188,12 @@ export function createMapLibreAdapter(
         if (isNewSource && map.getSource(layer.sourceId)) map.removeSource(layer.sourceId);
         throw error;
       }
-      bound.set(layer.runtimeId, { sourceId: layer.sourceId, type: specification.type });
+      bound.set(layer.runtimeId, {
+        sourceId: layer.sourceId,
+        type: specification.type,
+        paint: specification.paint,
+        motion: { opacity: 1, highlight: 0 },
+      });
       sourceUsers.set(layer.sourceId, (sourceUsers.get(layer.sourceId) ?? 0) + 1);
     },
     unbindLayer(runtimeId) {
@@ -198,11 +245,7 @@ export function createMapLibreAdapter(
         if (property === 'radius' && typeof value === 'number')
           radiusOverride.set(runtimeLayerId, value);
         const paintName = `${binding.type}-${property}`;
-        map.setPaintProperty(
-          runtimeLayerId,
-          paintName as Parameters<MapLibreMap['setPaintProperty']>[1],
-          value,
-        );
+        map.setPaintProperty(runtimeLayerId, paintName as PaintName, value);
       }
     },
     showCallouts(scene) {
@@ -213,6 +256,43 @@ export function createMapLibreAdapter(
     },
     bearing() {
       return map.getBearing();
+    },
+    setLayerProperty(runtimeLayerId, property, value) {
+      const binding = bound.get(runtimeLayerId);
+      if (!binding) throw new Error(`Missing active layer ${runtimeLayerId}`);
+      const paint = (name: string, next: unknown) =>
+        map.setPaintProperty(runtimeLayerId, name as PaintName, next as PaintValue);
+      const { type, motion } = binding;
+      const base = (name: string, fallback: number) => {
+        const authored = binding.paint[name];
+        return typeof authored === 'number' ? authored : fallback;
+      };
+      if (property === 'line-reveal') {
+        if (type !== 'line') throw new Error(`line-reveal needs a line layer ${runtimeLayerId}`);
+        const color = binding.paint['line-color'];
+        paint('line-gradient', [
+          'step',
+          ['line-progress'],
+          typeof color === 'string' ? color : accent,
+          Math.max(0, Math.min(1, value)),
+          'rgba(0, 0, 0, 0)',
+        ]);
+        return;
+      }
+      motion[property] = value;
+      // Each property writes only its own paint, so reader controls on other properties keep working.
+      const opacity = base(`${type}-opacity`, 1) * motion.opacity;
+      if (type === 'fill') {
+        paint('fill-opacity', opacity + (1 - opacity) * 0.5 * motion.highlight);
+        if (property === 'highlight')
+          paint('fill-outline-color', mixColor(labelHalo, ink, motion.highlight));
+      } else if (property === 'opacity') {
+        paint(`${type}-opacity`, opacity);
+        if (type === 'circle') paint('circle-stroke-opacity', motion.opacity);
+      } else if (type === 'circle') {
+        paint('circle-stroke-width', base('circle-stroke-width', 1) + 3 * motion.highlight);
+        paint('circle-stroke-color', mixColor(labelHalo, ink, motion.highlight));
+      } else paint('line-width', base('line-width', 2.5) * (1 + 0.8 * motion.highlight));
     },
   };
   return adapter;

@@ -1,4 +1,4 @@
-import type { Compiled } from '@mapbard/schema';
+import type { Compiled, LayerTrackProperty } from '@mapbard/schema';
 
 // Aliases derive from the public contract; no private consumer shape can drift.
 export type CompiledStory = Compiled;
@@ -30,6 +30,8 @@ export interface MapAdapter {
   showCallouts(scene: CompiledScene): MarkerHandle;
   /** Current map bearing in degrees, read live because camera tracks animate it. */
   bearing(): number;
+  /** Apply a motion track value in [0, 1] to an active layer (opacity factor, reveal fraction, highlight strength). */
+  setLayerProperty(runtimeLayerId: string, property: LayerTrackProperty, value: number): void;
 }
 
 export interface SceneView {

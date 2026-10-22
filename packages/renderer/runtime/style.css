@@ -179,8 +179,15 @@ h3 {
   padding-top: 15px;
   border-top: 1px solid var(--mb-rule);
 }
+/* A scene is `scrollLength` viewports tall (set inline from the compiled motion). Its card
+   holds still in a one-viewport sticky frame while the camera tracks scrub through it. */
 .scene {
-  min-height: 100vh;
+  min-height: calc(var(--mb-scroll-length, 1) * 100vh);
+}
+.scene-sticky {
+  position: sticky;
+  top: 0;
+  height: min(100vh, calc(var(--mb-scroll-length, 1) * 100vh));
   display: flex;
   align-items: center;
 }
@@ -601,7 +608,7 @@ h3 {
 }
 
 /* full-bleed: short captions along the bottom; the camera keeps that band clear */
-[data-mb-layout='full-bleed'] .scene {
+[data-mb-layout='full-bleed'] .scene-sticky {
   align-items: flex-end;
 }
 [data-mb-layout='full-bleed'] .scene-card {
@@ -617,7 +624,7 @@ h3 {
   .mb-callout {
     max-width: 10.5rem;
   }
-  .scene {
+  .scene-sticky {
     align-items: flex-end;
   }
   .scene-card {
@@ -660,6 +667,36 @@ h3 {
   }
   .maplibregl-ctrl-bottom-right {
     left: 128px;
+  }
+}
+
+/* the pause control for looping motion (WCAG 2.2.2); bottom right, above the attribution */
+.mb-motion-toggle {
+  position: fixed;
+  right: var(--mb-gutter);
+  bottom: 44px;
+  z-index: 4;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: var(--mb-text-small);
+  font-weight: 600;
+  color: var(--mb-ink);
+  background: var(--mb-card-bg);
+  border: 1px solid var(--mb-rule);
+  border-radius: 999px;
+  box-shadow: var(--mb-card-shadow);
+  cursor: pointer;
+}
+.mb-motion-toggle[hidden] {
+  display: none;
+}
+.mb-motion-toggle:focus-visible {
+  outline: 3px solid var(--mb-accent);
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .mb-motion-toggle {
+    bottom: calc(var(--mb-reserve) + 8px);
   }
 }
 

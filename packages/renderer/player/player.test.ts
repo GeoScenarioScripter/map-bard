@@ -2,8 +2,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { anchorMarkup, mediaMarkup, sceneMediaMarkup } from './media.js';
-import { createPlayer } from './player.js';
+import { createPlayer, type MotionStatus } from './player.js';
 import type { CompiledStory, MapAdapter, SceneView } from './types.js';
+import type { CameraState } from '@mapbard/schema';
 
 const specimen = JSON.parse(
   readFileSync(
@@ -14,11 +15,15 @@ const specimen = JSON.parse(
 
 function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
   const events: string[] = [];
+  const cameras: CameraState[] = [];
+  const statuses: MotionStatus[] = [];
+  const clock = { now: 0, frames: [] as (() => void)[] };
   const markers: { remove: ReturnType<typeof vi.fn> }[] = [];
   let change: ((id: string, value: boolean | number) => void) | undefined;
   const map: MapAdapter = {
-    setCamera: (_camera, transition) => {
+    setCamera: (camera, transition) => {
       events.push(`camera:${transition}`);
+      cameras.push(camera as CameraState);
     },
     bindLayer: (layer) => {
       events.push(`bind:${layer.runtimeId}:${layer.sourceId}`);
@@ -48,6 +53,9 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
       return marker;
     },
     bearing: () => 0,
+    setLayerProperty: (id, property, value) => {
+      events.push(`track:${id}:${property}:${Math.round(value * 1000) / 1000}`);
+    },
   };
   const view: SceneView = {
     showScene: (_scene, _media, onControl) => {
@@ -63,7 +71,25 @@ function harness(story: CompiledStory = specimen, reducedMotion = () => false) {
     },
   };
   return {
-    player: createPlayer(story, map, view, { reducedMotion }),
+    player: createPlayer(story, map, view, {
+      reducedMotion,
+      now: () => clock.now,
+      requestFrame: (callback) => clock.frames.push(callback),
+      cancelFrame: () => {
+        clock.frames.length = 0;
+      },
+      onMotionChange: (status) => statuses.push(status),
+    }),
+    /** Advance the clock and run the frames the player asked for. */
+    tick: (ms: number) => {
+      clock.now += ms;
+      const due = clock.frames.splice(0);
+      for (const frame of due) frame();
+      return due.length;
+    },
+    pending: () => clock.frames.length,
+    cameras,
+    statuses,
     events,
     markers,
     change: (id: string, value: boolean | number) => change?.(id, value),
@@ -103,11 +129,10 @@ describe('compiled player foundation', () => {
     player.setControl('radius', 8);
     player.enter('b');
     player.enter('a');
-    expect(events.filter((event) => event.startsWith('camera:'))).toEqual([
-      'camera:cut',
-      'camera:fly',
-      'camera:ease',
-    ]);
+    // The player drives every camera frame itself; scenes hand over by blending, never by map tweens.
+    expect(new Set(events.filter((event) => event.startsWith('camera:')))).toEqual(
+      new Set(['camera:cut']),
+    );
     expect(events.filter((event) => event === `control:${layerId}:visibility:true`)).toHaveLength(
       2,
     );
@@ -244,5 +269,153 @@ describe('compiled player foundation', () => {
     expect(() => player.enter('b')).toThrow(/Missing media/);
     expect(player.activeSceneId()).toBe('a');
     expect(events).not.toContain('unbind:mb:1:a:5:sites');
+  });
+});
+
+const camera = (zoom: number, lng = -77.2) => ({
+  center: [lng, 39.2] as [number, number],
+  zoom,
+  pitch: 0,
+  bearing: 0,
+});
+
+function withMotion(edit: (story: CompiledStory) => void): CompiledStory {
+  const story = structuredClone(specimen);
+  edit(story);
+  return story;
+}
+
+const fade = (runtimeLayerId: string, mode: 'play' | 'loop' = 'play') => ({
+  mode,
+  range: [0.2, 1] as [number, number],
+  durationMs: 1000,
+  runtimeLayerId,
+  property: 'opacity' as const,
+  keyframes: [
+    { at: 0, value: 0, easing: 'linear' as const },
+    { at: 1, value: 1, easing: 'linear' as const },
+  ],
+  final: 1,
+});
+
+describe('motion playback', () => {
+  const scrubbing = withMotion((story) => {
+    story.scenes[0]!.motion.camera = {
+      mode: 'scrub',
+      range: [0, 1],
+      keyframes: [
+        { at: 0, ...camera(4), easing: 'linear' },
+        { at: 1, ...camera(8), easing: 'linear' },
+      ],
+      final: camera(8),
+    };
+    story.scenes[0]!.motion.layers = [fade('mb:1:a:5:sites')];
+    story.scenes[1]!.motion.camera.keyframes = [{ at: 0, ...camera(10, -76), easing: 'linear' }];
+    story.scenes[1]!.motion.camera.final = camera(10, -76);
+    story.scenes[1]!.transitionIn = 'ease';
+  });
+
+  it('scrubs the camera with progress and plays timed tracks once armed', () => {
+    const { player, cameras, events, tick, pending } = harness(scrubbing);
+    player.enter('a');
+    expect(cameras.at(-1)).toEqual(camera(4));
+    // Not armed yet (still above the trigger line): the fade waits at its first value.
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0');
+    expect(pending()).toBe(0);
+    player.update('a', 0.5, true);
+    expect(cameras.at(-1)).toEqual(camera(6));
+    expect(pending()).toBe(1);
+    tick(500);
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0.5');
+    tick(600);
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:1');
+    expect(pending()).toBe(0);
+    player.update('a', 1);
+    expect(cameras.at(-1)).toEqual(camera(8));
+  });
+
+  it('hands the camera over between scenes by the later scene transition in both directions', () => {
+    const { player, cameras, tick, pending } = harness(scrubbing);
+    player.update('a', 1);
+    player.update('b', 0);
+    // The blend starts from the camera the reader saw.
+    expect(cameras.at(-1)).toEqual(camera(8));
+    tick(350);
+    expect(cameras.at(-1)!.zoom).toBeCloseTo(9, 1);
+    tick(400);
+    expect(cameras.at(-1)).toEqual(camera(10, -76));
+    expect(pending()).toBe(0);
+    // Scrolling back up uses scene b's transition too.
+    player.update('a', 1);
+    expect(cameras.at(-1)).toEqual(camera(10, -76));
+    tick(800);
+    expect(cameras.at(-1)).toEqual(camera(8));
+  });
+
+  it('jumps to final states under reduced motion and shortens fades on request', () => {
+    const stepped = harness(scrubbing, () => true);
+    stepped.player.enter('a');
+    stepped.player.update('a', 0.3, true);
+    expect(stepped.cameras.at(-1)).toEqual(camera(8));
+    expect(stepped.events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:1');
+    expect(stepped.pending()).toBe(0);
+
+    const shortened = harness(
+      withMotion((story) => {
+        story.scenes[0]!.motion = { ...scrubbing.scenes[0]!.motion, reducedMotion: 'shorten' };
+      }),
+      () => true,
+    );
+    shortened.player.update('a', 0.3, true);
+    expect(shortened.cameras.at(-1)).toEqual(camera(8));
+    shortened.tick(125);
+    expect(shortened.events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0.5');
+    shortened.tick(125);
+    expect(shortened.events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:1');
+
+    const kept = harness(
+      withMotion((story) => {
+        story.scenes[0]!.motion = { ...scrubbing.scenes[0]!.motion, reducedMotion: 'keep' };
+      }),
+      () => true,
+    );
+    kept.player.update('a', 0.5, true);
+    expect(kept.cameras.at(-1)).toEqual(camera(6));
+  });
+
+  it('pauses loops, reports them for the pause control, and ends them in their final state', () => {
+    const looping = withMotion((story) => {
+      story.scenes[0]!.motion.layers = [fade('mb:1:a:5:sites', 'loop')];
+    });
+    const { player, events, tick, pending, statuses } = harness(looping);
+    player.update('a', 0.5, true);
+    expect(statuses.at(-1)).toEqual({ loop: true, paused: false });
+    tick(250);
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0.25');
+    tick(1000);
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0.25');
+    player.setPaused(true);
+    expect(statuses.at(-1)).toEqual({ loop: true, paused: true });
+    expect(pending()).toBe(0);
+    tick(5000);
+    player.setPaused(false);
+    tick(250);
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0.5');
+    player.update('b', 0);
+    expect(statuses.at(-1)).toEqual({ loop: false, paused: false });
+  });
+
+  it('seeks to a settled state for capture', () => {
+    const { player, cameras, events, pending } = harness(scrubbing);
+    player.seek('a', 0.5);
+    expect(cameras.at(-1)).toEqual(camera(6));
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:1');
+    player.seek('a', 0);
+    // Before the fade's range starts it shows its first value.
+    expect(events.at(-1)).toBe('track:mb:1:a:5:sites:opacity:0');
+    player.seek('b', 1);
+    expect(cameras.at(-1)).toEqual(camera(10, -76));
+    expect(pending()).toBe(0);
+    expect(player.progress()).toEqual({ sceneId: 'b', p: 1 });
   });
 });

@@ -247,6 +247,70 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     expect(story).toEqual(parsed.value);
   });
 
+  it('applies motion track values as paint and measures lines only for reveals', () => {
+    const motionStory = structuredClone(story);
+    const line = motionStory.scenes[0]!.layers[0]!;
+    Object.assign(line, { geometry: 'line', technique: 'line' });
+    delete line.scaleId;
+    delete line.attribute;
+    motionStory.scenes[0]!.motion.layers = [
+      {
+        mode: 'scrub',
+        range: [0, 1],
+        runtimeLayerId: line.runtimeId,
+        property: 'line-reveal',
+        keyframes: [
+          { at: 0, value: 0, easing: 'linear' },
+          { at: 1, value: 1, easing: 'linear' },
+        ],
+        final: 1,
+      },
+    ];
+    const added: Record<string, { lineMetrics?: boolean }> = {};
+    const paint = vi.fn();
+    const sources = new Set<string>();
+    const map = {
+      getSource: (id: string) => sources.has(id),
+      addSource: (id: string, source: { lineMetrics?: boolean }) => {
+        sources.add(id);
+        added[id] = source;
+      },
+      getStyle: () => ({ layers: [] }),
+      addLayer: vi.fn(),
+      setPaintProperty: paint,
+    };
+    const adapter = createMapLibreAdapter(
+      motionStory,
+      sourceData,
+      map as unknown as Parameters<typeof createMapLibreAdapter>[2],
+      {} as Parameters<typeof createMapLibreAdapter>[3],
+    );
+    adapter.bindLayer(line);
+    adapter.bindLayer(motionStory.scenes[1]!.layers[0]!);
+    expect(added['period-a']!.lineMetrics).toBe(true);
+    expect(added['period-b']!.lineMetrics).toBeUndefined();
+    adapter.setLayerProperty(line.runtimeId, 'line-reveal', 0.4);
+    expect(paint).toHaveBeenLastCalledWith(line.runtimeId, 'line-gradient', [
+      'step',
+      ['line-progress'],
+      motionStory.theme.colors.accent,
+      0.4,
+      'rgba(0, 0, 0, 0)',
+    ]);
+    adapter.setLayerProperty(line.runtimeId, 'opacity', 0.5);
+    // The track scales the layer's own opacity (0.8 in the fixture).
+    expect(paint).toHaveBeenLastCalledWith(line.runtimeId, 'line-opacity', 0.4);
+    const circle = motionStory.scenes[1]!.layers[0]!.runtimeId;
+    paint.mockClear();
+    adapter.setLayerProperty(circle, 'highlight', 1);
+    expect(paint.mock.calls).toEqual([
+      [circle, 'circle-stroke-width', 4],
+      [circle, 'circle-stroke-color', motionStory.theme.colors.ink.toLowerCase()],
+    ]);
+    expect(() => adapter.setLayerProperty(circle, 'line-reveal', 1)).toThrow(/line layer/);
+    expect(() => adapter.setLayerProperty('mb:none', 'opacity', 1)).toThrow(/Missing active/);
+  });
+
   it('runs frame listeners on every render until unsubscribed and projects coordinates', () => {
     const listeners = new Set<() => void>();
     const map = {

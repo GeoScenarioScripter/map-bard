@@ -32,13 +32,16 @@ export function reservedArea(layout: Layout, viewport: { width: number; height: 
 
 /**
  * Camera padding for the active layout frame: the reserved card edge, plus the
- * measured rail of legends, controls and media when it shows anything. The camera
- * centre and fit targets then fall in the uncovered part of the map.
+ * measured rail of legends, controls and media when it shows anything. When the
+ * card sits along the bottom, the map's bottom controls (attribution, scale bars)
+ * stack above it and are reserved too. The camera centre and fit targets then
+ * fall in the uncovered part of the map.
  */
 export function cameraPadding(
   layout: Layout,
   viewport: { width: number; height: number },
   rail?: Rect,
+  controls?: Rect,
 ): Padding {
   const frame = activeFrame(layout, viewport.width);
   const gutter = frame.gutter;
@@ -51,6 +54,13 @@ export function cameraPadding(
       padding.right = Math.max(padding.right, viewport.width - rail.left + gutter);
     else padding.top = Math.max(padding.top, rail.bottom + gutter);
   }
+  if (
+    frame.reserve.edge === 'bottom' &&
+    controls &&
+    controls.right > controls.left &&
+    controls.bottom > controls.top
+  )
+    padding.bottom = Math.max(padding.bottom, viewport.height - controls.top + gutter);
   // Very small or very wide panels must not leave the camera without a view.
   for (const [low, high, size] of [
     ['left', 'right', viewport.width],

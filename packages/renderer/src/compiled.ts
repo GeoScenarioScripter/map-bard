@@ -225,9 +225,20 @@ const app = `(() => {
         api.styleBasemap(map, base, Boolean(chosen));
         // Keep the camera target clear of the layout's card and the rail of panels.
         const rail = document.querySelector('#mb-rail');
+        // Attribution and scale bars only: the north arrow and pause button come and go mid-flight.
+        const bottomControls = () => {
+          const boxes = [...document.querySelectorAll('#map .maplibregl-ctrl-attrib, #map .maplibregl-ctrl-scale')]
+            .map((element) => element.getBoundingClientRect())
+            .filter((box) => box.width > 0 && box.height > 0);
+          if (!boxes.length) return undefined;
+          return {
+            left: Math.min(...boxes.map((box) => box.left)), top: Math.min(...boxes.map((box) => box.top)),
+            right: Math.max(...boxes.map((box) => box.right)), bottom: Math.max(...boxes.map((box) => box.bottom)),
+          };
+        };
         const frame = () => {
           const viewport = { width: innerWidth, height: innerHeight };
-          const padding = api.cameraPadding(payload.story.layout, viewport, rail.getBoundingClientRect());
+          const padding = api.cameraPadding(payload.story.layout, viewport, rail.getBoundingClientRect(), bottomControls());
           return { padding, zoomOffset: api.zoomOffset(payload.story.layout, viewport, padding) };
         };
         // Callout labels keep clear of the card area, the rail and the map controls.

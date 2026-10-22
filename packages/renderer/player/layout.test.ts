@@ -29,6 +29,15 @@ describe('cameraPadding', () => {
     });
   });
 
+  it('keeps the bottom map controls clear above a phone sheet, but not beside a sidecar', () => {
+    const rail = { left: 12, top: 12, right: 378, bottom: 200 };
+    const controls = { left: 12, top: 420, right: 378, bottom: 478 };
+    expect(cameraPadding(resolveLayout('overlay-cards'), phone, rail, controls).bottom).toBe(436);
+    expect(cameraPadding(resolveLayout('sidecar'), desktop, undefined, controls).bottom).toBe(24);
+    const empty = { left: 12, top: 420, right: 12, bottom: 420 };
+    expect(cameraPadding(resolveLayout('overlay-cards'), phone, rail, empty).bottom).toBe(354);
+  });
+
   it('reserves the caption band for full-bleed and ignores an empty rail', () => {
     const layout = resolveLayout('full-bleed');
     const empty = { left: 1416, top: 24, right: 1416, bottom: 24 };

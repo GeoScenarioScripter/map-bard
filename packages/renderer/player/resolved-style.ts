@@ -140,12 +140,24 @@ export function layerStyle(
         [layer.filter.op, ['get', layer.filter.attribute], layer.filter.value],
       ]
     : undefined;
+  // Graduated circles draw largest first, so overlapping small symbols stay visible.
+  const sortKey =
+    type === 'circle' && scale?.kind === 'numeric-size' && layer.attribute
+      ? {
+          'circle-sort-key': [
+            'case',
+            validNumber(layer.attribute),
+            ['-', 0, numericValue(layer.attribute)],
+            1,
+          ],
+        }
+      : {};
   return {
     id: layer.runtimeId,
     type,
     source: layer.sourceId,
     paint,
-    layout: { visibility: 'visible' },
+    layout: { visibility: 'visible', ...sortKey },
     ...(filter ? { filter } : {}),
   };
 }

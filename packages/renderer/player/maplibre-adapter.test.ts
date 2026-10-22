@@ -133,6 +133,14 @@ describe('W3-B compiled playback against the actual W3-A fixture', () => {
     const size = variants.find((item) => item.id === 'area-size')!;
     const point = layerStyle({ ...base, technique: 'graduated-symbol', attribute: 'area' }, size);
     expect(point.paint['circle-radius']).toEqual(scalePaint(size, 'area'));
+    // Largest values get the lowest sort key and draw underneath; missing values draw on top.
+    expect(point.layout['circle-sort-key']).toEqual([
+      'case',
+      ['==', ['typeof', ['get', 'area']], 'number'],
+      ['-', 0, ['get', 'area']],
+      1,
+    ]);
+    expect(layerStyle(base, story.scales[0]).layout).toEqual({ visibility: 'visible' });
     expect(point.paint['circle-color']).toEqual([
       'case',
       ['==', ['typeof', ['get', 'area']], 'number'],

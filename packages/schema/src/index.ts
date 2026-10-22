@@ -4,6 +4,7 @@
  */
 export * from './geo-narrative.js';
 export * from './theme.js';
+export * from './layout.js';
 export * from './project.js';
 export * from './design.js';
 export * from './compiled.js';

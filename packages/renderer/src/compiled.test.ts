@@ -37,6 +37,18 @@ describe('generated theme stylesheet', () => {
     expect(css).toContain('--mb-text-h2:26.56px');
     expect(css).toContain('color-scheme:light');
     expect(css.match(/@font-face/g)).toHaveLength(2);
+    // Layout numbers come from the compiled frames, desktop first, then the phone override.
+    expect(css).toContain('--mb-card-width:440px;--mb-gutter:24px;--mb-reserve:440px}');
+    expect(css).toContain(
+      '@media (max-width: 640px){:root{--mb-card-width:640px;--mb-gutter:12px;--mb-reserve:42vh}}',
+    );
+    const page = renderCompiled(fixture, publication());
+    if (!page.ok) throw new Error(JSON.stringify(page.diagnostics));
+    expect(page.value.files['index.html']).toContain('data-mb-layout="sidecar"');
+    expect(page.value.files['index.html']).toMatch(
+      /<div id="mb-rail" class="mb-rail"><aside id="legends"[^]*<aside id="controls"[^]*<aside id="media"/,
+    );
+    expect(page.value.files['compiled-app.js']).toContain('api.cameraPadding(payload.story.layout');
     const night = structuredClone(fixture);
     night.theme = {
       ...night.theme,

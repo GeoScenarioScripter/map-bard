@@ -9,6 +9,7 @@
  * dimensions it needs (build-guide directive 5).
  */
 import { z } from 'zod';
+import { LAYOUT_TEMPLATES } from './layout.js';
 import { ThemeTokensSchema } from './theme.js';
 
 /** Bumped when the schema shape changes in a breaking way. */
@@ -228,6 +229,7 @@ export const GeoNarrativeSchema = z
     scenes: z.array(SceneSchema),
     basemap: BasemapSchema,
     theme: ThemeTokensSchema.optional(),
+    layout: z.enum(LAYOUT_TEMPLATES).optional(),
     schemaVersion: z.string(),
   })
   .superRefine((story, ctx) => {

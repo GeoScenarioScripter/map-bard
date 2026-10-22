@@ -6,6 +6,7 @@ import {
   LngLatSchema,
   SceneMediaSchema,
 } from './geo-narrative.js';
+import { ResolvedLayoutSchema } from './layout.js';
 import { ResolvedThemeSchema } from './theme.js';
 import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
 import {
@@ -124,6 +125,7 @@ export const CompiledSchema = z
     title: z.string(),
     intent: z.string(),
     theme: ResolvedThemeSchema,
+    layout: ResolvedLayoutSchema,
     basemap: z.union([
       z.literal('neutral'),
       z.object({ provider: z.literal('none') }).strict(),

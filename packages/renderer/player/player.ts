@@ -81,6 +81,8 @@ export function createPlayer(
       firstEntry || options.reducedMotion?.() ? 'cut' : (next.transitionIn ?? 'ease');
     active = next;
     try {
+      // Panels first: the camera padding measures the legends and media they show.
+      disposeView = view.showScene(next, mediaHtml, setControl, legendHtml);
       map.setCamera(next.camera, transition);
       for (const layer of next.layers) map.bindLayer(layer);
       for (const control of next.controls) setControl(control.id, control.default);
@@ -88,7 +90,6 @@ export function createPlayer(
         markers.push(map.addMarker(anchor, anchorHtml[index]!));
       }
       for (const annotation of next.annotations) markers.push(map.addAnnotation(annotation));
-      disposeView = view.showScene(next, mediaHtml, setControl, legendHtml);
     } catch (error) {
       clearActive();
       view.clear();

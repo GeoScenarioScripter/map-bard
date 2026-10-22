@@ -53,13 +53,13 @@ body {
   display: none;
 }
 
+/* Layout numbers (--mb-card-width, --mb-gutter, --mb-reserve) come from the compiled
+   layout frame, so the CSS and the camera padding agree. */
 #story {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--mb-gutter);
   pointer-events: none; /* let the map receive drags; cards re-enable below */
 }
 
@@ -73,8 +73,7 @@ h3 {
 
 /* cards share one token-driven surface */
 .mb-intro-panel,
-.scene-card,
-.mb-outro p {
+.scene-card {
   background: var(--mb-card-bg);
   -webkit-backdrop-filter: blur(var(--mb-card-blur));
   backdrop-filter: blur(var(--mb-card-blur));
@@ -91,7 +90,6 @@ h3 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 560px;
 }
 .mb-intro-panel {
   pointer-events: auto;
@@ -126,11 +124,6 @@ h3 {
   padding-top: 15px;
   border-top: 1px solid var(--mb-rule);
 }
-.mb-outro p {
-  width: fit-content;
-  padding: 14px 18px;
-}
-
 .scene {
   min-height: 100vh;
   display: flex;
@@ -138,7 +131,9 @@ h3 {
 }
 .scene-card {
   pointer-events: auto;
-  width: min(420px, 92vw);
+  width: min(var(--mb-card-width), 100%);
+  max-height: calc(100vh - 2 * var(--mb-gutter));
+  overflow: auto;
   padding: 22px 24px;
   opacity: 0.82;
   transition: opacity 0.2s ease;
@@ -195,10 +190,34 @@ h3 {
   color: #fff;
 }
 
-/* overlay panels: media, controls and legends */
+/* The rail stacks legends, controls, media and notices on one edge, so they never
+   overlap each other; the player measures it for camera padding. */
+.mb-rail {
+  position: fixed;
+  top: var(--mb-gutter);
+  right: var(--mb-gutter);
+  z-index: 3;
+  width: 280px;
+  max-height: calc(100vh - 2 * var(--mb-gutter) - 28px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+.mb-rail > * {
+  pointer-events: auto;
+  flex: none;
+}
+/* the intro and credits are never covered by scene panels; a basemap notice stays */
+[data-mb-bookend] .mb-rail > :not(#mb-basemap-notice) {
+  visibility: hidden;
+}
 .mb-compiled-media,
 #controls,
-.mb-legend-host {
+.mb-legend-host,
+#mb-basemap-notice {
+  margin: 0;
   background: var(--mb-card-bg);
   border: 1px solid var(--mb-rule);
   border-radius: min(var(--mb-card-radius), 12px);
@@ -206,41 +225,35 @@ h3 {
   color: var(--mb-ink);
 }
 .mb-compiled-media {
-  position: fixed;
-  right: 16px;
-  top: 16px;
-  z-index: 3;
-  width: min(300px, 28vw);
-  max-height: 45vh;
-  overflow: auto;
   padding: 12px;
 }
 .mb-compiled-media:empty {
   display: none;
 }
+.mb-compiled-media .mb-media {
+  margin: 0;
+}
+.mb-compiled-media img,
+.mb-compiled-media video {
+  max-height: 36vh;
+  object-fit: cover;
+}
 #controls {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  z-index: 4;
-  width: 232px;
   padding: 14px 16px;
 }
 #controls[hidden] {
   display: none;
 }
 .mb-legend-host {
-  position: fixed;
-  left: 12px;
-  bottom: 42px;
-  z-index: 3;
-  width: min(250px, calc(100vw - 24px));
-  max-height: min(44vh, 380px);
-  overflow: auto;
   padding: 10px 14px;
 }
 .mb-legend-host[hidden] {
   display: none;
+}
+#mb-basemap-notice {
+  padding: 8px 12px;
+  font-family: var(--mb-body);
+  font-size: var(--mb-text-small);
 }
 .mb-legend h3 {
   font-family: var(--mb-body);
@@ -392,35 +405,102 @@ h3 {
   margin-top: 5px;
 }
 
-@media (max-width: 640px) {
-  #story {
-    padding: 0 14px;
+/* sidecar: on wide screens the story is one solid column beside the map */
+@media (min-width: 641px) {
+  [data-mb-layout='sidecar'] #story {
+    width: var(--mb-card-width);
+    min-height: 100vh;
+    padding: 0 var(--mb-gutter);
+    pointer-events: auto;
+    background: var(--mb-card-bg);
+    -webkit-backdrop-filter: blur(var(--mb-card-blur));
+    backdrop-filter: blur(var(--mb-card-blur));
+    border-right: 1px solid var(--mb-rule);
+    box-shadow: var(--mb-card-shadow);
   }
+  [data-mb-layout='sidecar'] .scene-card,
+  [data-mb-layout='sidecar'] .mb-intro-panel {
+    width: 100%;
+    max-height: none;
+    padding: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  [data-mb-layout='sidecar'] .scene-card {
+    opacity: 0.45;
+  }
+  [data-mb-layout='sidecar'] .scene.is-active .scene-card {
+    opacity: 1;
+  }
+  [data-mb-layout='sidecar'] .scene-card h2::before,
+  [data-mb-layout='sidecar'] .mb-intro h1::before {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 4px;
+    margin-bottom: 16px;
+    background: var(--mb-accent);
+  }
+}
+
+/* full-bleed: short captions along the bottom; the camera keeps that band clear */
+[data-mb-layout='full-bleed'] .scene {
+  align-items: flex-end;
+}
+[data-mb-layout='full-bleed'] .scene-card {
+  max-height: calc(var(--mb-reserve) - 2 * var(--mb-gutter));
+  margin-bottom: var(--mb-gutter);
+}
+
+/* phones: every layout becomes a bottom sheet, with the rail across the top */
+@media (max-width: 640px) {
   .mb-intro-panel {
     padding: 24px;
   }
+  .scene {
+    align-items: flex-end;
+  }
   .scene-card {
     width: 100%;
+    max-height: calc(var(--mb-reserve) - 2 * var(--mb-gutter));
+    margin-bottom: var(--mb-gutter);
+    padding: 16px 18px;
+  }
+  .scene-card h2 {
+    font-size: var(--mb-text-h3);
+  }
+  .mb-rail {
+    left: var(--mb-gutter);
+    right: var(--mb-gutter);
+    width: auto;
+    max-height: 26vh;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .mb-rail > * {
+    flex: 1 1 150px;
+    min-width: 0;
   }
   .mb-compiled-media {
-    top: auto;
-    bottom: 82px;
-    right: 14px;
-    width: min(230px, 55vw);
-    max-height: 24vh;
+    padding: 8px;
   }
-  #controls {
-    left: 14px;
-    right: 14px;
-    width: auto;
-    top: auto;
-    bottom: 14px;
+  .mb-compiled-media img,
+  .mb-compiled-media video {
+    max-height: 18vh;
   }
-  .mb-legend-host {
-    left: 14px;
-    top: 14px;
-    bottom: auto;
-    max-height: 25vh;
+  .mb-compiled-media figcaption {
+    display: none;
+  }
+  /* attribution stays readable above the sheet */
+  .maplibregl-ctrl-bottom-right,
+  .maplibregl-ctrl-bottom-left {
+    bottom: var(--mb-reserve);
   }
 }
 
@@ -428,17 +508,4 @@ h3 {
   .scene-card {
     transition: none;
   }
-}
-#mb-basemap-notice {
-  position: fixed;
-  left: 12px;
-  bottom: 12px;
-  z-index: 10;
-  background: var(--mb-card-bg);
-  color: var(--mb-ink);
-  padding: 8px 12px;
-  border-radius: 4px;
-  box-shadow: var(--mb-card-shadow);
-  font-family: var(--mb-body);
-  font-size: var(--mb-text-small);
 }

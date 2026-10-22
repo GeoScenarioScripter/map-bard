@@ -16,6 +16,7 @@ import {
   MediaAnchorSchema,
   SceneMediaSchema,
 } from './geo-narrative.js';
+import { LAYOUT_TEMPLATES } from './layout.js';
 import { ThemeTokensSchema } from './theme.js';
 import {
   AttributionSchema,
@@ -116,6 +117,7 @@ export const ProjectV2Schema = z
     title: z.string(),
     intent: z.string(),
     theme: ThemeTokensSchema.strict().optional(),
+    layout: z.enum(LAYOUT_TEMPLATES).optional(),
     basemap: BasemapV2Schema,
     resources: z
       .object({ data: z.array(DataResourceV2Schema), media: z.array(MediaResourceV2Schema) })

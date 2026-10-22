@@ -262,6 +262,20 @@ describe('compileProject', () => {
       fallback: 'sans-serif',
       bundled: true,
     });
+    expect(result.value.layout.template).toBe('sidecar');
+    project.narrative.layout = 'full-bleed';
+    const fullBleed = compileProject(project, STAGE1_CAPABILITIES);
+    if (!fullBleed.ok) throw new Error(JSON.stringify(fullBleed.diagnostics));
+    expect(fullBleed.value.layout).toEqual(
+      expect.objectContaining({
+        template: 'full-bleed',
+        desktop: expect.objectContaining({
+          card: 'bottom-caption',
+          reserve: { edge: 'bottom', size: 32, unit: 'vh' },
+        }),
+        phone: expect.objectContaining({ card: 'bottom-sheet', rail: 'top' }),
+      }),
+    );
     project.narrative.theme = { bodyFont: "Inter'; } body { color: red" };
     const rejected = compileProject(project, STAGE1_CAPABILITIES);
     expect(rejected.ok).toBe(false);

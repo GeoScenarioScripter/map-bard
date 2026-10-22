@@ -109,6 +109,32 @@
       "rule": "left"
     }
   },
+  "layout": {
+    "template": "sidecar",
+    "phoneMaxWidth": 640,
+    "desktop": {
+      "card": "left-column",
+      "cardWidth": 440,
+      "gutter": 24,
+      "reserve": {
+        "edge": "left",
+        "size": 440,
+        "unit": "px"
+      },
+      "rail": "right"
+    },
+    "phone": {
+      "card": "bottom-sheet",
+      "cardWidth": 640,
+      "gutter": 12,
+      "reserve": {
+        "edge": "bottom",
+        "size": 42,
+        "unit": "vh"
+      },
+      "rail": "top"
+    }
+  },
   "basemap": "neutral",
   "scenes": [
     {

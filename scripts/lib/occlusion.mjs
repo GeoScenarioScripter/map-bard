@@ -18,14 +18,15 @@ const round = (value) => Math.round(value * 100) / 100;
  */
 export function occlusionFindings({ viewport, targets, panels }) {
   const findings = [];
+  const screen = { x: 0, y: 0, width: viewport.width, height: viewport.height };
   for (const target of targets) {
-    const centerX = target.rect.x + target.rect.width / 2;
-    const centerY = target.rect.y + target.rect.height / 2;
-    if (centerX < 0 || centerY < 0 || centerX > viewport.width || centerY > viewport.height) {
-      findings.push({ kind: 'target-offscreen', target: target.id });
+    const targetArea = area(target.rect);
+    // Clipped by the screen edge counts like being covered by a panel.
+    const outside = targetArea ? 1 - overlapArea(target.rect, screen) / targetArea : 0;
+    if (outside >= TARGET_COVER_RATIO) {
+      findings.push({ kind: 'target-offscreen', target: target.id, outside: round(outside) });
       continue;
     }
-    const targetArea = area(target.rect);
     for (const panel of panels) {
       const covered = targetArea ? overlapArea(target.rect, panel.rect) / targetArea : 0;
       if (covered >= TARGET_COVER_RATIO)

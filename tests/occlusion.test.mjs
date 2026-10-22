@@ -10,13 +10,15 @@ describe('visual QA occlusion geometry', () => {
     expect(overlapArea(rect(0, 0, 10, 10), rect(10, 0, 10, 10))).toBe(0);
   });
 
-  it('reports covered and offscreen targets and overlapping panels', () => {
+  it('reports covered, offscreen and edge-clipped targets and overlapping panels', () => {
     const findings = occlusionFindings({
       viewport,
       targets: [
         { id: 'hancock', rect: rect(100, 100, 20, 20) },
         { id: 'grazed', rect: rect(497, 100, 20, 20) },
         { id: 'away', rect: rect(1200, 100, 20, 20) },
+        { id: 'edge', rect: rect(-10, 600, 20, 20) },
+        { id: 'inside-edge', rect: rect(982, 600, 20, 20) },
       ],
       panels: [
         { id: 'card', rect: rect(50, 50, 450, 400) },
@@ -25,7 +27,8 @@ describe('visual QA occlusion geometry', () => {
     });
     expect(findings).toEqual([
       { kind: 'target-occluded', target: 'hancock', by: 'card', covered: 1 },
-      { kind: 'target-offscreen', target: 'away' },
+      { kind: 'target-offscreen', target: 'away', outside: 1 },
+      { kind: 'target-offscreen', target: 'edge', outside: 0.5 },
       { kind: 'panel-overlap', panels: ['card', 'legend'], area: 5000 },
     ]);
   });

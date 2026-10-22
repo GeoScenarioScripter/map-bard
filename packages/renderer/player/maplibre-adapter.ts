@@ -1,7 +1,16 @@
 import type { Map as MapLibreMap, LayerSpecification } from 'maplibre-gl';
 import { escapeHtml } from './media.js';
+import type { Padding } from './layout.js';
+
+export type CameraFrame = { padding: Padding; zoomOffset: number };
 import { layerStyle } from './resolved-style.js';
-import type { CompiledAnnotation, CompiledStory, MapAdapter, MarkerHandle } from './types.js';
+import type {
+  CompiledAnnotation,
+  CompiledScene,
+  CompiledStory,
+  MapAdapter,
+  MarkerHandle,
+} from './types.js';
 
 type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'>;
 type GeoData = Parameters<MapLibreMap['addSource']>[1];
@@ -39,14 +48,28 @@ export function createMapLibreAdapter(
   data: Record<string, unknown>,
   map: MapLibreMap,
   libre: MapLibreConstructors,
-): MapAdapter {
+  options: { frame?: () => CameraFrame } = {},
+): MapAdapter & { refit(): void } {
   const bound = new Map<string, { sourceId: string; type: 'circle' | 'line' | 'fill' }>();
   const sourceUsers = new Map<string, number>();
   const { accent, labelHalo } = story.theme.colors;
+  let camera: CompiledScene['camera'] | undefined;
   for (const scene of story.scenes) {
     for (const layer of scene.layers) {
       if (!data[layer.sourceId]) throw new Error(`Missing GeoJSON source ${layer.sourceId}`);
     }
+  }
+
+  /** Authored camera adjusted to the layout: padded clear of panels, zoomed out on small screens. */
+  function cameraTarget(authored: CompiledScene['camera']) {
+    const frame = options.frame?.();
+    return {
+      center: authored.center,
+      zoom: authored.zoom + (frame?.zoomOffset ?? 0),
+      bearing: authored.bearing ?? 0,
+      pitch: authored.pitch ?? 0,
+      ...(frame ? { padding: frame.padding } : {}),
+    };
   }
 
   function addAnnotation(annotation: CompiledAnnotation): MarkerHandle {
@@ -62,13 +85,9 @@ export function createMapLibreAdapter(
   }
 
   return {
-    setCamera(camera, transition) {
-      const target = {
-        center: camera.center,
-        zoom: camera.zoom,
-        bearing: camera.bearing ?? 0,
-        pitch: camera.pitch ?? 0,
-      };
+    setCamera(next, transition) {
+      camera = next;
+      const target = cameraTarget(next);
       if (transition === 'cut') map.jumpTo(target);
       else if (transition === 'fly') map.flyTo(target);
       else map.easeTo(target);
@@ -124,6 +143,10 @@ export function createMapLibreAdapter(
       );
     },
     addAnnotation,
+    /** Re-frame the active camera after the viewport or the rail changes size. */
+    refit() {
+      if (camera) map.jumpTo(cameraTarget(camera));
+    },
     setControl(runtimeLayerId, property, value) {
       const binding = bound.get(runtimeLayerId);
       if (!binding) throw new Error(`Missing active layer ${runtimeLayerId}`);

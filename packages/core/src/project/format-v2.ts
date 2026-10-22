@@ -440,6 +440,7 @@ export async function loadProjectV2(root: string): Promise<Result<LoadedProject>
     schemaVersion: '0.1.0',
     basemap: { style: 'neutral' },
     ...(manifest.theme ? { theme: manifest.theme } : {}),
+    ...(manifest.layout ? { layout: manifest.layout } : {}),
     dataSources: manifest.resources.data.map((r) => ({
       id: r.id,
       name: r.name ?? r.id,

@@ -9,6 +9,7 @@ export * from './project.js';
 export * from './design.js';
 export * from './motion.js';
 export * from './authored-motion.js';
+export * from './easing.js';
 export * from './callout.js';
 export * from './compiled.js';
 export * from './diagnostics.js';

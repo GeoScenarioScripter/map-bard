@@ -101,6 +101,23 @@ function resourceName(name: string | undefined, id: string): string {
   return name && name !== id ? name : humanizeId(id);
 }
 
+/** The GeoJSON geometry of a checked feature, for camera presets. */
+function rawGeometry(
+  project: ValidatedProject,
+  sourceId: string,
+  index: number,
+): { type?: unknown; coordinates?: unknown } | undefined {
+  const data = project.dataMap[sourceId];
+  if (!data || Array.isArray(data) || typeof data !== 'object' || !Array.isArray(data.features))
+    return undefined;
+  const feature = data.features[index];
+  if (!feature || Array.isArray(feature) || typeof feature !== 'object') return undefined;
+  const geometry = feature.geometry;
+  return geometry && !Array.isArray(geometry) && typeof geometry === 'object'
+    ? (geometry as { type?: unknown; coordinates?: unknown })
+    : undefined;
+}
+
 function hash(bytes: Uint8Array): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 }
@@ -452,6 +469,7 @@ export function compileProject(
       );
   }
   const theme = resolveTheme(authoredTheme);
+  const layout = resolveLayout(narrative.layout);
 
   const featureMap = new Map<string, Feature[]>();
   for (const resource of project.project.resources.data) {
@@ -905,7 +923,26 @@ export function compileProject(
       layers,
       annotations,
       controls,
-      motion: resolveSceneMotion(scene),
+      motion: resolveSceneMotion({
+        scene,
+        sceneIndex,
+        ...(project.authoredMotion ? { authored: project.authoredMotion } : {}),
+        layers,
+        controls,
+        sourceIds: project.project.resources.data.map((resource) => resource.id),
+        feature: (sourceId, featureId) => {
+          const match = featureMap.get(sourceId)?.find((entry) => entry.id === featureId);
+          return match ? rawGeometry(project, sourceId, match.index) : undefined;
+        },
+        sourceGeometries: (sourceId) =>
+          (featureMap.get(sourceId) ?? []).flatMap((entry) => {
+            const geometry = rawGeometry(project, sourceId, entry.index);
+            return geometry ? [geometry] : [];
+          }),
+        layout,
+        capability: (id, path, ids) => capability(capabilities, id, diagnostics, path, ids),
+        diagnostics,
+      }),
       // Resolved below, once the scales that size the annotated symbols exist.
       callouts: [],
     });
@@ -1208,7 +1245,7 @@ export function compileProject(
     title: narrative.title,
     intent: narrative.intent,
     theme,
-    layout: resolveLayout(narrative.layout),
+    layout,
     basemap,
     scenes: compiledScenes,
     scales,

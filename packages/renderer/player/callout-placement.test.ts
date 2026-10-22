@@ -46,7 +46,7 @@ describe('callout placement geometry', () => {
 
   it('offers every direction at each leader length, beyond the anchor symbol', () => {
     const all = candidates(request('a', 500, 300));
-    expect(all).toHaveLength(16 * LEADER_RINGS.length);
+    expect(all).toHaveLength(24 * LEADER_RINGS.length);
     const right = all[0]!;
     expect(right.position).toBe('right-0');
     expect(right.box).toEqual({ left: 524, top: 280, right: 684, bottom: 320 });
@@ -139,6 +139,50 @@ describe('placeCallouts', () => {
     expect(second!.collisions).toBe(0);
     expect(first!.position).toBe('left-0');
     expect(overlap(first!.box, second!.box)).toBe(0);
+  });
+
+  it('slides a label back inside the screen edge while it still meets its leader', () => {
+    const near = request('near', 950, 300, { anchorRadius: 4, targets: [] });
+    const bounds = { left: 8, top: 8, right: 992, bottom: 692 };
+    const fit = candidates(near, bounds).find((item) => item.position === 'above-fit-0')!;
+    expect(fit.box.right).toBe(992);
+    expect(fit.box.left).toBeLessThan(950);
+    // Without bounds there is nothing to fit to.
+    expect(candidates(near).some((item) => item.position.includes('-fit-'))).toBe(false);
+  });
+
+  it('clears the phone band when two labels must move together (Potomac 2024, p = 1)', () => {
+    // Projected Potomac gauges at 390x844 under a pitched, rotated camera: the free band
+    // between the rail and the attribution fits all three labels only if Hancock moves up
+    // and Little Falls takes a longer leader at the same time.
+    const phone = (id: string, priority: number, x: number, y: number, r: number) =>
+      request(id, x, y, { priority, anchorRadius: r, width: 168, height: 46.3 });
+    const field: PlacementField = {
+      viewport: { width: 390, height: 844 },
+      panels: [
+        { left: 0, top: 489.5, right: 390, bottom: 844 },
+        { left: 12, top: 12, right: 378, bottom: 181.9 },
+        { left: 10, top: 431, right: 81, bottom: 449 },
+        { left: 10, top: 461, right: 83, bottom: 480 },
+        { left: 138, top: 416, right: 380, bottom: 480 },
+      ],
+      symbols: [],
+    };
+    const gauges = [
+      phone('hancock', 0, 128.2, 281.7, 8.8),
+      phone('point-of-rocks', 1, 208.5, 351.2, 17),
+      phone('little-falls', 2, 261.1, 404, 14.7),
+    ];
+    const result = placeCallouts(gauges, field);
+    expect(result.map((item) => item.collisions)).toEqual([0, 0, 0]);
+    for (const placement of result) {
+      expect(placement.box.left).toBeGreaterThanOrEqual(8);
+      expect(placement.box.right).toBeLessThanOrEqual(382);
+    }
+    // Deterministic, and stable when fed its own positions back as the previous frame.
+    expect(placeCallouts(gauges, field)).toEqual(result);
+    const previous = new Map(result.map((item) => [item.id, item.position]));
+    expect(placeCallouts(gauges, field, previous)).toEqual(result);
   });
 
   it('keeps a clean previous position so labels do not flicker', () => {

@@ -54,7 +54,9 @@ export class FakeElement {
     return this.tagName === 'li' ? Math.ceil((this.textContent.length * CHAR) / WRAP) * 17 + 11 : 0;
   }
   getBoundingClientRect() {
-    const { left, top, width, height } = this.rect;
+    const { left, top } = this.rect;
+    const width = this.tagName === 'li' ? this.offsetWidth : this.rect.width;
+    const height = this.tagName === 'li' ? this.offsetHeight : this.rect.height;
     return { left, top, width, height, right: left + width, bottom: top + height };
   }
   /** Descendants with a class name, in document order. */

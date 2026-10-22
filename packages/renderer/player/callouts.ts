@@ -157,10 +157,11 @@ export function createCalloutOverlay(
       // Read every size first, then write, so a frame lays out once.
       const frame = container.getBoundingClientRect();
       const viewport = { width: frame.width, height: frame.height };
-      const sizes = parts.map(({ label }) => ({
-        width: label.offsetWidth,
-        height: label.offsetHeight,
-      }));
+      // Fractional sizes: rounding down would let a label graze its neighbours.
+      const sizes = parts.map(({ label }) => {
+        const box = label.getBoundingClientRect();
+        return { width: box.width, height: box.height };
+      });
       const panels = (options.panels?.() ?? []).map((box) => ({
         left: box.left - frame.left,
         top: box.top - frame.top,

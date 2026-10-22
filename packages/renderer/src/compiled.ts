@@ -213,16 +213,8 @@ const app = `(() => {
         credit.textContent = chosen ? chosen.attribution : '';
         attribution = new maplibregl.AttributionControl({ customAttribution: credit.innerHTML });
         map.addControl(attribution);
-        if (chosen && base.labels !== 'full') {
-          for (const layer of map.getStyle().layers || []) {
-            if (layer.type === 'symbol' && (base.labels === 'off' || /poi|place|label/i.test(layer.id)))
-              map.setLayoutProperty(layer.id, 'visibility', 'none');
-          }
-        }
-        if (chosen && base.terrain) {
-          map.addSource('mb-terrain', { type: 'raster-dem', tiles: [base.terrain.tiles], tileSize: base.terrain.tileSize, encoding: 'terrarium', attribution: base.terrain.attribution });
-          map.setTerrain({ source: 'mb-terrain', exaggeration: base.terrain.exaggeration });
-        }
+        // Labels, theme tint, terrain, hillshade, sky and projection; online parts only with a provider style.
+        api.styleBasemap(map, base, Boolean(chosen));
         // Keep the camera target clear of the layout's card and the rail of panels.
         const rail = document.querySelector('#mb-rail');
         const frame = () => {

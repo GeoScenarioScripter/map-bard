@@ -76,14 +76,21 @@ export const BasemapV2Schema = z
     styleUrl: z.string().url().optional(),
     attribution: z.string().optional(),
     labels: z.enum(['full', 'minimal', 'off']).optional(),
+    /** Recolour known provider layers from theme tokens; defaults to `theme` except for custom styles. */
+    tint: z.enum(['theme', 'none']).optional(),
     terrain: z
       .object({
         provider: z.enum(['mapterhorn', 'aws-terrarium']),
         exaggeration: z.number().positive().optional(),
+        /** Theme-tinted hillshade from the same elevation tiles; on by default. */
+        hillshade: z.boolean().optional(),
       })
       .strict()
       .optional(),
     fallback: z.array(z.enum(['openfreemap', 'versatiles'])).optional(),
+    /** Sky, horizon and fog from theme tokens; on by default. Visible when the camera pitches. */
+    sky: z.boolean().optional(),
+    projection: z.enum(['mercator', 'globe']).optional(),
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -101,12 +108,12 @@ export const BasemapV2Schema = z
       });
     if (
       value.provider === 'none' &&
-      (value.style || value.styleUrl || value.terrain || value.fallback?.length)
+      (value.style || value.styleUrl || value.terrain || value.fallback?.length || value.tint)
     )
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['provider'],
-        message: 'A none basemap cannot have a style, terrain or fallback.',
+        message: 'A none basemap cannot have a style, tint, terrain or fallback.',
       });
   });
 

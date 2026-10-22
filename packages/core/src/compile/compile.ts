@@ -1073,10 +1073,10 @@ export function compileProject(
   const resources: Compiled['resources'] = [];
   const requiredNetwork = new Set<string>();
   let basemap: Compiled['basemap'] =
-    project.authoredFormat === '0.2.0' ? { provider: 'none' } : 'neutral';
+    project.authoredFormat === '0.2.0' ? { provider: 'none', projection: 'mercator' } : 'neutral';
   if (project.authoredFormat === '0.2.0' && project.authoredBasemap) {
     try {
-      basemap = resolveBasemap(project.authoredBasemap, options.offline);
+      basemap = resolveBasemap(project.authoredBasemap, options.offline, theme.colors);
       if (options.offline && project.authoredBasemap.provider !== 'none')
         diagnostics.push({
           ...issue(

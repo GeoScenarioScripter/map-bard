@@ -1,3 +1,4 @@
+import { styleBasemap } from './basemap-style.js';
 import { createDomView } from './dom-view.js';
 import { cameraPadding, zoomOffset } from './layout.js';
 import { createPlayer } from './player.js';
@@ -13,5 +14,6 @@ Object.assign(globalThis, {
     observeScenes,
     cameraPadding,
     zoomOffset,
+    styleBasemap,
   },
 });

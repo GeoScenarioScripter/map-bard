@@ -1,18 +1,8 @@
-import type { ProjectV2 } from '@mapbard/schema';
+import type { Compiled, ProjectV2, ThemeColors } from '@mapbard/schema';
+import { THEME_PRESET_TOKENS } from './themes.js';
 
 type Authored = ProjectV2['basemap'];
-export type ResolvedBasemap =
-  | { provider: 'none' }
-  | {
-      provider: 'openfreemap' | 'versatiles' | 'custom';
-      labels: 'full' | 'minimal' | 'off';
-      styles: {
-        provider: 'openfreemap' | 'versatiles' | 'custom';
-        url: string;
-        attribution: string;
-      }[];
-      terrain?: { tiles: string; attribution: string; exaggeration: number; tileSize: 256 | 512 };
-    };
+export type ResolvedBasemap = Exclude<Compiled['basemap'], 'neutral'>;
 
 export const BASEMAP_PROVIDERS = {
   openfreemap: {
@@ -65,16 +55,29 @@ function style(provider: 'openfreemap' | 'versatiles', name?: string) {
   };
 }
 
-/** Resolve a declared provider without making network requests. */
-export function resolveBasemap(authored: Authored, offline = false): ResolvedBasemap {
-  if (offline || authored.provider === 'none') return { provider: 'none' };
+/**
+ * Resolve a declared provider without making network requests. Tint, hillshade and
+ * sky colours come from the theme; offline builds keep only request-free settings.
+ */
+export function resolveBasemap(
+  authored: Authored,
+  offline = false,
+  colors: ThemeColors = THEME_PRESET_TOKENS['editorial-light'].colors,
+): ResolvedBasemap {
+  const requestFree = {
+    projection: authored.projection ?? ('mercator' as const),
+    ...(authored.sky === false
+      ? {}
+      : { sky: { sky: colors.sky, horizon: colors.horizon, fog: colors.fog } }),
+  };
+  if (offline || authored.provider === 'none') return { provider: 'none', ...requestFree };
   const primary =
     authored.provider === 'custom'
       ? { provider: 'custom' as const, url: authored.styleUrl!, attribution: authored.attribution! }
       : style(authored.provider, authored.style);
   const fallbacks =
     authored.fallback ?? (authored.provider === 'openfreemap' ? ['versatiles'] : []);
-  const styles: Exclude<ResolvedBasemap, { provider: 'none' }>['styles'] = [primary];
+  const styles: Extract<ResolvedBasemap, { styles: unknown }>['styles'] = [primary];
   for (const fallback of fallbacks) {
     if (fallback !== primary.provider && !styles.some((entry) => entry.provider === fallback))
       styles.push(style(fallback));
@@ -87,11 +90,31 @@ export function resolveBasemap(authored: Authored, offline = false): ResolvedBas
     attribution: TERRAIN_PROVIDERS[authored.terrain.provider].attribution,
     exaggeration: authored.terrain.exaggeration ?? 1,
     tileSize: authored.terrain.provider === 'mapterhorn' ? (512 as const) : (256 as const),
+    ...(authored.terrain.hillshade === false
+      ? {}
+      : { hillshade: { shadow: colors.hillshadeShadow, highlight: colors.hillshadeHighlight } }),
   };
+  // Custom styles may not follow a known schema, so they are only tinted on request.
+  const tint = (authored.tint ?? (authored.provider === 'custom' ? 'none' : 'theme')) === 'theme';
   return {
     provider: authored.provider,
+    ...requestFree,
     labels: authored.labels ?? 'full',
     styles,
     ...(terrain ? { terrain } : {}),
+    ...(tint
+      ? {
+          tint: {
+            land: colors.land,
+            water: colors.water,
+            landcover: colors.landcover,
+            road: colors.road,
+            boundary: colors.boundary,
+            building: colors.building,
+            label: colors.label,
+            labelHalo: colors.labelHalo,
+          },
+        }
+      : {}),
   };
 }

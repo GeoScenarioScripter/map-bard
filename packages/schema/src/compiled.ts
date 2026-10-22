@@ -7,7 +7,7 @@ import {
   SceneMediaSchema,
 } from './geo-narrative.js';
 import { ResolvedLayoutSchema } from './layout.js';
-import { ResolvedThemeSchema } from './theme.js';
+import { HexColorSchema, ResolvedThemeSchema } from './theme.js';
 import { AnnotationSchema, LayerConstantSchema, TypedFilterSchema } from './design.js';
 import {
   COMPILED_VERSION,
@@ -26,6 +26,28 @@ const CountsSchema = z
     invalid: z.number().int().nonnegative(),
   })
   .strict();
+export const BasemapTintSchema = z
+  .object({
+    land: HexColorSchema,
+    water: HexColorSchema,
+    landcover: HexColorSchema,
+    road: HexColorSchema,
+    boundary: HexColorSchema,
+    building: HexColorSchema,
+    label: HexColorSchema,
+    labelHalo: HexColorSchema,
+  })
+  .strict();
+
+// Projection and sky need no network, so offline builds keep them.
+const requestFreeBasemap = {
+  projection: z.enum(['mercator', 'globe']),
+  sky: z
+    .object({ sky: HexColorSchema, horizon: HexColorSchema, fog: HexColorSchema })
+    .strict()
+    .optional(),
+};
+
 const ScaleBaseSchema = z.object({
   id: IdSchema,
   memberKeys: z.array(
@@ -128,10 +150,13 @@ export const CompiledSchema = z
     layout: ResolvedLayoutSchema,
     basemap: z.union([
       z.literal('neutral'),
-      z.object({ provider: z.literal('none') }).strict(),
+      z.object({ provider: z.literal('none'), ...requestFreeBasemap }).strict(),
       z
         .object({
           provider: z.enum(['openfreemap', 'versatiles', 'custom']),
+          ...requestFreeBasemap,
+          /** Colours for known provider layers; absent leaves the provider style as published. */
+          tint: BasemapTintSchema.optional(),
           labels: z.enum(['full', 'minimal', 'off']),
           styles: z
             .array(
@@ -150,6 +175,11 @@ export const CompiledSchema = z
               attribution: z.string().min(1),
               exaggeration: z.number().positive(),
               tileSize: z.union([z.literal(256), z.literal(512)]),
+              /** Hillshade from the same tiles, drawn below roads and labels. */
+              hillshade: z
+                .object({ shadow: HexColorSchema, highlight: HexColorSchema })
+                .strict()
+                .optional(),
             })
             .strict()
             .optional(),
@@ -273,5 +303,6 @@ export const CapabilityCatalogSchema = z
 
 export type Compiled = z.infer<typeof CompiledSchema>;
 export type ResolvedScale = z.infer<typeof ResolvedScaleSchema>;
+export type BasemapTint = z.infer<typeof BasemapTintSchema>;
 export type ResolvedAssets = z.infer<typeof ResolvedAssetsSchema>;
 export type CapabilityCatalog = z.infer<typeof CapabilityCatalogSchema>;

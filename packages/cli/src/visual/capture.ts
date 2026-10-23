@@ -35,6 +35,22 @@ export const IDLE_TIMEOUT_MS = 15000;
 /** The empty style that stands in for an online basemap when a run must not use the network. */
 export const EMPTY_STYLE = JSON.stringify({ version: 8, sources: {}, layers: [] });
 
+/**
+ * A terrarium tile at sea level (RGB 128, 0, 0), so stub terrain loads flat. Every terrain
+ * provider in the catalog uses terrarium encoding; the tile matches the source's tile size.
+ */
+export function flatTerrainTile(size: number): Buffer {
+  const png = new PNG({ width: size, height: size });
+  for (let index = 0; index < png.data.length; index += 4) png.data.set([128, 0, 0, 255], index);
+  return PNG.sync.write(png);
+}
+
+/** A regular expression for the request URLs of a `{z}/{x}/{y}` tile template. */
+export function tileUrlPattern(template: string): RegExp {
+  const escaped = template.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{[xyz]\\\}/g, '\\d+');
+  return new RegExp(`^${escaped}(?:\\?.*)?$`);
+}
+
 export type SampleFinding =
   | Finding
   | { kind: 'idle-timeout'; timeoutMs: number }
@@ -121,6 +137,10 @@ export async function routeNetwork(
 ): Promise<void> {
   if (network === 'live') return;
   const styles = styleUrls(story);
+  const terrain = (story.basemap as { terrain?: { tiles: string; tileSize?: number } } | undefined)
+    ?.terrain;
+  const terrainUrl = terrain && tileUrlPattern(terrain.tiles);
+  const flat = terrain && network === 'stub' ? flatTerrainTile(terrain.tileSize ?? 256) : undefined;
   await page.route(/^https?:\/\//, async (route) => {
     if (network === 'stub' && styles.has(route.request().url()))
       await route.fulfill({
@@ -128,6 +148,14 @@ export async function routeNetwork(
         contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
         body: EMPTY_STYLE,
+      });
+    // Stub terrain is flat, so terrain stories load and settle without the network.
+    else if (flat && terrainUrl?.test(route.request().url()))
+      await route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        headers: { 'access-control-allow-origin': '*' },
+        body: flat,
       });
     else await route.abort();
   });
@@ -168,6 +196,11 @@ type Log = {
 
 /** Chromium logs each request the run aborted; with the network unavailable that is expected. */
 const ABORTED_REQUEST = /^Failed to load resource: net::ERR_/;
+/**
+ * Terrain providers answer 404 where they have no tile (open sea, outside coverage), and
+ * MapLibre draws those as flat. Chromium still logs each one, so 404s from the terrain host pass.
+ */
+const MISSING_RESOURCE = /^Failed to load resource: the server responded with a status of 404/;
 
 async function captureViewport(
   browser: Browser,
@@ -187,9 +220,12 @@ async function captureViewport(
   const page = await context.newPage();
   await page.addInitScript(enableCapture);
   page.on('pageerror', (error) => log.pageErrors.push(`${viewport.id}: ${error.message}`));
+  const terrain = (story.basemap as { terrain?: { tiles: string } } | undefined)?.terrain;
+  const terrainUrl = terrain && tileUrlPattern(terrain.tiles);
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
     if (options.network === 'unavailable' && ABORTED_REQUEST.test(message.text())) return;
+    if (MISSING_RESOURCE.test(message.text()) && terrainUrl?.test(message.location().url)) return;
     log.consoleErrors.push(`${viewport.id}: ${message.text()}`);
   });
   page.on('request', (request) => {

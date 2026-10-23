@@ -8,8 +8,9 @@ variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
 with both `visual` jobs matching the Linux goldens exactly. All five
 packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
 0.2.1 (the `file://` worker fix), the others at 0.2.0. V2's detailed plan is in
-[m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); next: the owner
-settles its open decisions, then step 5.0 (spike).** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+[m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); the owner settled
+its decisions and step 5.0 (spike) has run; next: the owner confirms the
+[backend table](m2-visual.md#50-results-2026-10-23), then step 5.1.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -157,6 +158,19 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-23: Owner settled the V2 decisions (MapLibre for columns,
+  extrusions, change and hexbins; compile-time change values; ACS
+  state-to-state migration flows; score target ≥ 80). Ran step 5.0 on the
+  throwaway branch `spike/v2-5.0` (`spike/`): MapLibre extrusions sit on
+  live terrain; deck.gl columns are buried by the terrain height (40–50%
+  short on ridges); morphs redraw every frame only with feature state
+  (paint and `global-state` re-layout: 37–40% of frames at 5,000);
+  tier 231.5 KB gzip with arcs, 243.2 KB with trips; SwiftShader noise 0;
+  `file://` offline 0 requests; deck.gl arcs fail on the globe; altitude
+  projection ≤ 0.1 px. Live captures inspected. No package code changed,
+  so no build, tests or lint run; measurements in headless Chrome only,
+  not on phone hardware. Next: owner confirms the backend table, then
+  step 5.1.
 - 2026-10-23: Released 0.2.1 at the owner's request (`mapbard` and
   `@mapbard/renderer`; schema, core and knowledge stay 0.2.0). Applied
   the changeset, then build, all tests (browser smoke included), lint and

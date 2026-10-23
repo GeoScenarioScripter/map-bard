@@ -625,7 +625,9 @@ were published at 0.2.0 the same day.
 ## V2 — 3D data, change and flows
 
 Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
-marked **(owner)** on 2026-10-23, each as proposed; step 5.0 is next.
+marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
+day ([results](#50-results-2026-10-23)); next, the owner confirms the
+backend table, then step 5.1.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
@@ -844,6 +846,78 @@ recorded here, and the backend table is confirmed with the owner.
    projection matrix and projects lng/lat/altitude to the screen. Pass:
    within 0.5 px of `map.project` at altitude 0, and on the drawn column
    tops in screenshots.
+
+#### 5.0 results (2026-10-23)
+
+Run on branch `spike/v2-5.0` (scripts and raw results in `spike/`, never
+merged): Windows 11, headless system Chromium through playwright-core
+1.64.1, MapLibre 6.1.0, deck.gl 9.4.0 with luma.gl 9.4.2. Every page ran
+from `file://`. Frame timings use the default WebGL path, as the frame
+probe does, and headless Chrome paints at 120 Hz (8.3 ms), so they show
+main-thread cost, not a phone GPU.
+
+1. **MapLibre extrusions on terrain: pass.** Live Mapterhorn terrain
+   (exaggeration 1.5), pitch 70, in the flight view (zoom 9.4) and close
+   views at Hancock and on the Harpers Ferry ridges (zoom 12.6–13). Bases
+   sit on the draped footprint outline with flat tops; captures inspected.
+2. **deck.gl columns on terrain: sea level, as expected.** An interleaved
+   `ColumnLayer` is buried by the terrain height: on the ridges 300–365 m
+   of a 760 m column is underground, so it reads 40–50% too short. At the
+   gauges (23–186 m) and 30 km flight columns the error is invisible.
+   Lifting `getPosition` z by `map.queryTerrainElevation` (absolute and
+   exaggerated in 6.1) matches MapLibre, but the sampled value moves with
+   DEM zoom (zoom 8–14, exaggeration 1): 3–20 m at the gauges, 55–77 m on
+   the ridges, so lifted columns would need resampling and would jump.
+3. **Morph cost: pass with feature state.** All three methods redraw
+   heights (`global-state` works in `fill-extrusion-height`). Frame
+   interval p99 is 8.5 ms for every method, 1,000 and 5,000 columns,
+   desktop and phone; the update call costs ≤ 0.4 ms p99. But
+   `setPaintProperty` and `global-state` re-layout the source in the
+   worker, so drawn heights change in only 89–90% of frames at 1,000 and
+   37–40% at 5,000. Feature state changes 97–100% of frames at both.
+   **Morph and grow use feature state.**
+4. **Tier size: pass.** Gzip (level 9) of the tree-shaken IIFE with
+   `maplibre-gl` external: overlay + `ArcLayer` 231.5 KB; + `TripsLayer`
+   from `@deck.gl/geo-layers` 243.2 KB. The barrel import tree-shakes
+   (a deep import is the same size), so no port is needed. The bundle
+   never requires `maplibre-gl`. deck.gl 9.4's own dependencies need
+   `@loaders.gl/core` 4.5.x (pin 4.5.4), not the 4.4.3 its peer range
+   allows.
+5. **SwiftShader determinism: pass.** Five fresh browsers, arcs and trips
+   offline at pitch 30: 0 changed pixels at desktop and phone, even at
+   threshold 0. Golden tolerance can use the existing minimum.
+6. **`file://` and offline: pass.** With every http(s) request aborted:
+   0 remote requests, no console errors, and deck.gl drew (flat and
+   globe). The bundle contains loaders.gl CDN strings, but nothing loads
+   them.
+7. **Globe: fails.** On MapLibre's globe the overlay picks `GlobeView`
+   and trips draw, but arcs show only stubs at their ends (pitched: none),
+   with or without a lower arc height or depth testing. **deck.gl
+   techniques on globe are `CAPABILITY_UNSUPPORTED`** in V2.
+8. **Altitude projection: pass.** The custom layer's
+   `defaultProjectionData.mainMatrix` (Mercator 0–1 units) matches
+   `map.project` within 0 px flat (pitch 0 and 65) and 0.1 px on terrain
+   (with the terrain elevation as altitude). `modelViewProjectionMatrix`
+   uses other units and must not be used. Dots at base + height sit on the
+   drawn column tops, so `fill-extrusion-height` is not exaggerated with
+   the terrain.
+
+Also found: with default arc heights, continental arcs fill the sky at
+zoom 3.4 and pitch 30, so N sets a lower default `getHeight` and checks
+the framing.
+
+**Proposed backend table** (waits for the owner):
+
+| Technique                               | Backend                           | Evidence |
+| --------------------------------------- | --------------------------------- | -------- |
+| `column`, `extrusion`                   | MapLibre `fill-extrusion`         | 1, 2     |
+| `change` (size form)                    | MapLibre `circle`                 | —        |
+| `change` (height form)                  | MapLibre `fill-extrusion`         | 1, 2     |
+| `hexbin` (flat, extruded)               | MapLibre `fill`, `fill-extrusion` | 1        |
+| `grow`, `morph` tracks                  | MapLibre feature state            | 3        |
+| `arc`                                   | deck.gl `ArcLayer`                | 4–6      |
+| `trip`                                  | deck.gl `TripsLayer`              | 4–6      |
+| deck.gl technique with terrain or globe | `CAPABILITY_UNSUPPORTED`          | 2, 7     |
 
 ### 5.1 Foundation (lead)
 

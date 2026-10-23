@@ -1,10 +1,10 @@
 {
   "lockVersion": "0.2.0",
   "projectId": "potomac-daily-discharge",
-  "revision": 1,
+  "revision": 2,
   "inputs": {
     "manifestSha256": "sha256:62079a73b670409c901830d8ccc1e0be15ec8ecdb1994a10a759bea227644e83",
-    "storySha256": "sha256:bcdc466f37c8b1e7caf3b7f5adac46c404de6ddaab33922850c1c20beb648541",
+    "storySha256": "sha256:c31ada87fd72cdc8cdd7bc9ea06b9ecaa3984e0099e520214ccf9cb704e19de0",
     "resources": [
       {
         "id": "potomac-2024",
@@ -58,13 +58,13 @@
           ]
         }
       ],
-      "crs": "EPSG:4326",
       "extent": [
         -83.67541300020784,
         36.54073799988352,
         -74.68951599985573,
         42.26985999994247
       ],
+      "crs": "EPSG:4326",
       "attributeStats": {
         "name": {
           "present": 5,
@@ -89,13 +89,13 @@
           ]
         }
       ],
-      "crs": "EPSG:4326",
       "extent": [
         -78.59045164378917,
         38.04042414606486,
         -76.32587484772613,
         39.69828655400445
       ],
+      "crs": "EPSG:4326",
       "attributeStats": {
         "name": {
           "present": 52,
@@ -246,7 +246,6 @@
           ]
         }
       ],
-      "crs": "EPSG:4326",
       "extent": [
         -78.17788888888889,
         38.949777777777776,
@@ -257,6 +256,7 @@
         "2024-10-01",
         "2025-03-11T06:31:13.773492+00:00"
       ],
+      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,
@@ -465,7 +465,6 @@
           ]
         }
       ],
-      "crs": "EPSG:4326",
       "extent": [
         -78.17788888888889,
         38.949777777777776,
@@ -476,6 +475,7 @@
         "2025-10-01",
         "2026-01-14T18:37:02.329200+00:00"
       ],
+      "crs": "EPSG:4326",
       "attributeStats": {
         "station_id": {
           "present": 3,
@@ -541,5 +541,31 @@
         }
       }
     }
+  },
+  "lastCompileInputs": {
+    "manifestSha256": "sha256:62079a73b670409c901830d8ccc1e0be15ec8ecdb1994a10a759bea227644e83",
+    "storySha256": "sha256:c31ada87fd72cdc8cdd7bc9ea06b9ecaa3984e0099e520214ccf9cb704e19de0",
+    "resources": [
+      {
+        "id": "potomac-2024",
+        "sha256": "sha256:517eb654caa03bc030882b50053afdf1644d1eb1166b072e92aa91c5a3daf30e"
+      },
+      {
+        "id": "potomac-2025",
+        "sha256": "sha256:92ddb1b06bd1920bae501c5fc14a8f3cf625828766a469232719d832e036fd51"
+      },
+      {
+        "id": "potomac-context",
+        "sha256": "sha256:25b420ffa5e22ab882cbfc42c7145b2697da9e9352b70afcaa0cc75e59f36ba7"
+      },
+      {
+        "id": "potomac-river-context",
+        "sha256": "sha256:1ead5d0e2b5307d19f248ae1e6c196b0298085de6cc54260f122d329a28db250"
+      },
+      {
+        "id": "potomac-states-context",
+        "sha256": "sha256:852616c38611ac39ac9f3cf38adb4ba77497a8b5f9a1203df94ee63f72ffc392"
+      }
+    ]
   }
 }

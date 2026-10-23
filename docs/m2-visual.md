@@ -624,8 +624,8 @@ were published at 0.2.0 the same day.
 
 ## V2 — 3D data, change and flows
 
-Planned 2026-10-23. Status: **proposed.** Decisions marked **(owner)** wait
-for the owner; step 5.0 starts once they are settled.
+Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
+marked **(owner)** on 2026-10-23, each as proposed; step 5.0 is next.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
@@ -652,7 +652,7 @@ so V2 does nothing more for them.
 5. Frame probe on Potomac: p99 ≤ 16.7 ms on desktop and phone (default
    WebGL path). A 1,000-feature morph also stays within 16.7 ms.
 6. The `visual` CI job passes with the new projects in its matrix.
-7. **(owner)** The owner scores both Potomac variants. Proposed target:
+7. **(owner)** The owner scores both Potomac variants. Target (settled):
    **≥ 80** (V1 was 77; V4 needs 85).
 
 ### Decisions for V2
@@ -669,7 +669,8 @@ so V2 does nothing more for them.
   reverses this with measurements. If the owner prefers deck.gl columns
   anyway, columns move from M to N, Potomac loads the deck tier, and N
   also lifts each column base to the terrain elevation sampled at
-  runtime.
+  runtime. _Settled 2026-10-23: MapLibre, as proposed, unless 5.0 reverses
+  it._
 - **deck.gl 9.4.0 through `@deck.gl/maplibre` 9.4.0** (MIT; new in 9.4,
   peer `maplibre-gl` ^6), interleaved: deck.gl layers share MapLibre's
   WebGL2 context and go below the labels through `beforeId`. The package
@@ -690,7 +691,8 @@ so V2 does nothing more for them.
   inputs. M3 later moves the operation into lockfile results with the same
   definition. Until then, change labels are generated text written by the
   compiler, never by the author. The operation stays in one module
-  (`core/src/compile/change.ts`) so M3 can replace it.
+  (`core/src/compile/change.ts`) so M3 can replace it. _Settled
+  2026-10-23, as proposed._
 - **Formats.** The authored format stays 0.2.0 (optional additions only).
   The compiled spec moves to **0.4.0** in the foundation commit: layer
   backends, derived sources, height and width scales and new track
@@ -968,7 +970,7 @@ that compares them.
 
 ### P. Flows example (step 5.3)
 
-- **(owner) Dataset.** Proposed: U.S. Census Bureau state-to-state
+- **(owner) Dataset.** Settled 2026-10-23: U.S. Census Bureau state-to-state
   migration flows, the latest ACS release (U.S. public domain), for
   example where movers from one state went. ACS margins of error stay
   visible as the qualification.

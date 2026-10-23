@@ -6,7 +6,8 @@ V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
 variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
 with both `visual` jobs matching the Linux goldens exactly. All five
-packages are published at 0.2.0 (`latest`). V2's detailed plan is in
+packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
+0.2.1 (the `file://` worker fix), the others at 0.2.0. V2's detailed plan is in
 [m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); next: the owner
 settles its open decisions, then step 5.0 (spike).** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
@@ -98,11 +99,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
 - Release packages: all five (`mapbard`, `@mapbard/core`, `schema`,
-  `knowledge` and `renderer`) are published on npm at 0.2.0 (`latest`,
-  2026-10-23), each with a README, changelog, MIT license, explicit
+  `knowledge` and `renderer`) are published on npm (`latest`,
+  2026-10-23): `mapbard` and `renderer` at 0.2.1, the others at 0.2.0.
+  Each has a README, changelog, MIT license, explicit
   published files, exports and Node engine. Changesets, three-OS CI and a
-  manual npm release workflow are configured. The public `mapbard@0.2.0`
-  CLI ran via `npm exec`.
+  manual npm release workflow are configured. The public `mapbard@0.2.1`
+  CLI installed from npm and reported 0.2.1.
 - Checks: 276 routine tests (schema 37, knowledge 30, core 80, renderer 85,
   CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
   tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
@@ -155,6 +157,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-23: Released 0.2.1 at the owner's request (`mapbard` and
+  `@mapbard/renderer`; schema, core and knowledge stay 0.2.0). Applied
+  the changeset, then build, all tests (browser smoke included), lint and
+  `test:pack` passed locally. Pushed `8e65224`; release run 39923995931
+  passed `verify` on three OSes and published both with `latest` (a first
+  dispatch with a mistyped ref, 39923939583, was cancelled). The registry
+  served the renderer tarball about 6 minutes after publish; a clean
+  `npm install mapbard@0.2.1` reported 0.2.1 and carries the Blob worker.
+  Next: owner decisions on V2, then step 5.0.
 - 2026-10-23: `file://` fix. In a reader's Chrome, stories opened from
   `file://` drew no basemap or layers: Chrome blocks `new Worker` on a
   `file://` script, and MapLibre 6 starts a module worker for a cross-origin

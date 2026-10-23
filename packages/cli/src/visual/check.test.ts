@@ -94,7 +94,7 @@ describe('check --visual', () => {
       }),
     ]);
     expect(outcome.result).toMatchObject({
-      scenes: 3,
+      scenes: 4,
       visual: {
         network: 'offline',
         captures: 1,

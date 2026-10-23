@@ -9,7 +9,7 @@ export default tseslint.config(
       '**/out/**',
       '**/.mapbard-preview/**',
       '**/.mapbard-visual/**',
-      'examples/projects/potomac/offline/**',
+      'examples/projects/*/offline/**',
       '**/coverage/**',
       '**/.claude/**',
     ],

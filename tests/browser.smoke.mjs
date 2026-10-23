@@ -7,7 +7,7 @@ import process from 'node:process';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { URL, fileURLToPath, pathToFileURL } from 'node:url';
-import { EMPTY_STYLE, launchBrowser } from './browser.mjs';
+import { EMPTY_STYLE, FLAT_DEM, launchBrowser } from './browser.mjs';
 
 const runFile = promisify(execFile);
 const repository = fileURLToPath(new URL('../', import.meta.url));
@@ -56,6 +56,14 @@ async function openStory(browser, file, online) {
         contentType: 'application/json',
         headers: { 'access-control-allow-origin': '*' },
         body: EMPTY_STYLE,
+      });
+    // The example's Mapterhorn terrain loads flat, so the story settles without the network.
+    else if (online && route.request().url().startsWith('https://tiles.mapterhorn.com/'))
+      await route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        headers: { 'access-control-allow-origin': '*' },
+        body: FLAT_DEM,
       });
     else await route.abort();
   });

@@ -1,0 +1,52 @@
+{
+  "manifestVersion": 1,
+  "mapbard": "0.1.2",
+  "chromium": "156.0.8078.4",
+  "platform": "linux",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "phone",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "threshold": 0.1,
+  "maxDiffRatio": 0.0005,
+  "noise": {
+    "runs": 5,
+    "maxDiffRatio": 0,
+    "factor": 3,
+    "minimum": 0.0005
+  },
+  "captures": [
+    "compare-2025-p0-desktop.png",
+    "compare-2025-p0-phone.png",
+    "compare-2025-p100-desktop.png",
+    "compare-2025-p100-phone.png",
+    "compare-2025-p50-desktop.png",
+    "compare-2025-p50-phone.png",
+    "context-2024-p0-desktop.png",
+    "context-2024-p0-phone.png",
+    "context-2024-p100-desktop.png",
+    "context-2024-p100-phone.png",
+    "context-2024-p50-desktop.png",
+    "context-2024-p50-phone.png",
+    "limits-p0-desktop.png",
+    "limits-p0-phone.png",
+    "limits-p100-desktop.png",
+    "limits-p100-phone.png",
+    "limits-p50-desktop.png",
+    "limits-p50-phone.png",
+    "scope-p0-desktop.png",
+    "scope-p0-phone.png",
+    "scope-p100-desktop.png",
+    "scope-p100-phone.png",
+    "scope-p50-desktop.png",
+    "scope-p50-phone.png"
+  ]
+}

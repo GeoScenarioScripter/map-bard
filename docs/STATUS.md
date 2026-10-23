@@ -9,8 +9,8 @@ with both `visual` jobs matching the Linux goldens exactly. All five
 packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
 0.2.1 (the `file://` worker fix), the others at 0.2.0. V2's detailed plan is in
 [m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); the owner settled
-its decisions and step 5.0 (spike) has run; next: the owner confirms the
-[backend table](m2-visual.md#50-results-2026-10-23), then step 5.1.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+its decisions, step 5.0 (spike) has run and the owner confirmed its
+[backend table](m2-visual.md#50-results-2026-10-23); next: step 5.1.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today

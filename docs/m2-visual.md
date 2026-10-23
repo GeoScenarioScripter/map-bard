@@ -626,8 +626,8 @@ were published at 0.2.0 the same day.
 
 Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
 marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
-day ([results](#50-results-2026-10-23)); next, the owner confirms the
-backend table, then step 5.1.
+day ([results](#50-results-2026-10-23)), and the owner confirmed its
+backend table; step 5.1 is next.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
@@ -906,7 +906,7 @@ Also found: with default arc heights, continental arcs fill the sky at
 zoom 3.4 and pitch 30, so N sets a lower default `getHeight` and checks
 the framing.
 
-**Proposed backend table** (waits for the owner):
+**Backend table** (confirmed by the owner on 2026-10-23):
 
 | Technique                               | Backend                           | Evidence |
 | --------------------------------------- | --------------------------------- | -------- |

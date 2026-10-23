@@ -247,8 +247,11 @@ async function checkGoldens(
     manifest,
     sceneIndex,
   );
+  // Goldens from another platform always differ in text, so that warning never gates.
   const failOnWarnings = (entry: Diagnostic): Diagnostic =>
-    options.failOnWarnings ? { ...entry, severity: 'error' } : entry;
+    options.failOnWarnings && manifest.platform === process.platform
+      ? { ...entry, severity: 'error' }
+      : entry;
   return {
     summary: {
       status: diagnostics.length ? 'mismatch' : 'match',

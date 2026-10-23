@@ -155,10 +155,14 @@ describe('goldens', () => {
     const diff = PNG.sync.read(await readFile(join(out, 'a-p100-phone.diff.png')));
     expect(diff.width).toBe(20);
 
-    // Goldens from another platform only warn.
+    // Goldens from another platform give one summary warning.
     const elsewhere = await compareGoldens(root, out, captures, manifest, scenes, 'win32');
-    expect(elsewhere.diagnostics[0]).toMatchObject({ severity: 'warning' });
+    expect(elsewhere.diagnostics).toEqual([
+      expect.objectContaining({ severity: 'warning', path: ['goldens'] }),
+    ]);
+    expect(elsewhere.diagnostics[0]!.message).toContain('1 of 2 captures differ');
     expect(elsewhere.diagnostics[0]!.message).toContain('made on linux');
+    expect(elsewhere.comparisons.map((entry) => entry.status)).toEqual(['match', 'mismatch']);
   });
 
   it('reports captures without a golden and goldens without a capture', async () => {

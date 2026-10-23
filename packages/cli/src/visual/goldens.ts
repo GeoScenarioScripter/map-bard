@@ -152,8 +152,9 @@ const percent = (ratio: number): string => `${(ratio * 100).toFixed(2)}%`;
 
 /**
  * Compare each capture with its golden. A mismatch writes `<name>.diff.png` next to the capture
- * and is an error, or a warning when the goldens were made on another platform: SwiftShader on
- * Windows and Linux are not proven to render alike, and Linux (CI) is the canonical platform.
+ * and is an error. Goldens made on another platform give one summary warning instead: the map
+ * rasterises alike under SwiftShader, but DOM text wraps differently between Windows and Linux
+ * (0.8–4.5% of pixels on Potomac), and Linux (CI) is the canonical platform.
  */
 export async function compareGoldens(
   root: string,
@@ -163,11 +164,6 @@ export async function compareGoldens(
   sceneIndex: ReadonlyMap<string, number>,
   platform: string = process.platform,
 ): Promise<{ comparisons: GoldenComparison[]; diagnostics: Diagnostic[] }> {
-  const severity: Diagnostic['severity'] = manifest.platform === platform ? 'error' : 'warning';
-  const crossPlatform =
-    manifest.platform === platform
-      ? ''
-      : ` The goldens were made on ${manifest.platform}, this run is on ${platform}, so it only warns.`;
   const comparisons: GoldenComparison[] = [];
   const diagnostics: Diagnostic[] = [];
   const at = (sceneId: string | undefined): Pick<Diagnostic, 'path' | 'ids'> => {
@@ -187,10 +183,10 @@ export async function compareGoldens(
       comparisons.push({ name, sceneId: capture.sceneId, status: 'missing-golden' });
       diagnostics.push({
         code: 'VISUAL_GOLDEN_MISMATCH',
-        severity,
+        severity: 'error',
         artifact: 'design',
         ...at(capture.sceneId),
-        message: `No golden for ${name} (scene ${capture.sceneId}, ${capture.viewport}, p ${capture.p}).${crossPlatform}`,
+        message: `No golden for ${name} (scene ${capture.sceneId}, ${capture.viewport}, p ${capture.p}).`,
         remedy:
           'Check the capture, then run check --visual --update and commit the goldens directory.',
       });
@@ -215,10 +211,10 @@ export async function compareGoldens(
     });
     diagnostics.push({
       code: 'VISUAL_GOLDEN_MISMATCH',
-      severity,
+      severity: 'error',
       artifact: 'design',
       ...at(capture.sceneId),
-      message: `Scene ${capture.sceneId}, ${capture.viewport}, p ${capture.p}: ${percent(result.ratio)} of pixels differ from goldens/${name} (tolerance ${percent(manifest.maxDiffRatio)}); see ${diff}.${crossPlatform}`,
+      message: `Scene ${capture.sceneId}, ${capture.viewport}, p ${capture.p}: ${percent(result.ratio)} of pixels differ from goldens/${name} (tolerance ${percent(manifest.maxDiffRatio)}); see ${diff}.`,
       remedy:
         'Open the diff image. If the change is intended, run check --visual --update and commit the goldens; otherwise fix what changed.',
     });
@@ -228,12 +224,31 @@ export async function compareGoldens(
       comparisons.push({ name, status: 'missing-capture' });
       diagnostics.push({
         code: 'VISUAL_GOLDEN_MISMATCH',
-        severity,
+        severity: 'error',
         artifact: 'design',
         ...at(undefined),
-        message: `goldens/${name} has no matching capture; a scene or viewport was removed or renamed.${crossPlatform}`,
+        message: `goldens/${name} has no matching capture; a scene or viewport was removed or renamed.`,
         remedy: 'Run check --visual --update and commit the goldens directory.',
       });
     }
+  if (manifest.platform !== platform && diagnostics.length) {
+    const mismatched = comparisons.filter((entry) => entry.status !== 'match');
+    const worst = Math.max(0, ...mismatched.map((entry) => entry.ratio ?? 0));
+    return {
+      comparisons,
+      diagnostics: [
+        {
+          code: 'VISUAL_GOLDEN_MISMATCH',
+          severity: 'warning',
+          artifact: 'design',
+          path: [GOLDEN_DIRECTORY],
+          ids: {},
+          message: `${mismatched.length} of ${comparisons.length} captures differ from the goldens (worst ${percent(worst)}; diff images next to the captures). The goldens were made on ${manifest.platform} and this run is on ${platform}, so it only warns.`,
+          remedy:
+            'Text renders differently across platforms. Compare on the goldens platform (the CI visual job), or run check --visual --update there.',
+        },
+      ],
+    };
+  }
   return { comparisons, diagnostics };
 }

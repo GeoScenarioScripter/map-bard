@@ -5,8 +5,8 @@ execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
 V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
 variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
-with both `visual` jobs matching the Linux goldens exactly. The 0.2.0
-release is prepared and waits for the owner. Next: V2's detailed plan.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+with both `visual` jobs matching the Linux goldens exactly. All five
+packages are published at 0.2.0 (`latest`). Next: V2's detailed plan.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -95,15 +95,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   Both build online and offline. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
-- Release packages: `mapbard` and `@mapbard/core` at 0.1.2, and `schema`,
-  `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
-  exports and Node engine. Changesets, three-OS CI and a manual npm release
-  workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-  A pending changeset bumps all five packages to 0.2.0 for the M2 release.
+- Release packages: all five (`mapbard`, `@mapbard/core`, `schema`,
+  `knowledge` and `renderer`) are published on npm at 0.2.0 (`latest`,
+  2026-10-23), each with a README, changelog, MIT license, explicit
+  published files, exports and Node engine. Changesets, three-OS CI and a
+  manual npm release workflow are configured. The public `mapbard@0.2.0`
+  CLI ran via `npm exec`.
 - Checks: 276 routine tests (schema 37, knowledge 30, core 80, renderer 85,
   CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
-  tarball install smoke passed on 2026-10-23 (at the 0.1.x versions, before
-  the changeset is applied). A live OpenFreeMap style and multiple vector tiles loaded in headless
+  tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
 ## Known issues
@@ -152,6 +152,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Released 0.2.0 at the owner's request. Applied the
+  changeset (all five packages 0.2.0, changelogs), then build, 276 tests
+  (browser smoke included), lint and the tarball install smoke passed
+  locally. Pushed `a519768`; release run 39912450817 passed `verify` on
+  three OSes and published all five with the `latest` tag. The registry
+  lists 0.2.0 as `latest` for each, and `npm exec mapbard@0.2.0` reported
+  0.2.0 and listed the themes and layouts. Changesets made git tags on the
+  runner only; none are pushed, as with earlier releases. Next: V2's
+  detailed section in m2-visual.md.
 
 - 2026-10-23: V1 closed. Pushed 28 commits to `main` at the owner's
   request. CI run 39910445623 passed: `verify` on ubuntu, macOS and

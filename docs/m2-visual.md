@@ -617,8 +617,8 @@ Then V2 gets its detailed section here.
 **V1 closed 2026-10-23.** Atlas and night each scored 77. The first pushed
 CI run (39910445623) passed on all three OSes, and both `visual` jobs
 matched all 24 goldens on ubuntu-latest (worst difference 0), with 0 errors
-and only the known in-flight symbol warnings. The 0.2.0 release is
-prepared (changeset committed) and waits for the owner.
+and only the known in-flight symbol warnings. All five packages
+were published at 0.2.0 the same day.
 
 ## Later slices (outline)
 

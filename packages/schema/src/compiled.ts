@@ -105,6 +105,16 @@ export const ResolvedScaleSchema = z.discriminatedUnion('kind', [
   }).strict(),
 ]);
 
+/** Techniques the compiler renders; the authored schema also accepts `heatmap`, which it diagnoses. */
+export const COMPILED_TECHNIQUES = [
+  'point',
+  'graduated-symbol',
+  'line',
+  'fill',
+  'categorical',
+  'choropleth',
+] as const;
+
 const ResolvedLayerSchema = z
   .object({
     sceneId: IdSchema,
@@ -112,7 +122,7 @@ const ResolvedLayerSchema = z
     runtimeId: IdSchema,
     sourceId: IdSchema,
     geometry: z.enum(['point', 'line', 'polygon']),
-    technique: z.enum(['point', 'graduated-symbol', 'line', 'fill', 'categorical', 'choropleth']),
+    technique: z.enum(COMPILED_TECHNIQUES),
     attribute: IdSchema.optional(),
     scaleId: IdSchema.optional(),
     filter: TypedFilterSchema.optional(),

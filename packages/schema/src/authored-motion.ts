@@ -6,6 +6,7 @@ import {
   MotionModeSchema,
   ProgressSchema,
   RangeSchema,
+  REDUCED_MOTION_MODES,
   STAGGER_ORDERS,
   type Easing,
 } from './motion.js';
@@ -205,7 +206,7 @@ const sceneSettings = {
   scrollLength: z.number().finite().min(0.5).max(20).optional(),
   trigger: TriggerSchema.optional(),
   /** Under `prefers-reduced-motion`: `step` (default) jumps to final states, `shorten` keeps fast fades, `keep` plays as authored. */
-  reducedMotion: z.enum(['step', 'shorten', 'keep']).optional(),
+  reducedMotion: z.enum(REDUCED_MOTION_MODES).optional(),
 };
 
 const sceneTracks = {

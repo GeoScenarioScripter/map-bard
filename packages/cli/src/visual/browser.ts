@@ -15,6 +15,25 @@ export class BrowserMissingError extends Error {
   override name = 'BrowserMissingError';
 }
 
+export const BROWSER_REMEDY =
+  'Install Google Chrome, run `npx playwright install chromium`, or set MAPBARD_CHROME_PATH to a Chrome or Chromium executable.';
+
+export type BrowserProbe =
+  | { available: true; browser: string }
+  | { available: false; reason: string; remedy: string };
+
+/** Whether `check --visual` can start a browser here: launches one and closes it at once. */
+export async function probeBrowser(env: NodeJS.ProcessEnv = process.env): Promise<BrowserProbe> {
+  try {
+    const browser = await launchBrowser(env);
+    const version = browser.version();
+    await browser.close();
+    return { available: true, browser: `Chromium ${version}` };
+  } catch (error) {
+    return { available: false, reason: firstLine(error), remedy: BROWSER_REMEDY };
+  }
+}
+
 /**
  * Headless Chromium: `MAPBARD_CHROME_PATH` when set, else Playwright's own build, else the
  * system Chrome. `playwright-core` loads only here, so commands without `--visual` never need it.

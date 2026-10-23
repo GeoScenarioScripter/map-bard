@@ -4,7 +4,20 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { Command, CommanderError, Option } from 'commander';
 import { BASEMAP_PROVIDERS, TERRAIN_PROVIDERS, STAGE1_CAPABILITIES } from '@mapbard/knowledge';
-import { projectJsonSchema, storyJsonSchema, type Diagnostic } from '@mapbard/schema';
+import {
+  CAMERA_PRESETS,
+  COMPILED_TECHNIQUES,
+  LAYER_TRACK_PROPERTIES,
+  LAYOUT_TEMPLATES,
+  MotionModeSchema,
+  NAMED_EASINGS,
+  projectJsonSchema,
+  REDUCED_MOTION_MODES,
+  STAGGER_ORDERS,
+  storyJsonSchema,
+  THEME_PRESETS,
+  type Diagnostic,
+} from '@mapbard/schema';
 import {
   add,
   build,
@@ -17,6 +30,7 @@ import {
   refreshProjectLock,
   type Outcome,
 } from './operations.js';
+import { probeBrowser } from './visual/browser.js';
 import { NETWORK_MODES, type NetworkMode } from './visual/capture.js';
 import { checkVisual, VISUAL_DIRECTORY } from './visual/check.js';
 import { GOLDEN_DIRECTORY } from './visual/goldens.js';
@@ -391,19 +405,35 @@ export async function run(argv: string[] = process.argv): Promise<number> {
         preview(rootOf(options), Number(local.port), Boolean(local.open)),
       );
     });
-  program.command('capabilities').action((_local: unknown, command: Command) => {
+  program.command('capabilities').action(async (_local: unknown, command: Command) => {
     const options = command.optsWithGlobals() as Global;
     code = emit(
       'capabilities',
       {
         result: {
-          techniques: STAGE1_CAPABILITIES.ids,
+          capabilities: STAGE1_CAPABILITIES.ids,
+          techniques: COMPILED_TECHNIQUES,
+          themes: THEME_PRESETS,
+          layouts: LAYOUT_TEMPLATES,
+          motion: {
+            cameraPresets: CAMERA_PRESETS,
+            modes: MotionModeSchema.options,
+            layerTracks: LAYER_TRACK_PROPERTIES,
+            staggerOrders: STAGGER_ORDERS,
+            easings: [
+              ...NAMED_EASINGS,
+              'cubic-bezier(x1, y1, x2, y2)',
+              'spring(stiffness, damping)',
+            ],
+            reducedMotion: REDUCED_MOTION_MODES,
+          },
           basemaps: {
             none: {},
             custom: { required: ['styleUrl', 'attribution'] },
             ...BASEMAP_PROVIDERS,
           },
           terrain: TERRAIN_PROVIDERS,
+          visual: { ...(await probeBrowser()), networks: NETWORK_MODES },
           versions: { cli: cliVersion, format: '0.2.0' },
         },
         diagnostics: [],

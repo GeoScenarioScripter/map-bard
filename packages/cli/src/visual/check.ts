@@ -3,7 +3,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { Diagnostic } from '@mapbard/schema';
 import { build, issue, prepare, type Outcome } from '../operations.js';
-import { BrowserMissingError, launchBrowser } from './browser.js';
+import { BROWSER_REMEDY, BrowserMissingError, launchBrowser } from './browser.js';
 import {
   captureStory,
   VIEWPORTS,
@@ -161,7 +161,7 @@ export async function checkVisual(
               'export',
               [],
               `Visual checks need a headless Chromium. ${error.message}`,
-              'Install Google Chrome, run `npx playwright install chromium`, or set MAPBARD_CHROME_PATH to a Chrome or Chromium executable.',
+              BROWSER_REMEDY,
             )
           : issue(
               'VISUAL_RUNTIME',

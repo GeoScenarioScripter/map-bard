@@ -30,6 +30,8 @@ export const EasingSchema = z.union([
 ]);
 
 /** `scrub` follows scroll, `play` runs once for `durationMs`, `loop` repeats, `step` jumps to `final`. */
+export const REDUCED_MOTION_MODES = ['step', 'shorten', 'keep'] as const;
+
 export const MotionModeSchema = z.enum(['scrub', 'play', 'loop', 'step']);
 
 export const RangeSchema = z
@@ -192,7 +194,7 @@ export const SceneMotionSchema = z
      * at rest, 0.5 midway). The camera hand-over starts there.
      */
     trigger: ProgressSchema,
-    reducedMotion: z.enum(['step', 'shorten', 'keep']),
+    reducedMotion: z.enum(REDUCED_MOTION_MODES),
     camera: CameraTrackSchema,
     layers: z.array(LayerTrackSchema),
     callouts: z.array(CalloutTrackSchema),

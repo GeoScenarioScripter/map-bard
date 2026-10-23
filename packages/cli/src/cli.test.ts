@@ -4,6 +4,14 @@ import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import {
+  CAMERA_PRESETS,
+  CAPABILITY_IDS,
+  COMPILED_TECHNIQUES,
+  LAYOUT_TEMPLATES,
+  REDUCED_MOTION_MODES,
+  THEME_PRESETS,
+} from '@mapbard/schema';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const runFile = promisify(execFile);
@@ -183,6 +191,25 @@ describe('CLI binary', () => {
     const capabilities = await cli('--limit', '1', 'capabilities');
     expect(capabilities.envelope.result.techniques).toHaveLength(1);
     expect(capabilities.envelope.truncated).toBe(true);
+  });
+  it('lists every capability the compiler accepts and whether visual checks can run', async () => {
+    const missing = join(tmpdir(), 'no-such-chrome.exe');
+    const { envelope } = await cliWith({ MAPBARD_CHROME_PATH: missing }, 'capabilities');
+    expect(envelope.ok).toBe(true);
+    expect(envelope.truncated).toBe(false);
+    const result = envelope.result;
+    expect(result.capabilities).toEqual([...CAPABILITY_IDS]);
+    expect(result.techniques).toEqual([...COMPILED_TECHNIQUES]);
+    expect(result.themes).toEqual([...THEME_PRESETS]);
+    expect(result.layouts).toEqual([...LAYOUT_TEMPLATES]);
+    expect(result.motion.cameraPresets).toEqual([...CAMERA_PRESETS]);
+    expect(result.motion.modes).toEqual(['scrub', 'play', 'loop', 'step']);
+    expect(result.motion.reducedMotion).toEqual([...REDUCED_MOTION_MODES]);
+    expect(result.visual).toMatchObject({
+      available: false,
+      reason: expect.stringContaining('MAPBARD_CHROME_PATH'),
+      networks: ['offline', 'stub', 'live', 'unavailable'],
+    });
   });
   it('serves preview assets with real types and survives malformed URLs', async () => {
     const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));

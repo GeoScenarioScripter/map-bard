@@ -1,4 +1,11 @@
-export { BrowserMissingError, launchBrowser, VISUAL_BROWSER_ARGS } from './browser.js';
+export {
+  BROWSER_REMEDY,
+  BrowserMissingError,
+  launchBrowser,
+  probeBrowser,
+  VISUAL_BROWSER_ARGS,
+  type BrowserProbe,
+} from './browser.js';
 export {
   captureStory,
   drawnShare,

@@ -56,6 +56,10 @@ describe('format 0.2 migration and lock', () => {
       const recorded = await recordProjectCompilation(dest, compiled.value);
       expect(recorded.ok).toBe(true);
       if (recorded.ok) expect(recorded.value.lastCompileInputs).toEqual(recorded.value.inputs);
+      // Refreshing an unchanged lock after a build rewrites it byte for byte.
+      const built = await readFile(join(dest, 'mapbard.lock.json'), 'utf8');
+      expect((await refreshProjectLock(dest)).ok).toBe(true);
+      expect(await readFile(join(dest, 'mapbard.lock.json'), 'utf8')).toBe(built);
     }
   });
 

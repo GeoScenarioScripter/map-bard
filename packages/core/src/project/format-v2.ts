@@ -315,14 +315,16 @@ export async function refreshProjectLock(root: string): Promise<Result<LockV2>> 
     !previous ||
     canonical(previous.inputs) !== canonical(hashes) ||
     canonical(previous.profiles) !== canonical(profiles);
-  const lock: LockV2 = {
+  // Parsed so keys follow the schema, as the compile record writes them; otherwise `lock` and
+  // `build` reorder each other's output.
+  const lock: LockV2 = LockV2Schema.parse({
     lockVersion: '0.2.0',
     projectId: manifest.id,
     revision: previous ? previous.revision + (changed ? 1 : 0) : 1,
     inputs: hashes,
     profiles,
     ...(previous?.lastCompileInputs ? { lastCompileInputs: previous.lastCompileInputs } : {}),
-  };
+  });
   await writeFile(`${projectRoot}/mapbard.lock.json`, `${JSON.stringify(lock, null, 2)}\n`);
   return { ok: true, value: lock, diagnostics: [] };
 }

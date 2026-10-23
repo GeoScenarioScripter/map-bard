@@ -117,7 +117,9 @@ const contentTypes: Record<string, string> = {
 const ignoredChange = (file: string, output: string): boolean => {
   const first = file.split(/[\\/]/)[0]!;
   return (
+    // Builds stage into `<output>.next-*`, and the renderer stages that into `.<that>-*`.
     first.startsWith(output) ||
+    first.startsWith(`.${output}`) ||
     first === VISUAL_DIRECTORY ||
     first === GOLDEN_DIRECTORY ||
     first === '.git' ||

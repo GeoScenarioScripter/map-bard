@@ -1,7 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
-import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { cp, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import {
@@ -271,6 +271,43 @@ describe('CLI binary', () => {
       while (!stream.includes('REFERENCE_MISSING'))
         stream += new TextDecoder().decode((await reader.read()).value);
       await reader.cancel();
+    } finally {
+      server.kill();
+    }
+  });
+  it('does not rebuild the preview from its own build output', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'mapbard-cli-'));
+    created.push(scratch);
+    const root = join(scratch, 'project');
+    const example = fileURLToPath(new URL('../../../examples/projects/potomac', import.meta.url));
+    await cp(example, root, {
+      recursive: true,
+      filter: (path) => !/^(\.mapbard-|goldens|out)/.test(relative(example, path)),
+    });
+    const server = spawn(process.execPath, [binary, '--json', '--project', root, 'preview']);
+    const sleep = (ms: number) => new Promise((settle) => setTimeout(settle, ms));
+    try {
+      const line = await new Promise<string>((ready, fail) => {
+        let text = '';
+        server.stdout.on('data', (chunk) => {
+          text += chunk;
+          if (text.includes('\n')) ready(text);
+        });
+        server.once('exit', () => fail(new Error(`preview exited: ${text}`)));
+      });
+      expect(JSON.parse(line).ok).toBe(true);
+      const verification = join(root, '.mapbard-preview', 'verification.json');
+      const built = async () => (await stat(verification).catch(() => undefined))?.mtimeMs;
+      const initial = await built();
+      // A saved edit rebuilds once; the build's own staging directories must not rebuild again.
+      await writeFile(join(root, 'story.json'), await readFile(join(root, 'story.json')));
+      for (let waited = 0; (await built()) === initial && waited < 10000; waited += 100)
+        await sleep(100);
+      await sleep(500);
+      const rebuilt = await built();
+      expect(rebuilt).not.toBe(initial);
+      await sleep(3000);
+      expect(await built()).toBe(rebuilt);
     } finally {
       server.kill();
     }

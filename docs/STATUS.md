@@ -1,10 +1,10 @@
 # MapBard — Status
 
-**Updated 2026-10-22. [M2 — Visual Engine](visual-engine.md) is active; its
+**Updated 2026-10-23. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
 in Wave 4, steps 4.1 (J1) and 4.2 (J2 ‖ K) are complete, the Linux goldens
-for step 4.3 are committed, and the owner's scoring of both Potomac variants
-is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+and the [scoring sheets](m2-scoring.md) for step 4.3 are committed, and the
+owner's scoring of both Potomac variants is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -142,6 +142,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Step 4.3 scoring sheets in `docs/m2-scoring.md` (one per
+  variant: evidence and known gaps for the seven quality-bar areas), also on
+  a private page with captures and score fields. Fresh evidence: build;
+  `check` clean on both; `check --visual` 0 errors on both at stub, offline,
+  unavailable and live (6–8 flight symbol warnings, unchanged); offline
+  frames p99 8.5 ms; core JS 409 KB gzip. Two runs side by side missed the
+  15 s idle timeout mid-flight (1–2 errors); each rerun alone passed. Live
+  and offline contact sheets and seven full-size captures inspected. No
+  tests or lint run (docs only). Next: the owner scores both variants.
 
 - 2026-10-22: Step 4.2 (J2 ‖ K in parallel worktrees, merged) and the
   goldens part of 4.3. J2: goldens with `--update`, `--network

@@ -2,7 +2,8 @@
 
 Updated 2026-10-22. Status: **active**. Waves 1–3 are complete; Wave 4 is
 staggered (see below): steps 4.1 (J1) and 4.2 (J2 ‖ K) are complete. In
-4.3 the Linux goldens are committed, and the owner's scoring is next. Part of the
+4.3 the Linux goldens and the scoring sheets are committed, and the owner's
+scoring is next. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -579,8 +580,8 @@ Chromium build (156.0.8078.4) that `playwright-core` 1.64.1 installs in CI.
 Noise was 0 over five runs for both variants, and a check in the same image
 matched all 24 captures of each. Whether ubuntu-latest matches the image
 exactly is confirmed by the first CI run. If it doesn't, rerun the workflow
-with `update_goldens`. The scoring sheets and the owner's scores are still
-to do.
+with `update_goldens`. The scoring sheets are in
+[m2-scoring.md](m2-scoring.md) (2026-10-23); the owner's scores are next.
 
 ### L. Skill pack and release (step 4.4)
 

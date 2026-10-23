@@ -2,7 +2,9 @@
 
 **Updated 2026-10-22. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-in Wave 4, step 4.1 (J1, `check --visual`) is complete and step 4.2 (J2 ‖ K) is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+in Wave 4, steps 4.1 (J1) and 4.2 (J2 ‖ K) are complete, the Linux goldens
+for step 4.3 are committed, and the owner's scoring of both Potomac variants
+is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -38,10 +40,14 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   bars.
 - `@mapbard/knowledge`: capability list, encoding prerequisites, display
   formatters (units, numbers, titles), theme presets (`editorial-light`,
-  `night`, `atlas`, `newsroom`), layout frames, WCAG contrast, five critic
-  rules (raw identifiers, caret units, hidden contrast, inconsistent scales,
-  palette contrast) and provider catalog for OpenFreeMap, VersaTiles,
-  Mapterhorn and AWS Terrarium.
+  `night`, `atlas`, `newsroom`), context colours from theme tokens when a
+  layer sets none, layout frames, WCAG contrast, six critic rules (raw
+  identifiers, caret units, hidden contrast, inconsistent scales, palette
+  contrast, and `TEXT_OVERFLOW_LIKELY` for narration that would scroll in
+  the phone sheet), size budgets (core JS ≤ 450 KB gzip, all tiers ≤ 1.2 MB)
+  and provider catalog for OpenFreeMap, VersaTiles, Mapterhorn and AWS
+  Terrarium. Size encodings and shared size scales take `maxRadius`
+  (4–48 px, default 16).
 - Visual QA: `mapbard check --visual [--network offline|stub|live]
 [--fail-on-warnings]` runs `check`, builds into `.mapbard-visual/build/`
   (offline by default) and returns the findings as `VISUAL_*` diagnostics,
@@ -56,7 +62,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   on every OS. The capture also writes a contact sheet and reports console errors, remote requests and occlusion findings
   (panels, map controls, edge clipping, callout overlap, callouts covering
   targets, and point symbols without a callout hidden by panels, controls or
-  labels). The compiled page exposes `data-mb-state` and a read-only
+  labels). Offline runs compare each capture with the project's
+  `goldens/` (`--update` rewrites them from five runs and sets the
+  tolerance from the measured noise); goldens from another platform give
+  one non-gating warning. `--network unavailable` aborts every request and
+  checks the basemap notice and local layers; stub serves flat terrain; live
+  ignores terrain-host 404s. `--frames` reports p95/p99 frame intervals,
+  and `build` and `check --visual` report gzip sizes against the budgets.
+  The player hides a callout that cannot be placed clear of panels,
+  controls and other callouts, and credits each basemap provider once. The compiled page exposes `data-mb-state` and a read-only
   `window.MapBardStory` hook (`symbols()` lists shown point symbols); `seek`
   exists only with `MAPBARD_CAPTURE`. `node scripts/frame-probe.mjs
 <publication>` scrolls a story and reports frame intervals.
@@ -65,18 +79,21 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - `skills/mapbard`: a versioned agent workflow pack with format, technique,
   cartography, diagnostic and data-honesty guidance, installed by the CLI.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
-- Example: `examples/projects/potomac` (format 0.2, Potomac, three scenes,
-  gauges as graduated symbols on one shared size scale; an overview of the
-  river, gauges and callouts appearing downstream one after another, a
-  fly-along of the river and a push-in on Little Falls), built with `mapbard build` in online and offline modes. The format 0.1
+- Examples: `examples/projects/potomac` (atlas) and
+  `examples/projects/potomac-night` (night), with identical data and story
+  (format 0.2, four scenes, gauges as graduated symbols on one shared size
+  scale up to 26 px; a reveal from the Chesapeake region, a fly-along of the
+  river pitched to the horizon, a push-in on Little Falls and a pull-back),
+  Mapterhorn terrain with hillshade and sky, and committed Linux goldens.
+  Both build online and offline. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
 - Release packages: `mapbard` and `@mapbard/core` at 0.1.2, and `schema`,
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 241 routine tests (schema 37, knowledge 20, core 78, renderer 79, CLI 23,
-  root integration 3, browser smoke 1) and lint pass; the Windows tarball
+- Checks: 274 routine tests (schema 37, knowledge 30, core 80, renderer 85,
+  CLI 36, root 5, browser smoke 1), lint and `actionlint` pass; the Windows tarball
   install smoke last passed before M2. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
@@ -88,30 +105,29 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   drop. Fixed in Wave 2: all 6 layout findings; Potomac's QA report is clean
   at desktop and phone sizes (stub-online and offline). Fixed in Wave 3:
   annotation buttons over small symbols, and gauges merging into one blob in
-  the phone overview; QA is clean at p = 0, 0.5 and 1. Open: the largest
-  symbol radius is 16 px. Potomac still uses its own context colours
-  (an opaque state fill), which hide most of the basemap tint and hillshade;
-  the K redesign picks a theme and context styling.
-- Long narration scrolls inside the phone bottom sheet and the full-bleed
-  caption card, which are capped at the reserved height. The critic does not
-  warn about it yet.
+  the phone overview; QA is clean at p = 0, 0.5 and 1. Fixed in Wave 4 (K):
+  symbol size (`maxRadius`), context colours from the theme, the double
+  OpenFreeMap credit, flight callout collisions and long phone narration.
+  The owner has not scored the two variants yet (target ≥ 75 each).
 - Motion limits: `stagger` cannot apply to
   `line-reveal` or to scrub and step tracks (diagnostics say so). Frame
   timing is measured in headless Chrome with software WebGL, so it shows
   main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
-- `check --visual` fails on Potomac today (exit 1), all of it on the 2024
-  flight. Stub: 19 findings, 4 errors (phones: the Hancock callout under the
-  card or attribution and over Point of Rocks; desktop: under the story
-  column). There are 7 warnings, for gauges passing under the card, media,
-  legend, attribution or scale bar, or off the screen edge. Offline: 14
-  findings, 2 errors. A live run adds rest errors on phones: the Point of
-  Rocks callout over Little Falls at 2024 p = 0.95–1, and a limits gauge 32%
-  under the legend at p = 0.9–1, next to the expanded double OpenFreeMap
-  credit. K fixes these with callout hiding and the attribution change.
-- With a live provider style, the attribution shows OpenFreeMap twice (the
-  style's own source credit and MapBard's credit line).
+- `check --visual` passes on both Potomac variants (0 errors at stub,
+  offline, unavailable and live), with in-flight symbol warnings only: 8 at
+  stub and live, 6 offline, 7 unavailable. On desktop a gauge passes under
+  the media at 2024 p = 0.45 and under the story column at p = 0.9. On
+  phones a gauge passes under the attribution or a scale bar in the 2024
+  flight, and under the legend in the limits push-in and scope pull-back.
+  At some 2024 rest positions on phones, one of the three callouts can be
+  hidden for lack of room; QA counts that as clean.
+- The `visual` CI job has not run (needs a push). The Linux goldens were
+  made in the `mcr.microsoft.com/playwright:v1.64.1-noble` image with the
+  CI Chromium build; the first CI run confirms they match ubuntu-latest.
+  Windows captures differ from them by 0.8–4.5% (DOM text wraps
+  differently), so local Windows checks give one non-gating warning.
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
@@ -126,6 +142,22 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-22: Step 4.2 (J2 ‖ K in parallel worktrees, merged) and the
+  goldens part of 4.3. J2: goldens with `--update`, `--network
+unavailable`, size budgets, `--frames`, a `visual` CI job, and a fix for
+  the style fallback stopping after two failed styles. K: atlas and night
+  Potomac variants (four scenes; limits split into limits and scope),
+  context colours from the theme, `maxRadius`, callout hiding, providers
+  credited once, a compact phone notice rail, `TEXT_OVERFLOW_LIKELY`. Lead:
+  flat terrain under stub, terrain 404s ignored in live, one non-gating
+  warning for cross-platform goldens, Linux goldens made in Docker. Build,
+  274 tests, lint, browser smoke and actionlint pass; `check --visual` has
+  0 errors on both variants at stub, offline, unavailable and live (6–8
+  flight symbol warnings); Linux goldens match in Docker; live captures of
+  tint, hillshade, pitch and sky inspected. Frame probe p99 8.5 ms (run by
+  the workers, not rerun after the merge). CI not run (no push). Next: 4.3
+  scoring sheets and the owner's scores.
 
 - 2026-10-22: Step 4.1 (J1). Visual QA moved into the CLI as TypeScript
   (`packages/cli/src/visual/`) behind `mapbard check --visual`, with a

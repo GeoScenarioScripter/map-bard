@@ -1,7 +1,8 @@
 # M2 — Visual Engine: execution plan
 
 Updated 2026-10-22. Status: **active**. Waves 1–3 are complete; Wave 4 is
-staggered (see below): step 4.1 (J1) is complete, and 4.2 (J2 ‖ K) is next. Part of the
+staggered (see below): steps 4.1 (J1) and 4.2 (J2 ‖ K) are complete. In
+4.3 the Linux goldens are committed, and the owner's scoring is next. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -420,8 +421,12 @@ As built (2026-10-22):
   otherwise). The manifest records the noise, factor and floor. Goldens are
   compared only on offline runs, and only when `goldens/manifest.json`
   exists. A missing golden or a golden with no capture is also
-  `VISUAL_GOLDEN_MISMATCH`. Another platform's goldens only warn; the
-  Windows–Linux SwiftShader diff is not measured yet (needs CI). On Potomac
+  `VISUAL_GOLDEN_MISMATCH`. Another platform's goldens give one summary
+  warning that `--fail-on-warnings` never promotes. Measured on Potomac,
+  Windows against Linux goldens: the WebGL map rasterises alike, but DOM text
+  (narration, callouts, legend) wraps differently with the same bundled
+  fonts, so 0.8–4.5% of pixels differ in every capture. Cross-platform
+  goldens therefore stay non-gating. On Potomac
   the 18 goldens are 2.8 MB, and changing the river colour failed all 18
   captures at 0.20–0.22% with diff images. `--update` takes about 3 minutes here.
 - **`--network unavailable`** aborts every request on an online build.
@@ -448,8 +453,8 @@ As built (2026-10-22):
 - **CI** `visual` job: a matrix over `potomac` and `potomac-night`. It
   fails when a project has no goldens, unless `update_goldens` is set, and it
   uploads `goldens-<project>`. The budget table goes to the step summary.
-  `actionlint` isn't installed here. The YAML was parsed and its inline
-  scripts were run on local outputs.
+  `actionlint` 1.7.7 passes on every workflow (shellcheck was not
+  installed, so the inline scripts were run by hand on local outputs).
 - The CLI's test timeout is 20 s, because Potomac builds under parallel load
   passed 5 s.
 
@@ -546,12 +551,13 @@ As built (2026-10-22):
 - **Stub terrain.** `--network stub` aborts Mapterhorn tiles, which logs
   console errors and keeps the map from going idle, so a terrain story
   cannot pass stub. The smoke test now answers them with a flat terrarium
-  tile (`FLAT_DEM` in `tests/browser.mjs`). The same change in
-  `packages/cli/src/visual/capture.ts` is J2's to land. K verified stub
-  with it applied locally, uncommitted.
+  tile (`FLAT_DEM` in `tests/browser.mjs`). The lead landed the same change in
+  `packages/cli/src/visual/capture.ts`, sized to the source's `tileSize`.
+  Live runs also ignore 404s from the terrain host: Mapterhorn answers 404
+  where it has no tile (open sea, such as 6/19/25), and MapLibre draws those
+  flat.
 - **Results** (both variants, 4 scenes, 24 captures and 98 sweep samples
-  each): 0 errors at stub (with the local stub-terrain patch), offline and
-  unavailable. Flight findings fell from 19 (stub) to 8 at stub, 6 offline
+  each): 0 errors at stub, offline, unavailable and live. Flight findings fell from 19 (stub) to 8 at stub, 6 offline
   and 7 unavailable, all symbol warnings: a gauge under the media or legend
   in the 2024 flight and in the limits and scope pull-backs on phones, and
   under the story column on desktop at 2024 p = 0.9. No callout findings
@@ -566,6 +572,15 @@ sheet per variant: the seven quality-bar areas, each with evidence (contact
 sheets, sweep results, live screenshots, frame numbers, critic output) and
 known gaps. The owner gives the score. Defects the owner names are fixed
 before L. The scores go in STATUS.md. The target is ≥ 75 for each variant.
+
+As built (2026-10-22): the Linux goldens were made locally in the
+`mcr.microsoft.com/playwright:v1.64.1-noble` Docker image, which has the
+Chromium build (156.0.8078.4) that `playwright-core` 1.64.1 installs in CI.
+Noise was 0 over five runs for both variants, and a check in the same image
+matched all 24 captures of each. Whether ubuntu-latest matches the image
+exactly is confirmed by the first CI run. If it doesn't, rerun the workflow
+with `update_goldens`. The scoring sheets and the owner's scores are still
+to do.
 
 ### L. Skill pack and release (step 4.4)
 

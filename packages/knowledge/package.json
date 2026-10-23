@@ -1,6 +1,6 @@
 {
   "name": "@mapbard/knowledge",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Map technique capability rules and keyless basemap and terrain catalogs for MapBard",
   "keywords": [
     "mapbard",

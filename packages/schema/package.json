@@ -1,6 +1,6 @@
 {
   "name": "@mapbard/schema",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Versioned Zod and JSON Schema contracts for MapBard projects, stories, and publications",
   "keywords": [
     "mapbard",

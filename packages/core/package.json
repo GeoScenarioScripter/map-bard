@@ -1,6 +1,6 @@
 {
   "name": "@mapbard/core",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Deterministic project loading, source profiling, validation, and story compilation for MapBard",
   "keywords": [
     "mapbard",

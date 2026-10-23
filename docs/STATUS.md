@@ -2,9 +2,10 @@
 
 **Updated 2026-10-23. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-in Wave 4, steps 4.1 (J1) and 4.2 (J2 ‖ K) are complete, the Linux goldens
-and the [scoring sheets](m2-scoring.md) for step 4.3 are committed, and the
-owner's scoring of both Potomac variants is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+in Wave 4, steps 4.1 (J1), 4.2 (J2 ‖ K) and 4.3 are complete: the owner
+[scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
+variants 77/100 (target ≥ 75) and named no defects. Step 4.4 (L: skill
+pack, capabilities, READMEs, changeset) is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -99,7 +100,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## Known issues
 
-- Visual quality is below the bar (<60/100). The defects are listed in
+- Visual quality was below the bar (<60/100) before M2. The defects are listed in
   [visual-engine.md](visual-engine.md#why-the-current-output) (M2). Fixed
   in Wave 1: raw legend IDs, caret units, and the encoding that hid the 2025
   drop. Fixed in Wave 2: all 6 layout findings; Potomac's QA report is clean
@@ -108,7 +109,9 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   the phone overview; QA is clean at p = 0, 0.5 and 1. Fixed in Wave 4 (K):
   symbol size (`maxRadius`), context colours from the theme, the double
   OpenFreeMap credit, flight callout collisions and long phone narration.
-  The owner has not scored the two variants yet (target ≥ 75 each).
+  The owner scored both variants 77/100 on 2026-10-23 (target ≥ 75); the
+  weakest areas are motion and camera (9/15) and attention and annotation
+  (10/15).
 - Motion limits: `stagger` cannot apply to
   `line-reveal` or to scrub and step tracks (diagnostics say so). Frame
   timing is measured in headless Chrome with software WebGL, so it shows
@@ -142,6 +145,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Step 4.3 complete. The owner viewed both stories online in
+  `preview` and scored atlas 77 and night 77 (place 13, encoding 16, motion
+  9, attention 10, type 12, depth 8, polish 9 on each) and named no
+  defects. Scores recorded in `docs/m2-scoring.md`. Docs only; no checks
+  run. Next: step 4.4 (L).
 
 - 2026-10-23: Step 4.3 scoring sheets in `docs/m2-scoring.md` (one per
   variant: evidence and known gaps for the seven quality-bar areas), also on

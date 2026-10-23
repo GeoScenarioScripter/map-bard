@@ -21,10 +21,7 @@ if (!publication) {
   );
   process.exit(2);
 }
-const browser = await launchBrowser(
-  process.env,
-  swiftshader ? undefined : ['--allow-file-access-from-files'],
-);
+const browser = await launchBrowser(process.env, swiftshader ? undefined : []);
 try {
   const report = await probeFrames(browser, {
     publication: resolve(publication),

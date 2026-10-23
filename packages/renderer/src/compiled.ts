@@ -151,7 +151,7 @@ function html(compiled: Compiled): string {
 <body><div id="map" aria-label="Story map"></div><div id="mb-rail" class="mb-rail"><aside id="legends" class="mb-legend-host" hidden></aside><aside id="controls" class="mb-controls" hidden></aside><aside id="media" class="mb-compiled-media"></aside></div><button id="mb-motion-toggle" class="mb-motion-toggle" type="button" aria-pressed="false" hidden>Pause animation</button>
 <main id="story"><header class="mb-intro"><div class="mb-intro-panel"><h1>${escapeHtml(compiled.title)}</h1><p>${escapeHtml(compiled.intent)}</p><p class="mb-scroll-hint">Scroll to explore the story</p></div></header>
 ${scenes}<footer class="mb-outro"><div class="mb-intro-panel"><p>Made with MapBard.</p>${credits ? `<h2>Sources and qualifications</h2><ul>${credits}</ul>` : ''}</div></footer></main>
-<script src="vendor/maplibre-gl.js"></script><script src="compiled-data.js"></script><script src="player.js"></script><script src="compiled-app.js"></script></body></html>\n`;
+<script src="vendor/maplibre-gl.js"></script><script src="vendor/maplibre-gl-worker.js"></script><script src="compiled-data.js"></script><script src="player.js"></script><script src="compiled-app.js"></script></body></html>\n`;
 }
 
 const app = `(() => {
@@ -169,7 +169,7 @@ const app = `(() => {
     document.querySelector('#story').prepend(panel);
   };
   try {
-    if (!payload || !api || !window.maplibregl || !scenes.length) throw new Error('Required player or story data is missing');
+    if (!payload || !api || !window.maplibregl || !window.MAPBARD_MAPLIBRE_WORKER || !scenes.length) throw new Error('Required player or story data is missing');
     const first = payload.story.scenes[0];
     const base = payload.story.basemap;
     const styles = typeof base === 'object' && base.provider !== 'none' ? base.styles : [];
@@ -187,7 +187,9 @@ const app = `(() => {
     };
     // Without an online style the map shows the theme's land colour, not a blank canvas.
     const emptyStyle = { version: 8, sources: {}, layers: [{ id: 'mb-background', type: 'background', paint: { 'background-color': payload.story.theme.colors.land } }] };
-    maplibregl.setWorkerUrl('vendor/maplibre-gl-worker.js');
+    // From file:// a worker script URL is blocked and so is a module worker from a Blob; a classic
+    // worker from a Blob is not. MapLibre starts a classic worker when the URL ends in .cjs.
+    maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([window.MAPBARD_MAPLIBRE_WORKER], { type: 'text/javascript' })) + '#.cjs');
     const map = new maplibregl.Map({
       container: 'map', style: styles[0] ? styles[0].url : emptyStyle,
       center: first.camera.center, zoom: first.camera.zoom, attributionControl: false, maxPitch: 85,

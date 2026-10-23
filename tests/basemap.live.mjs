@@ -35,7 +35,6 @@ try {
   browser = await chromium.launch({
     headless: true,
     channel: 'chrome',
-    args: ['--allow-file-access-from-files'],
     ...(process.env.MAPBARD_CHROME_PATH ? { executablePath: process.env.MAPBARD_CHROME_PATH } : {}),
   });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

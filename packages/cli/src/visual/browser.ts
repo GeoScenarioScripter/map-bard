@@ -2,13 +2,10 @@ import type { Browser } from 'playwright-core';
 
 /**
  * Chromium flags for visual runs. SwiftShader on every OS, so Windows and Linux rasterise
- * WebGL with the same software renderer; file access lets `file://` pages load their data.
+ * WebGL with the same software renderer. There is no file-access flag: a `file://` page must
+ * work as a reader's browser opens it.
  */
-export const VISUAL_BROWSER_ARGS = [
-  '--allow-file-access-from-files',
-  '--use-angle=swiftshader',
-  '--enable-unsafe-swiftshader',
-];
+export const VISUAL_BROWSER_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 
 /** No usable Chromium: reported as VISUAL_BROWSER_MISSING, never as a crash. */
 export class BrowserMissingError extends Error {

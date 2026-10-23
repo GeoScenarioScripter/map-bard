@@ -155,6 +155,20 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-23: `file://` fix. In a reader's Chrome, stories opened from
+  `file://` drew no basemap or layers: Chrome blocks `new Worker` on a
+  `file://` script, and MapLibre 6 starts a module worker for a cross-origin
+  Blob, which Chrome also blocks there. The page now loads the worker source
+  as a string (`vendor/maplibre-gl-worker.js`) and passes MapLibre a Blob URL
+  ending `#.cjs` (MapLibre's switch to a classic worker; recheck it on a
+  MapLibre upgrade). Every browser launch drops
+  `--allow-file-access-from-files`, which had hidden the failure, and the
+  smoke test now waits for the map to go idle; it fails on the old player.
+  Checks: renderer, core, schema, knowledge and CLI tests, lint,
+  `test:browser` (system Chrome 155), `check --visual` on Potomac (ok; the
+  Linux goldens give the usual cross-platform warning on Windows), and
+  screenshots matching between `file://` and HTTP. Not run: Linux goldens,
+  Firefox and Safari. Next: owner decisions on V2, then step 5.0.
 - 2026-10-23: Planned V2 in m2-visual.md (Wave 5, steps 5.0–5.5): a
   spike, a foundation commit (compiled 0.4.0, tier loading, altitude
   projection), then M (MapLibre columns, extrusions, change symbols,

@@ -7,7 +7,6 @@ import { chromium } from 'playwright-core';
 export async function launchBrowser() {
   const launchOptions = {
     headless: true,
-    args: ['--allow-file-access-from-files'],
     ...(process.env.MAPBARD_CHROME_PATH ? { executablePath: process.env.MAPBARD_CHROME_PATH } : {}),
   };
   try {

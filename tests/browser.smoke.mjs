@@ -73,6 +73,16 @@ async function openStory(browser, file, online) {
     await page.locator('[data-scene-id="context-2024"].is-active').waitFor({ timeout: 10000 });
     await page.locator('[data-scene-id="compare-2025"]').scrollIntoViewIfNeeded();
     await page.locator('[data-scene-id="compare-2025"].is-active').waitFor({ timeout: 10000 });
+    // The map settles only once MapLibre's worker has loaded the story's sources, which a
+    // browser can refuse from file:// without a console error that names the cause.
+    await page.evaluate(() =>
+      Promise.race([
+        globalThis.MapBardStory.whenIdle(),
+        new Promise((_, reject) =>
+          globalThis.setTimeout(() => reject(new Error('Map never settled')), 15000),
+        ),
+      ]),
+    );
     assert.equal(await page.locator('[role="alert"]').count(), 0);
     assert.deepEqual(errors, []);
     return remote;

@@ -68,7 +68,7 @@ export type CaptureRunner = (options: {
  * frame times would mostly measure the software rasteriser.
  */
 async function sampleFrames(options: { publication: string; network: NetworkMode }) {
-  const browser = await launchBrowser(process.env, ['--allow-file-access-from-files']);
+  const browser = await launchBrowser(process.env, []);
   try {
     return await probeStoryFrames(browser, options);
   } finally {

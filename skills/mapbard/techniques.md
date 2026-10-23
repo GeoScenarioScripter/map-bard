@@ -23,3 +23,7 @@ Numeric color needs a `classification` with 2–9 `classes` and one of these met
 If ties leave fewer distinct quantile or natural-breaks classes than requested, `check` warns. Check that the classes separate the features the narration compares; if they don't, use graduated symbols or manual breaks.
 
 For a cross-scene comparison, use a shared scale rather than rescaling each scene. A colour shared scale repeats the members' `method`, `classes` and `breaks`. A shared size scale (`"visualVariable": "size"`, members are `graduated-symbol` layers with no classification) sizes every member by area on one range from zero to the largest value, so a drop between periods shows as smaller circles. Heatmaps and data-driven opacity produce capability diagnostics.
+
+Graduated symbols size by area, so a value four times larger draws twice the radius. Set `maxRadius` so the smallest compared value stays visible and the largest symbols don't hide their neighbours; a value close to zero still draws as a tiny dot, so say it in the narration or annotate it.
+
+Motion is a technique too: each camera preset suits one kind of claim, and every preset has cases where it hurts. Read [motion](motion.md) before adding a `fly-along`, `orbit` or staggered reveal, and prefer `hold` when the data, not the movement, makes the point.

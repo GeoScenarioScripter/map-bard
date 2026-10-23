@@ -1,4 +1,9 @@
-import type { Compiled, LayerTrackProperty, Stagger } from '@mapbard/schema';
+import type {
+  Compiled,
+  LayerTrackProperty,
+  Stagger,
+  StaggeredTrackProperty,
+} from '@mapbard/schema';
 
 // Aliases derive from the public contract; no private consumer shape can drift.
 export type CompiledStory = Compiled;
@@ -21,6 +26,11 @@ export interface MapAdapter {
   onFrame(listener: () => void): () => void;
   /** Screen position of a map coordinate, in CSS pixels from the map container's top left. */
   project(at: readonly [number, number]): { x: number; y: number };
+  /**
+   * Screen position of a point `heightMeters` above the ground (the terrain surface when there
+   * is terrain), such as a column top. Falls back to the ground position on the globe.
+   */
+  projectAltitude(at: readonly [number, number], heightMeters: number): { x: number; y: number };
   setControl(
     runtimeLayerId: string,
     property: CompiledControl['property'],
@@ -37,13 +47,16 @@ export interface MapAdapter {
   /** Apply a staggered track: `valueAt(rank)` for each drawn feature in stagger order. */
   setLayerFeatureValues(
     runtimeLayerId: string,
-    property: Exclude<LayerTrackProperty, 'line-reveal'>,
+    property: StaggeredTrackProperty,
     stagger: Stagger,
     valueAt: (rank: number) => number,
   ): void;
   /** Fade one callout of the shown scene; 0 hides it from readers and placement. */
   setCalloutOpacity(calloutId: string, value: number): void;
-  /** Every shown point symbol as a screen circle (map container pixels), for visual QA. */
+  /**
+   * Every shown point symbol as a screen circle (map container pixels), for visual QA. A 3D
+   * symbol (a column) is two circles, its base and its top, so QA geometry stays 2D.
+   */
   drawnSymbols(): { layerId: string; x: number; y: number; radius: number }[];
 }
 

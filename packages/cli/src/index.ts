@@ -3,6 +3,7 @@ import { readFileSync, watch } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { Command, CommanderError, Option } from 'commander';
+import { compilerReady } from '@mapbard/core';
 import { BASEMAP_PROVIDERS, TERRAIN_PROVIDERS, STAGE1_CAPABILITIES } from '@mapbard/knowledge';
 import {
   CAMERA_PRESETS,
@@ -413,14 +414,15 @@ export async function run(argv: string[] = process.argv): Promise<number> {
       'capabilities',
       {
         result: {
-          capabilities: STAGE1_CAPABILITIES.ids,
-          techniques: COMPILED_TECHNIQUES,
+          // V2 techniques, their capabilities and tracks appear once their compiler step lands.
+          capabilities: STAGE1_CAPABILITIES.ids.filter(compilerReady),
+          techniques: COMPILED_TECHNIQUES.filter(compilerReady),
           themes: THEME_PRESETS,
           layouts: LAYOUT_TEMPLATES,
           motion: {
             cameraPresets: CAMERA_PRESETS,
             modes: MotionModeSchema.options,
-            layerTracks: LAYER_TRACK_PROPERTIES,
+            layerTracks: LAYER_TRACK_PROPERTIES.filter(compilerReady),
             staggerOrders: STAGGER_ORDERS,
             easings: [
               ...NAMED_EASINGS,

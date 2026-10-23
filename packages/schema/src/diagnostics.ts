@@ -26,6 +26,8 @@ export const DiagnosticSchema = z
       'SCALE_INCONSISTENT',
       'PALETTE_CONTRAST_LOW',
       'TEXT_OVERFLOW_LIKELY',
+      'ENCODING_AREA_DISTORTED',
+      'DEPTH_UNSEEN',
       // Visual checks (`mapbard check --visual`) and size budgets.
       'VISUAL_OCCLUSION',
       'VISUAL_RUNTIME',

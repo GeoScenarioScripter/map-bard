@@ -2,8 +2,10 @@ import type { Map as MapLibreMap, LayerSpecification } from 'maplibre-gl';
 import type { Padding, Rect } from './layout.js';
 
 export type CameraFrame = { padding: Padding; zoomOffset: number };
+import { createAltitudeProjector } from './altitude.js';
 import { createCalloutOverlay, type SymbolPoint } from './callouts.js';
-import { layerStyle, matchesLayerFilter, pointRadius } from './resolved-style.js';
+import { heightMeters, layerStyle, matchesLayerFilter, pointRadius } from './resolved-style.js';
+import { tierFactory, type TierLayers, type TierName } from './tiers.js';
 import type { Stagger } from '@mapbard/schema';
 import type {
   CompiledLayer,
@@ -13,7 +15,8 @@ import type {
   MarkerHandle,
 } from './types.js';
 
-type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'>;
+type MapLibreConstructors = Pick<typeof import('maplibre-gl'), 'Marker' | 'Popup'> &
+  Partial<Pick<typeof import('maplibre-gl'), 'MercatorCoordinate'>>;
 type GeoData = Parameters<MapLibreMap['addSource']>[1];
 type PaintName = Parameters<MapLibreMap['setPaintProperty']>[1];
 type PaintValue = Parameters<MapLibreMap['setPaintProperty']>[2];
@@ -21,8 +24,8 @@ type Bound = {
   sourceId: string;
   type: 'circle' | 'line' | 'fill';
   paint: Record<string, unknown>;
-  /** Motion track values: opacity factor, highlight strength, reveal fraction. */
-  motion: { opacity: number; highlight: number };
+  /** Motion track values: opacity factor, highlight strength, height factor. */
+  motion: { opacity: number; highlight: number; grow: number };
   /** Properties a staggered track drives per feature, through feature state. */
   staggered: Set<'opacity' | 'highlight'>;
 };
@@ -92,7 +95,17 @@ export function createMapLibreAdapter(
     /** Client rects of screen UI callout labels must avoid: card area, rail, map controls. */
     obstacles?: () => Rect[];
   } = {},
-): MapAdapter & { refit(): void } {
+): MapAdapter & { refit(): void; whenDrawn(): Promise<void>; dispose(): void } {
+  // Layers of another backend go to their tier, created once for the whole story.
+  const tiers = new Map<TierName, TierLayers>();
+  for (const scene of story.scenes)
+    for (const layer of scene.layers)
+      if (layer.backend !== 'maplibre' && !tiers.has(layer.backend))
+        tiers.set(layer.backend, tierFactory(layer.backend)({ story, data, map }));
+  const tierOf = new Map<string, TierLayers>();
+  const altitude = libre.MercatorCoordinate
+    ? createAltitudeProjector(map, libre.MercatorCoordinate)
+    : undefined;
   const bound = new Map<string, Bound>();
   const sourceUsers = new Map<string, number>();
   const { accent, labelHalo, ink } = story.theme.colors;
@@ -105,6 +118,7 @@ export function createMapLibreAdapter(
         if (layer) metricSources.add(layer.sourceId);
       }
   let camera: CompiledScene['camera'] | undefined;
+  // Derived sources (change, morph, hexbin) arrive in `data` beside the resources.
   for (const scene of story.scenes) {
     for (const layer of scene.layers) {
       if (!data[layer.sourceId]) throw new Error(`Missing GeoJSON source ${layer.sourceId}`);
@@ -209,12 +223,19 @@ export function createMapLibreAdapter(
     } else paint('line-width', times(base('line-width', 2.5), plus(1, times(0.8, strength))));
   }
 
-  type Drawn = { runtimeId: string; at: [number, number]; radius: (size?: number) => number };
+  type Drawn = {
+    runtimeId: string;
+    at: [number, number];
+    radius: (size?: number) => number;
+    /** A column's full height in metres; its drawn top is this times the grow factor. */
+    height?: number;
+  };
   function drawnPoints(layers: readonly CompiledLayer[]): Drawn[] {
     const drawn: Drawn[] = [];
     for (const layer of layers) {
-      if (layer.geometry !== 'point') continue;
+      if (layer.geometry !== 'point' || layer.backend !== 'maplibre') continue;
       const scale = story.scales.find((item) => item.id === layer.scaleId);
+      const heightScale = scale?.kind === 'numeric-height' ? scale : undefined;
       const source = data[layer.sourceId] as { features?: unknown[] } | undefined;
       for (const feature of source?.features ?? []) {
         const { geometry, properties } = (feature ?? {}) as {
@@ -236,6 +257,9 @@ export function createMapLibreAdapter(
             runtimeId: layer.runtimeId,
             at: [point[0], point[1]],
             radius: (size) => pointRadius(layer, scale, props, size),
+            ...(heightScale && layer.attribute
+              ? { height: heightMeters(heightScale, props[layer.attribute]) }
+              : {}),
           });
         }
       }
@@ -252,7 +276,7 @@ export function createMapLibreAdapter(
         .map((item) => ({ at: item.at, radius: item.radius(radiusOverride.get(item.runtimeId)) }));
   }
 
-  const adapter: MapAdapter & { refit(): void } = {
+  const adapter: MapAdapter & { refit(): void; whenDrawn(): Promise<void>; dispose(): void } = {
     setCamera(next, transition) {
       camera = next;
       const target = cameraTarget(next);
@@ -261,7 +285,14 @@ export function createMapLibreAdapter(
       else map.easeTo(target);
     },
     bindLayer(layer) {
-      if (bound.has(layer.runtimeId)) throw new Error(`Layer already bound ${layer.runtimeId}`);
+      if (bound.has(layer.runtimeId) || tierOf.has(layer.runtimeId))
+        throw new Error(`Layer already bound ${layer.runtimeId}`);
+      if (layer.backend !== 'maplibre') {
+        const tier = tiers.get(layer.backend)!;
+        tier.bindLayer(layer);
+        tierOf.set(layer.runtimeId, tier);
+        return;
+      }
       const scale = layer.scaleId
         ? story.scales.find((item) => item.id === layer.scaleId)
         : undefined;
@@ -295,7 +326,7 @@ export function createMapLibreAdapter(
         sourceId: layer.sourceId,
         type: specification.type,
         paint: specification.paint,
-        motion: { opacity: 1, highlight: 0 },
+        motion: { opacity: 1, highlight: 0, grow: 1 },
         staggered: new Set(),
       });
       boundLayers.set(layer.runtimeId, layer);
@@ -303,6 +334,12 @@ export function createMapLibreAdapter(
       sourceUsers.set(layer.sourceId, (sourceUsers.get(layer.sourceId) ?? 0) + 1);
     },
     unbindLayer(runtimeId) {
+      const tier = tierOf.get(runtimeId);
+      if (tier) {
+        tier.unbindLayer(runtimeId);
+        tierOf.delete(runtimeId);
+        return;
+      }
       const existing = bound.get(runtimeId);
       if (!existing) return;
       if (map.getLayer(runtimeId)) map.removeLayer(runtimeId);
@@ -338,11 +375,25 @@ export function createMapLibreAdapter(
       const point = map.project([at[0], at[1]]);
       return { x: point.x, y: point.y };
     },
+    projectAltitude(at, height) {
+      return altitude ? altitude.project(at, height) : adapter.project(at);
+    },
+    async whenDrawn() {
+      await Promise.all([...tiers.values()].map((tier) => tier.whenDrawn()));
+    },
+    dispose() {
+      for (const tier of tiers.values()) tier.dispose();
+      tiers.clear();
+      tierOf.clear();
+      altitude?.dispose();
+    },
     /** Re-frame the active camera after the viewport or the rail changes size. */
     refit() {
       if (camera) map.jumpTo(cameraTarget(camera));
     },
     setControl(runtimeLayerId, property, value) {
+      const tier = tierOf.get(runtimeLayerId);
+      if (tier) return tier.setControl(runtimeLayerId, property, value);
       const binding = bound.get(runtimeLayerId);
       if (!binding) throw new Error(`Missing active layer ${runtimeLayerId}`);
       if (property === 'visibility') {
@@ -372,19 +423,24 @@ export function createMapLibreAdapter(
           !hiddenLayers.has(layer.runtimeId) &&
           (bound.get(layer.runtimeId)?.motion.opacity ?? 1) > 0.05,
       );
-      return drawnPoints(shown).map((item) => {
-        const { x, y } = adapter.project(item.at);
-        return {
-          layerId: item.runtimeId,
-          x,
-          y,
-          radius: item.radius(radiusOverride.get(item.runtimeId)),
-        };
+      return drawnPoints(shown).flatMap((item) => {
+        const radius = item.radius(radiusOverride.get(item.runtimeId));
+        const base = { layerId: item.runtimeId, ...adapter.project(item.at), radius };
+        const height = (item.height ?? 0) * (bound.get(item.runtimeId)?.motion.grow ?? 1);
+        // A column is its base and its top, so QA's 2D geometry sees where it stands.
+        return height > 0
+          ? [base, { layerId: item.runtimeId, ...adapter.projectAltitude(item.at, height), radius }]
+          : [base];
       });
     },
     setLayerProperty(runtimeLayerId, property, value) {
+      const tier = tierOf.get(runtimeLayerId);
+      if (tier) return tier.setLayerProperty(runtimeLayerId, property, value);
       const binding = bound.get(runtimeLayerId);
       if (!binding) throw new Error(`Missing active layer ${runtimeLayerId}`);
+      // Steps M and N draw these; compiled stories cannot reach here until they do.
+      if (property === 'grow' || property === 'morph' || property === 'trail')
+        throw new Error(`MapLibre layers do not draw ${property} tracks yet (${runtimeLayerId})`);
       const paint = (name: string, next: unknown) =>
         map.setPaintProperty(runtimeLayerId, name as PaintName, next as PaintValue);
       const { type, motion } = binding;
@@ -404,14 +460,20 @@ export function createMapLibreAdapter(
       applyMotion(runtimeLayerId, binding, property);
     },
     staggerCount(runtimeLayerId, stagger) {
+      const tier = tierOf.get(runtimeLayerId);
+      if (tier) return tier.staggerCount(runtimeLayerId, stagger);
       const layer = boundLayers.get(runtimeLayerId);
       if (!layer) throw new Error(`Missing active layer ${runtimeLayerId}`);
       return rankedIds(layer, stagger).length;
     },
     setLayerFeatureValues(runtimeLayerId, property, stagger, valueAt) {
+      const tier = tierOf.get(runtimeLayerId);
+      if (tier) return tier.setLayerFeatureValues(runtimeLayerId, property, stagger, valueAt);
       const binding = bound.get(runtimeLayerId);
       const layer = boundLayers.get(runtimeLayerId);
       if (!binding || !layer) throw new Error(`Missing active layer ${runtimeLayerId}`);
+      if (property === 'grow' || property === 'morph')
+        throw new Error(`MapLibre layers do not draw ${property} tracks yet (${runtimeLayerId})`);
       const key = stateKey(runtimeLayerId, property);
       rankedIds(layer, stagger).forEach((id, rank) =>
         map.setFeatureState({ source: binding.sourceId, id }, { [key]: valueAt(rank) }),

@@ -37,11 +37,12 @@
     },
     "./player.js": "./dist/player/player.js",
     "./vendor/maplibre-gl.js": "./dist/vendor/maplibre-gl.js",
-    "./vendor/maplibre-gl-worker.js": "./dist/vendor/maplibre-gl-worker.js"
+    "./vendor/maplibre-gl-worker.js": "./dist/vendor/maplibre-gl-worker.js",
+    "./vendor/tier-deck.js": "./dist/vendor/tier-deck.js"
   },
   "scripts": {
-    "build": "node ../../scripts/clean-package-dist.mjs renderer && tsc -p tsconfig.json && tsc -p player/tsconfig.json && node scripts/build-player.mjs && node scripts/build-maplibre.mjs",
-    "build:player": "tsc -p player/tsconfig.json && node scripts/build-player.mjs",
+    "build": "node ../../scripts/clean-package-dist.mjs renderer && tsc -p tsconfig.json && tsc -p player/tsconfig.json && node scripts/build-player.mjs && node scripts/build-tier-deck.mjs && node scripts/build-maplibre.mjs",
+    "build:player": "tsc -p player/tsconfig.json && node scripts/build-player.mjs && node scripts/build-tier-deck.mjs",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

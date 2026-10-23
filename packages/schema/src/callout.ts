@@ -17,9 +17,31 @@ export const CalloutTargetSchema = z
  * One resolved annotation callout. The player positions the label, leader line and target
  * halo from the map projection every frame; it never derives text or targets itself.
  */
+/**
+ * A callout the compiler wrote, never the author: for example a change label. It lists the
+ * values it was computed from, so the text can be traced to the data.
+ */
+export const GeneratedCalloutSchema = z
+  .object({
+    operation: z.literal('change'),
+    inputs: z
+      .array(
+        z
+          .object({
+            sourceId: IdSchema,
+            featureId: IdSchema,
+            attribute: IdSchema,
+            value: z.number().finite(),
+          })
+          .strict(),
+      )
+      .min(1),
+  })
+  .strict();
+
 export const CalloutSchema = z
   .object({
-    /** The authored annotation ID. */
+    /** The authored annotation ID, or a compiler ID for a generated callout. */
     id: IdSchema,
     text: z.string().min(1),
     /** Where the leader line points. */
@@ -28,6 +50,7 @@ export const CalloutSchema = z
     priority: z.number().int().nonnegative(),
     /** Drawn point symbols of the annotated features; empty for free, line or polygon targets. */
     targets: z.array(CalloutTargetSchema),
+    generated: GeneratedCalloutSchema.optional(),
   })
   .strict();
 
@@ -54,3 +77,4 @@ export const SceneCalloutsSchema = z.array(CalloutSchema).superRefine((callouts,
 
 export type CalloutTarget = z.infer<typeof CalloutTargetSchema>;
 export type Callout = z.infer<typeof CalloutSchema>;
+export type GeneratedCallout = z.infer<typeof GeneratedCalloutSchema>;

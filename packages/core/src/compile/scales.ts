@@ -1,5 +1,10 @@
 import { formatNumber, formatUnit } from '@mapbard/knowledge';
-import { DEFAULT_MAX_RADIUS, type Diagnostic, type ResolvedScale } from '@mapbard/schema';
+import {
+  DEFAULT_MAX_RADIUS,
+  DEFAULT_MAX_WIDTH,
+  type Diagnostic,
+  type ResolvedScale,
+} from '@mapbard/schema';
 
 export type ScaleKey = { sceneId: string; layerId: string; sourceId: string };
 export type ScaleInput = {
@@ -18,6 +23,10 @@ export type ScaleInput = {
   domain?: [number, number];
   /** Graduated size: radius of the largest symbol, in CSS pixels. */
   maxRadius?: number;
+  /** Height: the largest value's height in metres; the compiler always supplies one. */
+  maxHeightMeters?: number;
+  /** Width: the largest value's width in CSS pixels. */
+  maxWidth?: number;
   path: (string | number)[];
 };
 
@@ -489,6 +498,95 @@ export function numericSizeScale(input: ScaleInput): {
         value,
         radius: min === max ? radiusRange[0] : largest * Math.sqrt(value / max),
         label: `${formatNumber(value)}${max === 0 ? ' (zero area)' : ''}`,
+      })),
+    },
+    diagnostics: [],
+  };
+}
+
+/** Finite nonnegative values for a bar-like (linear from zero) encoding, or the diagnostic. */
+function barValues(
+  input: ScaleInput,
+  what: string,
+): { numbers: number[]; counts: { valid: number; missing: number; invalid: number } } | Diagnostic {
+  const { valid, counts } = classify(input.values);
+  const numbers = valid.filter((value): value is number => typeof value === 'number');
+  const typeInvalid = counts.invalid + valid.length - numbers.length;
+  const negative = numbers.filter((value) => value < 0).length;
+  const usable = numbers.filter((value) => value >= 0);
+  const resolvedCounts = { ...counts, valid: usable.length, invalid: typeInvalid + negative };
+  if (typeInvalid)
+    return valueError(
+      input,
+      `${what} needs finite number values.`,
+      'Correct the source data or use a constant symbol.',
+      resolvedCounts,
+    );
+  if (negative)
+    return {
+      ...valueError(
+        input,
+        `Negative quantities cannot map to ${what.toLowerCase()}, which starts at zero.`,
+        'Show signed values with change symbols, or encode colour.',
+        resolvedCounts,
+      ),
+      code: 'MEASUREMENT_INCOMPATIBLE',
+    };
+  if (!usable.length)
+    return valueError(
+      input,
+      `${what} has no finite values.`,
+      'Supply measured values or use a constant symbol.',
+      resolvedCounts,
+    );
+  return { numbers: usable, counts: resolvedCounts };
+}
+
+/** Heights linear from zero (bar semantics); the legend names the tallest value, not pixels. */
+export function numericHeightScale(input: ScaleInput): {
+  scale?: ResolvedScale;
+  diagnostics: Diagnostic[];
+} {
+  const values = barValues(input, 'Height');
+  if ('code' in values) return { diagnostics: [values] };
+  if (input.maxHeightMeters === undefined || !(input.maxHeightMeters > 0))
+    throw new Error(`Height scale ${input.id} has no largest height`);
+  const max = values.numbers.reduce((value, entry) => Math.max(value, entry), 0);
+  return {
+    scale: {
+      ...base(input, values.counts),
+      kind: 'numeric-height',
+      domain: [0, max],
+      mapping: 'linear',
+      maxHeightMeters: input.maxHeightMeters,
+      tallest: { value: max, label: formatNumber(max) },
+    },
+    diagnostics: [],
+  };
+}
+
+/** Line widths linear from zero (arcs), with a legend of example widths. */
+export function numericWidthScale(input: ScaleInput): {
+  scale?: ResolvedScale;
+  diagnostics: Diagnostic[];
+} {
+  const values = barValues(input, 'Width');
+  if ('code' in values) return { diagnostics: [values] };
+  const max = values.numbers.reduce((value, entry) => Math.max(value, entry), 0);
+  const widest = input.maxWidth ?? DEFAULT_MAX_WIDTH;
+  const examples = max === 0 ? [0] : [max / 4, max / 2, max];
+  return {
+    scale: {
+      ...base(input, values.counts),
+      kind: 'numeric-width',
+      domain: [0, max],
+      mapping: 'linear',
+      maxWidth: widest,
+      noDataWidth: 1,
+      legend: examples.map((value) => ({
+        value,
+        width: max === 0 ? 0 : (widest * value) / max,
+        label: formatNumber(value),
       })),
     },
     diagnostics: [],

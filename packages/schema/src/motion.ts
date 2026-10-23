@@ -114,8 +114,22 @@ export const CameraTrackSchema = z
     })),
   );
 
-/** `opacity` scales the layer's own opacity, `line-reveal` draws a line on, `highlight` strengthens its outline. */
-export const LAYER_TRACK_PROPERTIES = ['opacity', 'line-reveal', 'highlight'] as const;
+/**
+ * `opacity` scales the layer's own opacity, `line-reveal` draws a line on, `highlight` strengthens
+ * its outline. V2: `grow` scales heights (0 flat, 1 full), `morph` blends from the transition's
+ * values (0) to the layer's own (1), and `trail` moves a trip's clock across its time domain.
+ */
+export const LAYER_TRACK_PROPERTIES = [
+  'opacity',
+  'line-reveal',
+  'highlight',
+  'grow',
+  'morph',
+  'trail',
+] as const;
+
+/** Properties that draw the whole layer at once, so they never stagger. */
+export const UNSTAGGERED_TRACK_PROPERTIES = ['line-reveal', 'trail'] as const;
 
 const LayerKeyframeSchema = z
   .object({
@@ -163,11 +177,14 @@ export const LayerTrackSchema = z
         path: ['stagger'],
         message: 'Only play and loop tracks stagger; scrub and step follow scroll.',
       });
-    if (track.stagger && track.property === 'line-reveal')
+    if (
+      track.stagger &&
+      (UNSTAGGERED_TRACK_PROPERTIES as readonly string[]).includes(track.property)
+    )
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['stagger'],
-        message: 'line-reveal draws the whole layer at once and cannot stagger.',
+        message: `${track.property} draws the whole layer at once and cannot stagger.`,
       });
   });
 
@@ -233,4 +250,8 @@ export type LayerTrack = z.infer<typeof LayerTrackSchema>;
 export type Stagger = z.infer<typeof StaggerSchema>;
 export type CalloutTrack = z.infer<typeof CalloutTrackSchema>;
 export type LayerTrackProperty = (typeof LAYER_TRACK_PROPERTIES)[number];
+export type StaggeredTrackProperty = Exclude<
+  LayerTrackProperty,
+  (typeof UNSTAGGERED_TRACK_PROPERTIES)[number]
+>;
 export type SceneMotion = z.infer<typeof SceneMotionSchema>;

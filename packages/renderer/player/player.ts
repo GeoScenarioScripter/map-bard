@@ -73,7 +73,7 @@ export function createPlayer(
   options: PlayerOptions = {},
 ) {
   // A literal, not the schema constant: the IIFE player must not bundle Zod.
-  if (story.compiledVersion !== '0.3.0')
+  if (story.compiledVersion !== '0.4.0')
     throw new Error(`Unsupported compiled version ${story.compiledVersion}`);
   const scheduler = { ...defaultScheduler(), ...options };
   const now = scheduler.now ?? (() => Date.now());
@@ -161,15 +161,17 @@ export function createPlayer(
       if (
         stagger &&
         track.property !== 'line-reveal' &&
+        track.property !== 'trail' &&
         (track.mode === 'play' || track.mode === 'loop')
       ) {
         // Each feature runs the track, offset by its rank; the clock spans all of them.
+        const property = track.property;
         const count = map.staggerCount(track.runtimeLayerId, stagger);
         const frame = trackFrame({ ...track, durationMs: staggerSpan(track, count) }, state, clock);
         running ||= frame.running;
-        const key = `${track.runtimeLayerId}\u0000${track.property}`;
+        const key = `${track.runtimeLayerId}\u0000${property}`;
         if (layerValues.get(key) !== frame.t) {
-          map.setLayerFeatureValues(track.runtimeLayerId, track.property, stagger, (rank) =>
+          map.setLayerFeatureValues(track.runtimeLayerId, property, stagger, (rank) =>
             layerValueAt(track, staggerT(track, count, frame.t, rank)),
           );
           layerValues.set(key, frame.t);

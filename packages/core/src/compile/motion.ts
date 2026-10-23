@@ -69,7 +69,7 @@ export const MOTION_DEFAULTS = {
 
 /** Width of the player's right-hand rail (renderer `RAIL_WIDTH`); presets frame the map beside it. */
 const RAIL_WIDTH = 280;
-const REFERENCE_VIEWPORT = { width: 1440, height: 900 };
+export const REFERENCE_VIEWPORT = { width: 1440, height: 900 };
 const FLY_ALONG_SAMPLES = 25;
 
 export type MotionLayer = {
@@ -77,13 +77,19 @@ export type MotionLayer = {
   runtimeId: string;
   sourceId: string;
   geometry: 'point' | 'line' | 'polygon';
+  technique: string;
   scaleId?: string;
   /** The encoded attribute, which an ascending or descending stagger ranks by. */
   attribute?: string;
 };
 
 export type MotionInput = {
-  scene: { id: string; camera: AuthoredCamera };
+  /** `layers` are the authored ones, for fields compiled layers drop, such as `transition`. */
+  scene: {
+    id: string;
+    camera: AuthoredCamera;
+    layers?: readonly { id: string; transition?: unknown }[];
+  };
   sceneIndex: number;
   authored?: AuthoredMotion;
   /** Compiled layers of this scene. */
@@ -188,6 +194,15 @@ const LAYER_CAPABILITY: Record<LayerTrack['property'], CapabilityId> = {
   opacity: 'motion.layer-opacity',
   'line-reveal': 'motion.line-reveal',
   highlight: 'motion.highlight',
+  grow: 'motion.grow',
+  morph: 'motion.morph',
+  trail: 'motion.trail',
+};
+/** V2 track properties and the techniques that draw them. */
+const TRACK_TECHNIQUES: Partial<Record<LayerTrack['property'], readonly string[]>> = {
+  grow: ['column', 'extrusion', 'change', 'hexbin'],
+  morph: ['column', 'extrusion', 'change', 'hexbin'],
+  trail: ['trip'],
 };
 
 type Frame = { at: number; state: CameraState; easing: Easing };
@@ -705,6 +720,31 @@ function resolveLayerTrack(
     })
   )
     return undefined;
+  const techniques = TRACK_TECHNIQUES[track.property];
+  if (techniques && !techniques.includes(layer.technique)) {
+    problem(
+      'CAPABILITY_UNSUPPORTED',
+      { artifact: where.artifact, path: [...where.path, 'property'] },
+      `${track.property} applies to ${techniques.join(', ')} layers; layer ${track.layerId} is ${layer.technique}.`,
+      'Animate opacity or highlight on this layer instead.',
+      ids,
+    );
+    return undefined;
+  }
+  // A morph blends from the values the layer's transition names, so it needs one.
+  if (
+    track.property === 'morph' &&
+    !input.scene.layers?.find((item) => item.id === track.layerId)?.transition
+  ) {
+    problem(
+      'VALUE_INVALID',
+      { artifact: where.artifact, path: [...where.path, 'property'] },
+      `A morph track needs a transition on layer ${track.layerId}.`,
+      'Add transition.from to the layer, or animate another property.',
+      ids,
+    );
+    return undefined;
+  }
   if (track.property === 'line-reveal' && layer.geometry !== 'line') {
     problem(
       'VALUE_INVALID',
@@ -786,12 +826,12 @@ function resolveLayerTrack(
       );
       return undefined;
     }
-    if (track.property === 'line-reveal') {
+    if (track.property === 'line-reveal' || track.property === 'trail') {
       problem(
         'CAPABILITY_UNSUPPORTED',
         at,
-        'line-reveal draws the whole layer at once and cannot stagger.',
-        'Stagger an opacity or highlight track instead.',
+        `${track.property} draws the whole layer at once and cannot stagger.`,
+        'Stagger an opacity, highlight or grow track instead.',
         ids,
       );
       return undefined;

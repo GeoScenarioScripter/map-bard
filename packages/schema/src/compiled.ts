@@ -17,9 +17,11 @@ import {
   DigestSchema,
   IdSchema,
   InputSnapshotSchema,
+  JsonValueSchema,
   PROJECT_VERSION,
   RelativePathSchema,
 } from './project.js';
+import { V2_TECHNIQUES } from './techniques.js';
 
 const CountsSchema = z
   .object({
@@ -103,9 +105,41 @@ export const ResolvedScaleSchema = z.discriminatedUnion('kind', [
       )
       .min(1),
   }).strict(),
+  // Bars: height is linear from zero. On-screen height changes with pitch and zoom, so the
+  // legend draws no pixel scale; it names the attribute, unit, "from 0" and the tallest value.
+  ScaleBaseSchema.extend({
+    kind: z.literal('numeric-height'),
+    domain: z.tuple([z.literal(0), z.number().finite().nonnegative()]),
+    mapping: z.literal('linear'),
+    /** Height of the domain's top value above its base, in metres. */
+    maxHeightMeters: z.number().finite().positive(),
+    tallest: z.object({ value: z.number().finite().nonnegative(), label: z.string() }).strict(),
+  }).strict(),
+  ScaleBaseSchema.extend({
+    kind: z.literal('numeric-width'),
+    domain: z.tuple([z.literal(0), z.number().finite().nonnegative()]),
+    mapping: z.literal('linear'),
+    /** Width of the domain's top value, in CSS pixels. */
+    maxWidth: z.number().finite().positive(),
+    noDataWidth: z.number().finite().nonnegative(),
+    legend: z
+      .array(
+        z
+          .object({
+            value: z.number().finite().nonnegative(),
+            width: z.number().finite().nonnegative(),
+            label: z.string(),
+          })
+          .strict(),
+      )
+      .min(1),
+  }).strict(),
 ]);
 
-/** Techniques the compiler renders; the authored schema also accepts `heatmap`, which it diagnoses. */
+/**
+ * Techniques the compiled contract carries; the authored schema also accepts `heatmap`, which
+ * the compiler diagnoses. A V2 technique compiles once its core module is ready.
+ */
 export const COMPILED_TECHNIQUES = [
   'point',
   'graduated-symbol',
@@ -113,16 +147,70 @@ export const COMPILED_TECHNIQUES = [
   'fill',
   'categorical',
   'choropleth',
+  ...V2_TECHNIQUES,
 ] as const;
+export type CompiledTechnique = (typeof COMPILED_TECHNIQUES)[number];
+
+/** `maplibre` draws in the base map; `deck` in the deck.gl tier, loaded only when used. */
+export const LAYER_BACKENDS = ['maplibre', 'deck'] as const;
+export type LayerBackend = (typeof LAYER_BACKENDS)[number];
+
+/**
+ * Each technique uses the cheapest backend that draws it correctly (m2-visual.md, 5.0 backend
+ * table): MapLibre extrusions sit on terrain, so only arcs and trips need deck.gl.
+ */
+export const TECHNIQUE_BACKENDS: Record<CompiledTechnique, LayerBackend> = {
+  point: 'maplibre',
+  'graduated-symbol': 'maplibre',
+  line: 'maplibre',
+  fill: 'maplibre',
+  categorical: 'maplibre',
+  choropleth: 'maplibre',
+  column: 'maplibre',
+  extrusion: 'maplibre',
+  change: 'maplibre',
+  hexbin: 'maplibre',
+  arc: 'deck',
+  trip: 'deck',
+};
+
+/** A compiler-computed source: joined before-values (change, morph) or hexbin aggregates. */
+export const DerivedSourceSchema = z
+  .object({
+    id: IdSchema,
+    kind: z.enum(['change', 'morph', 'hexbin']),
+    /** Every source it was computed from, with the hash compiled, so each value can be traced. */
+    inputs: z.array(z.object({ sourceId: IdSchema, sha256: DigestSchema }).strict()).min(1),
+    /** The operation's parameters, for example the cell size and aggregate. */
+    parameters: z.record(JsonValueSchema),
+    data: z
+      .object({
+        type: z.literal('FeatureCollection'),
+        features: z.array(
+          z
+            .object({
+              type: z.literal('Feature'),
+              id: z.union([z.string(), z.number()]).optional(),
+              geometry: z.unknown(),
+              properties: z.record(z.unknown()).nullable(),
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
 
 const ResolvedLayerSchema = z
   .object({
     sceneId: IdSchema,
     authoredLayerId: IdSchema,
     runtimeId: IdSchema,
+    /** A data resource or a derived source. */
     sourceId: IdSchema,
     geometry: z.enum(['point', 'line', 'polygon']),
     technique: z.enum(COMPILED_TECHNIQUES),
+    backend: z.enum(LAYER_BACKENDS),
     attribute: IdSchema.optional(),
     scaleId: IdSchema.optional(),
     filter: TypedFilterSchema.optional(),
@@ -131,7 +219,11 @@ const ResolvedLayerSchema = z
     /** Polygon outline colour; set when a fill takes its colour from the theme. */
     outline: z.string().optional(),
   })
-  .strict();
+  .strict()
+  .refine((layer) => TECHNIQUE_BACKENDS[layer.technique] === layer.backend, {
+    message: 'A layer is drawn by its technique backend.',
+    path: ['backend'],
+  });
 
 const ResolvedControlSchema = z
   .object({
@@ -234,6 +326,7 @@ export const CompiledSchema = z
         .strict(),
     ),
     scales: z.array(ResolvedScaleSchema),
+    derived: z.array(DerivedSourceSchema),
     resources: z.array(
       z
         .object({
@@ -268,6 +361,29 @@ export const CompiledSchema = z
         path: ['contractVersions'],
         message: 'Contract versions and basemap must agree.',
       });
+    const data = new Set(
+      value.resources.flatMap((item) => (item.kind === 'data' ? [item.id] : [])),
+    );
+    const derived = new Set<string>();
+    value.derived.forEach((source, index) => {
+      if (data.has(source.id) || derived.has(source.id))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['derived', index, 'id'],
+          message: `Derived source ${source.id} collides with another source.`,
+        });
+      derived.add(source.id);
+    });
+    value.scenes.forEach((scene, sceneIndex) =>
+      scene.layers.forEach((layer, layerIndex) => {
+        if (!data.has(layer.sourceId) && !derived.has(layer.sourceId))
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['scenes', sceneIndex, 'layers', layerIndex, 'sourceId'],
+            message: `Layer source ${layer.sourceId} is neither a data resource nor a derived source.`,
+          });
+      }),
+    );
   });
 
 export const ResolvedAssetsSchema = z.array(
@@ -311,6 +427,15 @@ export const CAPABILITY_IDS = [
   'control.visibility',
   'control.opacity',
   'control.radius',
+  'height.column',
+  'height.extrusion',
+  'change.symbol',
+  'aggregate.hexbin',
+  'flow.arc',
+  'flow.trip',
+  'motion.grow',
+  'motion.morph',
+  'motion.trail',
 ] as const;
 export const CapabilityCatalogSchema = z
   .object({
@@ -333,6 +458,7 @@ export const CapabilityCatalogSchema = z
 
 export type Compiled = z.infer<typeof CompiledSchema>;
 export type ResolvedScale = z.infer<typeof ResolvedScaleSchema>;
+export type DerivedSource = z.infer<typeof DerivedSourceSchema>;
 export type BasemapTint = z.infer<typeof BasemapTintSchema>;
 export type ResolvedAssets = z.infer<typeof ResolvedAssetsSchema>;
 export type CapabilityCatalog = z.infer<typeof CapabilityCatalogSchema>;

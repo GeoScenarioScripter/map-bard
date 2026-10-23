@@ -4,13 +4,19 @@ import {
   COMPILED_VERSION,
   CompiledSchema,
   FontFamilySchema,
+  LAYER_V2_FIELDS,
+  TECHNIQUE_BACKENDS,
+  V2_TECHNIQUES,
   type CapabilityCatalog,
+  type Callout,
   type Compiled,
   type DataResource,
+  type DerivedSource,
   type Diagnostic,
   type LayerBinding,
   type ResolvedScale,
   type Result,
+  type V2Technique,
   type ValidatedProject,
   validateProject,
 } from '@mapbard/schema';
@@ -37,13 +43,16 @@ import {
 import {
   categoryColorScale,
   numericColorScale,
+  numericHeightScale,
   numericSizeScale,
+  numericWidthScale,
   type ClassificationMethod,
   type ScaleInput,
   type ScaleKey,
 } from './scales.js';
-import { resolveSceneMotion } from './motion.js';
+import { REFERENCE_VIEWPORT, resolveSceneMotion } from './motion.js';
 import { resolveSceneCallouts } from './callouts.js';
+import { TECHNIQUE_COMPILERS } from './dispatch.js';
 
 export const COMPILER_VERSION = 's1-w3-a.1';
 
@@ -83,6 +92,68 @@ const CLASSIFICATION_CAPABILITY: Record<ClassificationMethod, CapabilityId> = {
   'natural-breaks': 'color.natural-breaks',
   manual: 'color.manual-breaks',
 };
+
+const isV2Technique = (technique: string): technique is V2Technique =>
+  (V2_TECHNIQUES as readonly string[]).includes(technique);
+
+/** The techniques each V2 layer field applies to. */
+const V2_FIELD_TECHNIQUES: Record<(typeof LAYER_V2_FIELDS)[number], readonly string[]> = {
+  column: ['column', 'change'],
+  compare: ['change'],
+  transition: ['column', 'extrusion', 'change', 'hexbin'],
+  aggregate: ['hexbin'],
+  extrude: ['hexbin'],
+  arc: ['arc'],
+  trip: ['trip'],
+};
+/** Continuous encodings: one mapping from zero to the largest mark that `field` sets. */
+const CONTINUOUS_SCALES = {
+  size: {
+    kind: 'numeric-size',
+    field: 'maxRadius',
+    noun: 'radii',
+    capability: 'size.graduated-area',
+  },
+  // Height and width scales come with their techniques, which check their own capabilities.
+  height: {
+    kind: 'numeric-height',
+    field: 'maxHeightMeters',
+    noun: 'heights',
+    capability: undefined,
+  },
+  width: { kind: 'numeric-width', field: 'maxWidth', noun: 'widths', capability: undefined },
+} as const satisfies Record<
+  string,
+  {
+    kind: ResolvedScale['kind'];
+    field: 'maxRadius' | 'maxHeightMeters' | 'maxWidth';
+    noun: string;
+    capability: CapabilityId | undefined;
+  }
+>;
+
+/** The techniques each visual variable applies to; colour and opacity have their own checks. */
+const VARIABLE_TECHNIQUES: Partial<Record<string, readonly string[]>> = {
+  size: ['point', 'graduated-symbol', 'change'],
+  height: ['column', 'extrusion', 'change'],
+  width: ['arc'],
+};
+
+/**
+ * Ground metres per CSS pixel of a MapLibre camera (512-pixel tiles) at a latitude: the scale
+ * that turns a default column height into a share of the view.
+ */
+export function metresPerPixel(zoom: number, latitude: number): number {
+  return (40075016.686 * Math.cos((latitude * Math.PI) / 180)) / (512 * 2 ** zoom);
+}
+
+/** The default tallest height: a fifth of the reference desktop view at the scene's camera. */
+export function defaultMaxHeightMeters(camera: { center: [number, number]; zoom: number }): number {
+  const metres = (metresPerPixel(camera.zoom, camera.center[1]) * REFERENCE_VIEWPORT.height) / 5;
+  // Two significant figures, so the compiled number reads as chosen rather than computed.
+  const step = 10 ** (Math.floor(Math.log10(metres)) - 1);
+  return Math.max(1, Math.round(metres / step) * step);
+}
 
 function key(sceneId: string, layerId: string): string {
   return `${sceneId.length}:${sceneId}:${layerId.length}:${layerId}`;
@@ -341,7 +412,7 @@ function valuesFor(context: LayerContext, diagnostics: Diagnostic[], numeric: bo
 
 function resolveScale(
   input: ScaleInput,
-  kind: 'numeric-color' | 'category-color' | 'numeric-size',
+  kind: ResolvedScale['kind'],
   diagnostics: Diagnostic[],
 ): ResolvedScale | undefined {
   const result =
@@ -349,7 +420,11 @@ function resolveScale(
       ? numericColorScale(input)
       : kind === 'numeric-size'
         ? numericSizeScale(input)
-        : categoryColorScale(input);
+        : kind === 'numeric-height'
+          ? numericHeightScale(input)
+          : kind === 'numeric-width'
+            ? numericWidthScale(input)
+            : categoryColorScale(input);
   diagnostics.push(...result.diagnostics);
   return result.scale;
 }
@@ -506,6 +581,8 @@ export function compileProject(
     }),
   );
   const contexts = new Map<string, LayerContext>();
+  const derived: DerivedSource[] = [];
+  const generatedCallouts = new Map<string, Callout[]>();
   const runtimeIds = new Set<string>();
   const compiledScenes: Compiled['scenes'] = [];
   for (const [sceneIndex, scene] of narrative.scenes.entries()) {
@@ -639,32 +716,89 @@ export function compileProject(
             ids,
           ),
         );
-      if (
-        layer.encode?.visualVariable === 'size' &&
-        layer.technique !== 'graduated-symbol' &&
-        layer.technique !== 'point'
-      )
+      const variable = layer.encode?.visualVariable;
+      const variableTechniques = variable ? VARIABLE_TECHNIQUES[variable] : undefined;
+      if (variableTechniques && !variableTechniques.includes(layer.technique))
         diagnostics.push(
           issue(
             'CAPABILITY_UNSUPPORTED',
             'narrative',
             [...at, 'encode'],
-            'Graduated size is supported only for points.',
-            'Use a point layer.',
+            variable === 'size'
+              ? 'Graduated size is supported only for points.'
+              : `A ${variable} encoding applies to ${variableTechniques.join(', ')} layers, not ${layer.technique}.`,
+            variable === 'size'
+              ? 'Use a point layer.'
+              : `Use a ${variableTechniques.join(' or ')} technique, or encode colour.`,
             ids,
           ),
         );
-      if (layer.encode?.maxRadius !== undefined && layer.encode.visualVariable !== 'size')
+      for (const [field, needs] of [
+        ['maxRadius', 'size'],
+        ['maxHeightMeters', 'height'],
+        ['maxWidth', 'width'],
+      ] as const)
+        if (layer.encode?.[field] !== undefined && variable !== needs)
+          diagnostics.push(
+            issue(
+              'CAPABILITY_UNSUPPORTED',
+              'narrative',
+              [...at, 'encode', field],
+              `${field} applies only to ${needs} encodings.`,
+              `Remove ${field} or encode ${needs}.`,
+              ids,
+            ),
+          );
+      for (const field of LAYER_V2_FIELDS)
+        if (layer[field] !== undefined && !V2_FIELD_TECHNIQUES[field].includes(layer.technique))
+          diagnostics.push(
+            issue(
+              'CAPABILITY_UNSUPPORTED',
+              'narrative',
+              [...at, field],
+              `${field} applies to ${V2_FIELD_TECHNIQUES[field].join(', ')} layers, not ${layer.technique}.`,
+              `Remove ${field} or use a technique it applies to.`,
+              ids,
+            ),
+          );
+      // Format 0.1 projects keep the V1 techniques; V2 needs the format 0.2 files.
+      const v2Variable = variable === 'height' || variable === 'width';
+      if (
+        project.authoredFormat !== '0.2.0' &&
+        (isV2Technique(layer.technique) ||
+          v2Variable ||
+          LAYER_V2_FIELDS.some((field) => layer[field] !== undefined))
+      )
         diagnostics.push(
           issue(
-            'CAPABILITY_UNSUPPORTED',
+            'VERSION_UNSUPPORTED',
             'narrative',
-            [...at, 'encode', 'maxRadius'],
-            'maxRadius applies only to size encodings.',
-            'Remove maxRadius or encode size.',
+            [...at, 'technique'],
+            'V2 techniques and fields need a format 0.2 project.',
+            'Run mapbard migrate, then author the layer in story.json.',
             ids,
           ),
         );
+      const v2 =
+        project.authoredFormat === '0.2.0' && isV2Technique(layer.technique)
+          ? TECHNIQUE_COMPILERS[layer.technique]({
+              sceneId: scene.id,
+              layer,
+              resource,
+              features,
+              path: at,
+              ids,
+            })
+          : undefined;
+      if (v2) {
+        diagnostics.push(...v2.diagnostics);
+        derived.push(...(v2.derived ?? []));
+        if (v2.callouts?.length)
+          generatedCallouts.set(scene.id, [
+            ...(generatedCallouts.get(scene.id) ?? []),
+            ...v2.callouts,
+          ]);
+      }
       if (layer.technique === 'graduated-symbol' && layer.encode?.visualVariable !== 'size')
         diagnostics.push(
           issue(
@@ -764,6 +898,7 @@ export function compileProject(
               : {}),
           }
         : designed?.constant;
+      const technique = layer.technique === 'heatmap' ? 'point' : layer.technique;
       if (actualGeometry)
         layers.push({
           sceneId: scene.id,
@@ -771,11 +906,13 @@ export function compileProject(
           runtimeId: id,
           sourceId: resource.id,
           geometry: actualGeometry,
-          technique: layer.technique === 'heatmap' ? 'point' : layer.technique,
+          technique,
+          backend: TECHNIQUE_BACKENDS[technique],
           ...(layer.encode ? { attribute: layer.encode.attribute, scaleId } : {}),
           ...(filter ? { filter } : {}),
           ...(constant ? { constant } : {}),
           ...(themed?.outline ? { outline: themed.outline } : {}),
+          ...v2?.layer,
         });
     }
     const annotations = (sceneDesign?.annotations ?? []).map((item) => ({
@@ -978,6 +1115,8 @@ export function compileProject(
 
   const scales: ResolvedScale[] = [];
   const handled = new Set<string>();
+  const sceneCamera = (sceneId: string) =>
+    narrative.scenes.find((scene) => scene.id === sceneId)!.camera;
   for (const scale of design.sharedScales) {
     const members: LayerContext[] = scale.members
       .map((member) => contexts.get(key(member.sceneId, member.layerId)))
@@ -985,6 +1124,8 @@ export function compileProject(
     if (members.length !== scale.members.length) continue;
     const first = members[0]!;
     const color = scale.visualVariable === 'color' ? scale : undefined;
+    const variable = scale.visualVariable;
+    const continuous = variable === 'color' ? undefined : CONTINUOUS_SCALES[variable];
     const sameBreaks = (breaks: number[] | undefined) =>
       JSON.stringify(breaks ?? null) === JSON.stringify(color?.breaks ?? null);
     if (
@@ -994,7 +1135,8 @@ export function compileProject(
             item.layer.classification?.method !== color.method ||
             item.layer.classification.classes !== color.classes ||
             !sameBreaks(item.layer.classification.breaks)
-          : item.layer.encode?.visualVariable !== 'size' || item.layer.classification !== undefined,
+          : item.layer.encode?.visualVariable !== variable ||
+            item.layer.classification !== undefined,
       )
     )
       diagnostics.push(
@@ -1004,34 +1146,37 @@ export function compileProject(
           ['sharedScales', scale.id],
           color
             ? `Shared scale members must use the same ${color.method} color classification.`
-            : 'Shared size scale members must encode size without classification.',
+            : `Shared ${variable} scale members must encode ${variable} without classification.`,
           color
             ? 'Align the encoding, method, classes and breaks of every member with the shared scale.'
-            : 'Encode size on every member and remove member classifications.',
+            : `Encode ${variable} on every member and remove member classifications.`,
           { scaleId: scale.id },
         ),
       );
-    // One mapping: the shared scale's largest radius, else the one its members agree on.
-    const maxRadius = color
-      ? undefined
-      : ((scale.visualVariable === 'size' ? scale.maxRadius : undefined) ??
-        members.find((member) => member.layer.encode?.maxRadius !== undefined)?.layer.encode
-          ?.maxRadius);
+    // One mapping: the shared scale's largest mark, else the one its members agree on.
+    const field = continuous?.field;
+    const authoredLargest = field
+      ? (scale as Partial<Record<typeof field, number>>)[field]
+      : undefined;
+    const largest = field
+      ? (authoredLargest ??
+        members.find((member) => member.layer.encode?.[field] !== undefined)?.layer.encode?.[field])
+      : undefined;
     if (
-      !color &&
+      field &&
+      continuous &&
       members.some(
         (member) =>
-          member.layer.encode?.maxRadius !== undefined &&
-          member.layer.encode.maxRadius !== maxRadius,
+          member.layer.encode?.[field] !== undefined && member.layer.encode[field] !== largest,
       )
     )
       diagnostics.push(
         issue(
           'MEASUREMENT_INCOMPATIBLE',
           'design',
-          ['sharedScales', scale.id, 'maxRadius'],
-          'Shared size scale members set different largest radii.',
-          'Set maxRadius once on the shared scale and remove it from the member layers.',
+          ['sharedScales', scale.id, field],
+          `Shared ${variable} scale members set different largest ${continuous.noun}.`,
+          `Set ${field} once on the shared scale and remove it from the member layers.`,
           { scaleId: scale.id },
         ),
       );
@@ -1039,13 +1184,13 @@ export function compileProject(
       handled.add(key(member.sceneId, member.layer.id));
       checkMeasurement(member, color ? 'color' : 'size', diagnostics, scale.id);
     });
-    capability(
-      capabilities,
-      color ? CLASSIFICATION_CAPABILITY[color.method] : 'size.graduated-area',
-      diagnostics,
-      ['sharedScales', scale.id],
-      { scaleId: scale.id },
-    );
+    const scaleCapability = color
+      ? CLASSIFICATION_CAPABILITY[color.method]
+      : continuous?.capability;
+    if (scaleCapability)
+      capability(capabilities, scaleCapability, diagnostics, ['sharedScales', scale.id], {
+        scaleId: scale.id,
+      });
     const values = members.flatMap((member) => valuesFor(member, diagnostics, true));
     const firstDeclaration = first.resource.attributes.find(
       (entry) => entry.name === first.layer.encode?.attribute,
@@ -1063,10 +1208,13 @@ export function compileProject(
       ...(color ? { method: color.method } : {}),
       ...(color?.breaks ? { breaks: color.breaks } : {}),
       ...(color?.domain ? { domain: color.domain } : {}),
-      ...(maxRadius !== undefined ? { maxRadius } : {}),
+      ...(field && largest !== undefined ? { [field]: largest } : {}),
+      ...(variable === 'height' && largest === undefined
+        ? { maxHeightMeters: defaultMaxHeightMeters(sceneCamera(first.sceneId)) }
+        : {}),
       path: ['sharedScales', scale.id],
     };
-    const resolved = resolveScale(input, color ? 'numeric-color' : 'numeric-size', diagnostics);
+    const resolved = resolveScale(input, continuous?.kind ?? 'numeric-color', diagnostics);
     if (resolved) scales.push(resolved);
   }
   for (const context of contexts.values()) {
@@ -1087,12 +1235,27 @@ export function compileProject(
       );
       continue;
     }
-    const kind =
-      layer.encode.visualVariable === 'size'
-        ? 'numeric-size'
-        : layer.technique === 'categorical' || declaration.role !== 'quantity'
-          ? 'category-color'
-          : 'numeric-color';
+    const variable = layer.encode.visualVariable;
+    const continuous =
+      variable === 'size' || variable === 'height' || variable === 'width'
+        ? CONTINUOUS_SCALES[variable]
+        : undefined;
+    const kind: ResolvedScale['kind'] =
+      continuous?.kind ??
+      (layer.technique === 'categorical' || declaration.role !== 'quantity'
+        ? 'category-color'
+        : 'numeric-color');
+    if (continuous && continuous.kind !== 'numeric-size' && layer.classification)
+      diagnostics.push(
+        issue(
+          'CAPABILITY_UNSUPPORTED',
+          'narrative',
+          ['scenes', context.sceneId, 'layers', layer.id, 'classification'],
+          `A ${variable} encoding is linear from zero and cannot be classified.`,
+          'Remove the classification from this encoding.',
+          { sceneId: context.sceneId, layerId: layer.id },
+        ),
+      );
     if (kind === 'numeric-color' && !layer.classification)
       diagnostics.push(
         issue(
@@ -1143,18 +1306,22 @@ export function compileProject(
         ),
       );
     if (kind === 'numeric-color') checkMeasurement(context, 'color', diagnostics, scaleId);
-    if (kind === 'numeric-size') checkMeasurement(context, 'size', diagnostics, scaleId);
-    capability(
-      capabilities,
+    // Heights and widths are bars: like area, they need a ratio quantity with a real zero.
+    if (continuous) checkMeasurement(context, 'size', diagnostics, scaleId);
+    const scaleCapability =
       kind === 'numeric-color'
         ? CLASSIFICATION_CAPABILITY[layer.classification?.method ?? 'equal-interval']
-        : kind === 'numeric-size'
-          ? 'size.graduated-area'
-          : 'color.categorical',
-      diagnostics,
-      ['scenes', context.sceneId, 'layers', layer.id],
-      { sceneId: context.sceneId, layerId: layer.id },
-    );
+        : kind === 'category-color'
+          ? 'color.categorical'
+          : continuous?.capability;
+    if (scaleCapability)
+      capability(
+        capabilities,
+        scaleCapability,
+        diagnostics,
+        ['scenes', context.sceneId, 'layers', layer.id],
+        { sceneId: context.sceneId, layerId: layer.id },
+      );
     const input: ScaleInput = {
       id: scaleId,
       title: scaleTitle(declaration, layer.encode.attribute),
@@ -1166,6 +1333,13 @@ export function compileProject(
       ...(layer.classification ? { method: layer.classification.method } : {}),
       ...(layer.classification?.breaks ? { breaks: layer.classification.breaks } : {}),
       ...(layer.encode.maxRadius !== undefined ? { maxRadius: layer.encode.maxRadius } : {}),
+      ...(layer.encode.maxWidth !== undefined ? { maxWidth: layer.encode.maxWidth } : {}),
+      ...(variable === 'height'
+        ? {
+            maxHeightMeters:
+              layer.encode.maxHeightMeters ?? defaultMaxHeightMeters(sceneCamera(context.sceneId)),
+          }
+        : {}),
       path: ['features', 'properties', layer.encode.attribute],
     };
     const resolved = resolveScale(input, kind, diagnostics);
@@ -1173,6 +1347,7 @@ export function compileProject(
   }
 
   for (const scene of compiledScenes) {
+    const generated = generatedCallouts.get(scene.id) ?? [];
     scene.callouts = resolveSceneCallouts(
       scene.annotations,
       scene.layers,
@@ -1181,6 +1356,13 @@ export function compileProject(
         const feature = featureMap.get(sourceId)?.find((entry) => entry.id === id);
         return feature && { feature, points: featurePoints(project, sourceId, feature) };
       },
+    );
+    // Generated callouts (change labels) place after the author's, in the order compiled.
+    scene.callouts.push(
+      ...generated.map((callout, index) => ({
+        ...callout,
+        priority: scene.callouts.length + index,
+      })),
     );
   }
 
@@ -1303,6 +1485,7 @@ export function compileProject(
     basemap,
     scenes: compiledScenes,
     scales,
+    derived,
     resources,
     requiredNetwork: [...requiredNetwork].sort(),
   };

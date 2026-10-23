@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ClassificationMethodSchema, LngLatSchema, MaxRadiusSchema } from './geo-narrative.js';
 import { DESIGN_VERSION, ExtensionsSchema, IdSchema } from './project.js';
+import { MaxHeightMetersSchema, MaxWidthSchema } from './techniques.js';
 
 export const AnnotationSchema = z
   .object({
@@ -67,6 +68,22 @@ export const SharedScaleSchema = z.discriminatedUnion('visualVariable', [
       visualVariable: z.literal('size'),
       /** Radius of the largest symbol, in CSS pixels (default 16). */
       maxRadius: MaxRadiusSchema.optional(),
+    })
+    .strict(),
+  // Columns and extrusions: one linear height from zero over every member.
+  z
+    .object({
+      ...sharedScaleBase,
+      visualVariable: z.literal('height'),
+      maxHeightMeters: MaxHeightMetersSchema.optional(),
+    })
+    .strict(),
+  // Arcs: one linear width from zero over every member.
+  z
+    .object({
+      ...sharedScaleBase,
+      visualVariable: z.literal('width'),
+      maxWidth: MaxWidthSchema.optional(),
     })
     .strict(),
 ]);

@@ -51,6 +51,20 @@ export const ThemeRampsSchema = z
   })
   .strict();
 
+/**
+ * Light on 3D data (columns, extrusions), applied as the MapLibre style `light` anchored to the
+ * map. `azimuth` is the compass direction the light comes from and `altitude` its angle above
+ * the horizon, both in degrees.
+ */
+export const ThemeLightSchema = z
+  .object({
+    azimuth: z.number().finite().min(0).max(360),
+    altitude: z.number().finite().min(0).max(90),
+    intensity: z.number().finite().min(0).max(1),
+    color: HexColorSchema,
+  })
+  .strict();
+
 /** Authored theme: a preset plus optional overrides; omitted fields come from the preset. */
 export const ThemeTokensSchema = z.object({
   preset: z.enum(THEME_PRESETS).optional(),
@@ -60,6 +74,7 @@ export const ThemeTokensSchema = z.object({
   bodyFont: z.string().optional(),
   colors: ThemeColorsSchema.partial().strict().optional(),
   ramps: ThemeRampsSchema.partial().strict().optional(),
+  light: ThemeLightSchema.partial().strict().optional(),
 });
 
 const FontSchema = z
@@ -78,6 +93,7 @@ export const ResolvedThemeSchema = z
     colors: ThemeColorsSchema,
     palette: z.array(z.string()).min(1),
     ramps: ThemeRampsSchema,
+    light: ThemeLightSchema,
     fonts: z.object({ display: FontSchema, body: FontSchema }).strict(),
     type: z
       .object({
@@ -105,3 +121,4 @@ export type ThemePreset = (typeof THEME_PRESETS)[number];
 export type ThemeTokens = z.infer<typeof ThemeTokensSchema>;
 export type ThemeColors = z.infer<typeof ThemeColorsSchema>;
 export type ResolvedTheme = z.infer<typeof ResolvedThemeSchema>;
+export type ThemeLight = z.infer<typeof ThemeLightSchema>;

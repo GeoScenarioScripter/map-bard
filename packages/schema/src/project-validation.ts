@@ -57,6 +57,8 @@ export const CompiledBundleSchema = z
     mediaCopies: ResolvedAssetsSchema,
     /** Font families the writer copies into fonts/ with their licences. */
     fonts: z.array(FontFamilySchema),
+    /** Renderer tiers the story uses; the writer copies only these into vendor/. */
+    tiers: z.array(z.enum(['deck'])),
     input: InputSnapshotSchema,
     diagnostics: z.array(DiagnosticSchema),
     requiredNetwork: z.array(z.string().url()),

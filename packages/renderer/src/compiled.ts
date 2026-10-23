@@ -57,6 +57,14 @@ const SHADOWS = {
   strong: '0 18px 48px rgba(0, 0, 0, 0.42)',
 } as const;
 
+/** Renderer tiers the story's layers use; a story with none loads only the core. */
+export function compiledTiers(compiled: Compiled): CompiledBundle['tiers'] {
+  const backends = new Set(
+    compiled.scenes.flatMap((scene) => scene.layers.map((layer) => layer.backend)),
+  );
+  return backends.has('deck') ? ['deck'] : [];
+}
+
 /** Families the publication must ship in `fonts/`. */
 export function bundledFonts(compiled: Compiled): string[] {
   const { display, body } = compiled.theme.fonts;
@@ -145,13 +153,17 @@ function html(compiled: Compiled): string {
         `<li>${escapeHtml(resource.name ?? resource.id)}: ${escapeHtml(resource.credit ?? '')}${resource.qualification ? ` — ${escapeHtml(resource.qualification)}` : ''}</li>`,
     )
     .join('');
+  // Tier scripts register with the player, so they load after it and before the app starts.
+  const tierScripts = compiledTiers(compiled)
+    .map((tier) => `<script src="vendor/tier-${tier}.js"></script>`)
+    .join('');
   return `<!doctype html>
 <html lang="en" data-mb-theme="${compiled.theme.preset}" data-mb-layout="${compiled.layout.template}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(compiled.title)}</title><link rel="stylesheet" href="vendor/maplibre-gl.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"></head>
 <body><div id="map" aria-label="Story map"></div><div id="mb-rail" class="mb-rail"><aside id="legends" class="mb-legend-host" hidden></aside><aside id="controls" class="mb-controls" hidden></aside><aside id="media" class="mb-compiled-media"></aside></div><button id="mb-motion-toggle" class="mb-motion-toggle" type="button" aria-pressed="false" hidden>Pause animation</button>
 <main id="story"><header class="mb-intro"><div class="mb-intro-panel"><h1>${escapeHtml(compiled.title)}</h1><p>${escapeHtml(compiled.intent)}</p><p class="mb-scroll-hint">Scroll to explore the story</p></div></header>
 ${scenes}<footer class="mb-outro"><div class="mb-intro-panel"><p>Made with MapBard.</p>${credits ? `<h2>Sources and qualifications</h2><ul>${credits}</ul>` : ''}</div></footer></main>
-<script src="vendor/maplibre-gl.js"></script><script src="vendor/maplibre-gl-worker.js"></script><script src="compiled-data.js"></script><script src="player.js"></script><script src="compiled-app.js"></script></body></html>\n`;
+<script src="vendor/maplibre-gl.js"></script><script src="vendor/maplibre-gl-worker.js"></script><script src="compiled-data.js"></script><script src="player.js"></script>${tierScripts}<script src="compiled-app.js"></script></body></html>\n`;
 }
 
 const app = `(() => {
@@ -294,7 +306,8 @@ const app = `(() => {
             const box = map.getContainer().getBoundingClientRect();
             return adapter.drawnSymbols().map((symbol) => ({ ...symbol, x: symbol.x + box.left, y: symbol.y + box.top }));
           },
-          whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }),
+          // Idle also waits for each renderer tier's first drawn frame.
+          whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }).then(() => adapter.whenDrawn()),
         };
         // Capture pages opt in before load; only they may hold a scene at a chosen progress.
         if (window.MAPBARD_CAPTURE === true) {
@@ -311,7 +324,7 @@ const app = `(() => {
           root.toggleAttribute('data-mb-bookend', framing.size > 0);
         }, { rootMargin: '-50% 0px -50% 0px' });
         document.querySelectorAll('.mb-intro, .mb-outro').forEach((element) => bookends.observe(element));
-        cleanup = () => { tracker.dispose(); stopNorth(); toggle.removeEventListener('click', onToggle); toggle.hidden = true; bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); delete window.MapBardStory; };
+        cleanup = () => { tracker.dispose(); stopNorth(); toggle.removeEventListener('click', onToggle); toggle.hidden = true; bookends.disconnect(); removeEventListener('resize', refit); player.dispose(); adapter.dispose(); delete window.MapBardStory; };
         switching = false;
         root.dataset.mbState = 'ready';
       } catch (error) { showError(error); map.remove(); }
@@ -410,6 +423,20 @@ export function renderCompiled(
         ),
       );
     }
+  }
+  // Derived sources ship beside the resources; each must come from the bytes compiled here.
+  for (const source of compiled.derived) {
+    if (source.inputs.some((input) => expected.get(input.sourceId) !== input.sha256))
+      diagnostics.push(
+        issue(
+          'INPUT_STALE',
+          ['derived'],
+          'A derived source was computed from other data than this compilation.',
+          'Recompile the project.',
+          { sourceId: source.id },
+        ),
+      );
+    else data.set(source.id, source.data);
   }
   const localMedia = compiled.resources.filter((item) => item.kind !== 'data' && item.bundlePath);
   if (
@@ -516,6 +543,7 @@ export function renderCompiled(
       files,
       mediaCopies: publication.assets,
       fonts: bundledFonts(compiled),
+      tiers: compiledTiers(compiled),
       input: compiled.input,
       diagnostics: [],
       requiredNetwork: compiled.requiredNetwork,

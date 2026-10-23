@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { LAYOUT_TEMPLATES } from './layout.js';
 import { ThemeTokensSchema } from './theme.js';
+import { V2_TECHNIQUES, encodeV2Fields, layerV2Fields } from './techniques.js';
 
 /** Bumped when the schema shape changes in a breaking way. */
 export const SCHEMA_VERSION = '0.1.0';
@@ -137,6 +138,9 @@ export const DiscourseDimensionsSchema = z.object({
 export const DEFAULT_MAX_RADIUS = 16;
 export const MaxRadiusSchema = z.number().finite().min(4).max(48);
 
+/** `height` and `width` (V2) are linear from zero, like bars. */
+export const VISUAL_VARIABLES = ['color', 'size', 'opacity', 'height', 'width'] as const;
+
 export const ClassificationMethodSchema = z.enum([
   'equal-interval',
   'quantile',
@@ -155,13 +159,15 @@ export const LayerBindingSchema = z.object({
     'line',
     'point',
     'fill',
+    ...V2_TECHNIQUES,
   ]),
   encode: z
     .object({
       attribute: z.string(),
-      visualVariable: z.enum(['color', 'size', 'opacity']),
+      visualVariable: z.enum(VISUAL_VARIABLES),
       /** Size encodings only: radius of the largest symbol, in CSS pixels (default 16). */
       maxRadius: MaxRadiusSchema.optional(),
+      ...encodeV2Fields,
     })
     .optional(),
   classification: z
@@ -174,6 +180,7 @@ export const LayerBindingSchema = z.object({
     .optional(),
   /** Simple expression, e.g. "year == 2020". */
   filter: z.string().optional(),
+  ...layerV2Fields,
 });
 
 export const CameraSchema = z.object({

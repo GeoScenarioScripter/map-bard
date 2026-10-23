@@ -79,6 +79,13 @@ function oneLegend(scale: ResolvedScale, layer: CompiledLayer, accent: string): 
   } else if (scale.kind === 'category-color') {
     kind = 'categories';
     body = `<ul>${scale.categories.map(({ label, color }) => row(swatch(color, geometry), label)).join('')}</ul>`;
+  } else if (scale.kind === 'numeric-height') {
+    // On-screen height changes with pitch and zoom, so the key states the range in words.
+    kind = 'heights';
+    body = `<ul>${row('', `Height from 0 to ${scale.tallest.label}`)}</ul>`;
+  } else if (scale.kind === 'numeric-width') {
+    kind = 'widths';
+    body = `<ul>${scale.legend.map((entry) => row('', entry.label)).join('')}</ul>`;
   } else {
     kind = 'sizes';
     // Nothing to nest when every value maps to zero area: list the compiled labels instead.

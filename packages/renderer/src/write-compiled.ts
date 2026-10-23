@@ -93,6 +93,10 @@ export async function writeCompiledBundle(
       ],
     };
   const diagnostics: Diagnostic[] = [];
+  // Only the tiers a story uses are copied, so a story without deck.gl techniques ships none.
+  const tiers = bundle.tiers.map(
+    (tier) => [`@mapbard/renderer/vendor/tier-${tier}.js`, `vendor/tier-${tier}.js`] as const,
+  );
   const fonts: [string, string][] = [];
   for (const family of bundle.fonts) {
     const file = FONT_FILES[family];
@@ -108,6 +112,7 @@ export async function writeCompiledBundle(
   }
   const destinations = [
     ...fixedPaths,
+    ...tiers.map((item) => item[1]),
     ...fonts.map((item) => item[1]),
     ...bundle.mediaCopies.map((item) => item.bundlePath),
   ];
@@ -196,6 +201,7 @@ export async function writeCompiledBundle(
   for (const spec of [
     builtPlayer,
     ...vendor.map((item) => item[0]),
+    ...tiers.map((item) => item[0]),
     ...fonts.map((item) => item[0]),
   ]) {
     try {
@@ -238,7 +244,7 @@ export async function writeCompiledBundle(
       await writeFile(join(staging, path), content, 'utf8');
     await copyFile(join(runtimeDir, 'style.css'), join(staging, 'style.css'));
     await copyFile(require.resolve(builtPlayer), join(staging, 'player.js'));
-    for (const [spec, path] of [...vendor, ...fonts]) {
+    for (const [spec, path] of [...vendor, ...tiers, ...fonts]) {
       await mkdir(dirname(join(staging, path)), { recursive: true });
       await copyFile(require.resolve(spec), join(staging, path));
     }

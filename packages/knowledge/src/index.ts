@@ -61,11 +61,18 @@ export function techniqueGeometry(technique: LayerBinding['technique']): Geometr
   switch (technique) {
     case 'point':
     case 'graduated-symbol':
+    case 'column':
+    case 'change':
+    case 'hexbin':
+      // Hexbins take points and aggregate them into derived cells.
       return 'point';
     case 'line':
+    case 'arc':
+    case 'trip':
       return 'line';
     case 'fill':
     case 'choropleth':
+    case 'extrusion':
       return 'polygon';
     case 'categorical':
     case 'heatmap':

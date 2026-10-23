@@ -300,3 +300,77 @@ describe('compiled publication', () => {
     }
   });
 });
+
+describe('renderer tiers and derived sources (compiled 0.4.0)', () => {
+  /** The fixture with its first layer drawn by the deck tier (as an arc layer would be). */
+  const deckStory = (): Compiled => {
+    const story = structuredClone(fixture);
+    const layer = story.scenes[0]!.layers[0]!;
+    Object.assign(layer, { technique: 'arc', geometry: 'line', backend: 'deck' });
+    return story;
+  };
+
+  it('loads no tier for a story without deck layers', async () => {
+    const result = renderCompiled(fixture, publication());
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(result.value.tiers).toEqual([]);
+    expect(result.value.files['index.html']).not.toContain('tier-');
+    const root = await mkdtemp(join(tmpdir(), 'mapbard-tiers-'));
+    try {
+      const written = await writeCompiledBundle(result.value, join(root, 'story'));
+      if (!written.ok) throw new Error(JSON.stringify(written.diagnostics));
+      expect(written.value.written.filter((path) => path.includes('tier-'))).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('ships the deck tier and its script tag, between the player and the app', async () => {
+    const result = renderCompiled(deckStory(), publication());
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(result.value.tiers).toEqual(['deck']);
+    expect(result.value.files['index.html']).toContain(
+      '<script src="player.js"></script><script src="vendor/tier-deck.js"></script><script src="compiled-app.js"></script>',
+    );
+    const root = await mkdtemp(join(tmpdir(), 'mapbard-tiers-'));
+    try {
+      const out = join(root, 'story');
+      const written = await writeCompiledBundle(result.value, out);
+      if (!written.ok) throw new Error(JSON.stringify(written.diagnostics));
+      expect(written.value.written).toContain('vendor/tier-deck.js');
+      const tier = await readFile(join(out, 'vendor/tier-deck.js'), 'utf8');
+      expect(tier).toContain('registerTier');
+      expect(() => new Script(tier)).not.toThrow();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('adds derived sources to the page data only when computed from the compiled bytes', () => {
+    const story = structuredClone(fixture);
+    const source = {
+      id: 'mb-derived:change',
+      kind: 'change' as const,
+      inputs: [{ sourceId: 'period-a', sha256: digest(dataBytes[0]!.bytes) }],
+      parameters: { compare: 'period-b' },
+      data: {
+        type: 'FeatureCollection' as const,
+        features: [
+          { type: 'Feature' as const, id: 1, geometry: null, properties: { 'mb:delta': -3 } },
+        ],
+      },
+    };
+    story.derived = [source];
+    const result = renderCompiled(story, publication());
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(result.value.files['compiled-data.js']).toContain('"mb-derived:change":{"type"');
+    story.derived = [
+      { ...source, inputs: [{ sourceId: 'period-a', sha256: digest(new Uint8Array([1])) }] },
+    ];
+    const stale = renderCompiled(story, publication());
+    expect(stale.ok).toBe(false);
+    expect(stale.diagnostics).toEqual([
+      expect.objectContaining({ code: 'INPUT_STALE', path: ['derived'] }),
+    ]);
+  });
+});

@@ -31,6 +31,8 @@ export function scalePaint(scale: ResolvedScale, attribute: string): Expression 
       stops.length === 0 ? scale.colors[0] : ['step', value, scale.colors[0], ...stops];
     return ['case', validNumber(attribute), color, scale.noDataColor];
   }
+  if (scale.kind === 'numeric-height' || scale.kind === 'numeric-width')
+    throw new Error(`No paint for a ${scale.kind} scale yet (${scale.id})`);
   const [min, max] = scale.domain;
   const [lowRadius, highRadius] = scale.radiusRange;
   const radius: unknown =
@@ -38,6 +40,19 @@ export function scalePaint(scale: ResolvedScale, attribute: string): Expression 
       ? highRadius
       : ['+', lowRadius, ['*', highRadius - lowRadius, ['sqrt', ['/', value, max]]]];
   return ['case', validNumber(attribute), radius, scale.noDataRadius];
+}
+
+/**
+ * A feature's height in metres above its base on a numeric-height scale: linear from zero, so
+ * the domain's top value stands `maxHeightMeters` tall. Missing values stand 0 (not drawn tall).
+ */
+export function heightMeters(
+  scale: Extract<ResolvedScale, { kind: 'numeric-height' }>,
+  value: unknown,
+): number {
+  const top = scale.domain[1];
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0 || top <= 0) return 0;
+  return (Math.min(value, top) / top) * scale.maxHeightMeters;
 }
 
 /** Constant point radius and the halo stroke around every circle, in CSS pixels. */
@@ -105,7 +120,7 @@ export function layerStyle(
   const type: 'circle' | 'line' | 'fill' =
     layer.geometry === 'point' ? 'circle' : layer.geometry === 'line' ? 'line' : 'fill';
   const color =
-    scale && scale.kind !== 'numeric-size' && layer.attribute
+    (scale?.kind === 'numeric-color' || scale?.kind === 'category-color') && layer.attribute
       ? scalePaint(scale, layer.attribute)
       : (layer.constant?.color ?? accent);
   const opacity = layer.constant?.opacity ?? 0.85;

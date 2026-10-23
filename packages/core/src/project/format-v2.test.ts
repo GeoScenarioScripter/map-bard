@@ -49,7 +49,7 @@ describe('format 0.2 migration and lock', () => {
     const compiled = compileProject(loaded.value, STAGE1_CAPABILITIES);
     expect(compiled.ok).toBe(true);
     if (compiled.ok) {
-      expect(compiled.value.compiledVersion).toBe('0.3.0');
+      expect(compiled.value.compiledVersion).toBe('0.4.0');
       expect(compiled.value.contractVersions.project).toBe('0.2.0');
       expect(compiled.value.scenes).toHaveLength(3);
       expect(compiled.value.scales.some((scale) => scale.id === 'daily-discharge')).toBe(true);

@@ -16,7 +16,9 @@ import {
   MaxRadiusSchema,
   MediaAnchorSchema,
   SceneMediaSchema,
+  VISUAL_VARIABLES,
 } from './geo-narrative.js';
+import { encodeV2Fields } from './techniques.js';
 import {
   AuthoredSceneMotionSchema,
   MotionPresetsSchema,
@@ -149,9 +151,10 @@ export const StoryLayerSchema = LayerBindingSchema.omit({ dataSourceId: true, fi
     encode: z
       .object({
         attribute: IdSchema,
-        visualVariable: z.enum(['color', 'size', 'opacity']),
+        visualVariable: z.enum(VISUAL_VARIABLES),
         /** Size encodings only: radius of the largest symbol, in CSS pixels (default 16). */
         maxRadius: MaxRadiusSchema.optional(),
+        ...encodeV2Fields,
       })
       .strict()
       .optional(),

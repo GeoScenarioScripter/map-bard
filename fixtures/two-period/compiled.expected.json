@@ -1,5 +1,5 @@
 {
-  "compiledVersion": "0.3.0",
+  "compiledVersion": "0.4.0",
   "contractVersions": {
     "project": "0.1.0",
     "narrative": "0.1.0",
@@ -84,6 +84,12 @@
         "#2166ac"
       ]
     },
+    "light": {
+      "azimuth": 315,
+      "altitude": 45,
+      "intensity": 0.4,
+      "color": "#ffffff"
+    },
     "fonts": {
       "display": {
         "family": "Source Serif 4",
@@ -164,6 +170,7 @@
           "sourceId": "period-a",
           "geometry": "point",
           "technique": "point",
+          "backend": "maplibre",
           "attribute": "value",
           "scaleId": "period-color",
           "constant": {
@@ -265,6 +272,7 @@
           "sourceId": "period-b",
           "geometry": "point",
           "technique": "point",
+          "backend": "maplibre",
           "attribute": "value",
           "scaleId": "period-color",
           "constant": {
@@ -355,6 +363,7 @@
       "effectiveClasses": 3
     }
   ],
+  "derived": [],
   "resources": [
     {
       "id": "period-a",

@@ -667,12 +667,19 @@ h3 {
     flex: 1 1 150px;
     min-width: 0;
   }
+  /* a basemap notice is a thin strip of its own, so the legend and media keep one row
+     below it and the rail never has to scroll a panel out of view */
+  #mb-basemap-notice {
+    flex-basis: 100%;
+    padding: 4px 10px;
+    line-height: 1.35;
+  }
   .mb-compiled-media {
     padding: 8px;
   }
   .mb-compiled-media img,
   .mb-compiled-media video {
-    max-height: 18vh;
+    max-height: 15vh;
   }
   .mb-compiled-media figcaption {
     display: none;

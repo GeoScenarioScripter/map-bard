@@ -178,6 +178,7 @@ const app = `(() => {
     let switching = false;
     let cleanup;
     let attribution;
+    let onSourceData;
     let timer;
     const notice = (message) => {
       let panel = document.querySelector('#mb-basemap-notice');
@@ -206,6 +207,7 @@ const app = `(() => {
       if (cleanup) { cleanup(); cleanup = undefined; }
       root.dataset.mbState = 'loading';
       if (attribution) { map.removeControl(attribution); attribution = undefined; }
+      if (onSourceData) { map.off('sourcedata', onSourceData); onSourceData = undefined; }
       ready = false;
       styleIndex++;
       if (styles[styleIndex]) { map.setStyle(styles[styleIndex].url); timer = setTimeout(failStyle, 12000); }
@@ -219,12 +221,24 @@ const app = `(() => {
         clearTimeout(timer);
         ready = true;
         const chosen = styles[styleIndex];
-        // The provider is credited once: by the style's own sources, else by this line.
-        const credit = document.createElement('span');
-        const own = Object.values(map.getStyle().sources || {}).map((source) => source.attribution || '');
-        credit.textContent = chosen ? api.providerCredit(chosen.attribution, own) : '';
-        attribution = new maplibregl.AttributionControl(credit.textContent ? { customAttribution: credit.innerHTML } : {});
-        map.addControl(attribution);
+        // The provider is credited once: by the style's own sources, else by this line. Sources
+        // that load their attribution from TileJSON only have it later, so it is redone then.
+        let shownCredit;
+        const showCredit = () => {
+          const own = Object.keys(map.getStyle().sources || {}).map((id) => (map.getSource(id) || {}).attribution || '');
+          const text = chosen ? api.providerCredit(chosen.attribution, own) : '';
+          if (attribution && text === shownCredit) return;
+          shownCredit = text;
+          if (attribution) map.removeControl(attribution);
+          const credit = document.createElement('span');
+          credit.textContent = text;
+          attribution = new maplibregl.AttributionControl(text ? { customAttribution: credit.innerHTML } : {});
+          map.addControl(attribution);
+        };
+        showCredit();
+        if (onSourceData) map.off('sourcedata', onSourceData);
+        onSourceData = (event) => { if (event.sourceDataType === 'metadata') showCredit(); };
+        map.on('sourcedata', onSourceData);
         // Labels, theme tint, terrain, hillshade, sky and projection; online parts only with a provider style.
         api.styleBasemap(map, base, Boolean(chosen));
         // Keep the camera target clear of the layout's card and the rail of panels.

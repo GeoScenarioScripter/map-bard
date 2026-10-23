@@ -2,10 +2,12 @@
 
 **Updated 2026-10-23. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-in Wave 4, steps 4.1 (J1), 4.2 (J2 ‖ K) and 4.3 are complete: the owner
+Wave 4 is built: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
-variants 77/100 (target ≥ 75) and named no defects. Step 4.4 (L: skill
-pack, capabilities, READMEs, changeset) is next.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+variants 77/100 (target ≥ 75), and step 4.4 (L: skill pack, capabilities,
+READMEs, changeset) is committed. V1 closes when the `visual` CI job
+passes, which needs a push; pushing and the 0.2.0 release wait for the
+owner.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -77,8 +79,13 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 <publication>` scrolls a story and reports frame intervals.
 - `mapbard` CLI: `init`, `add`, `inspect`, `lock`, `check` (and `check --visual`), `build`, `preview`,
   `capabilities`, `schema`, `migrate` and `skill install`, with JSON envelopes.
-- `skills/mapbard`: a versioned agent workflow pack with format, technique,
-  cartography, diagnostic and data-honesty guidance, installed by the CLI.
+  `capabilities` lists capability IDs, compiled techniques, themes, layouts,
+  motion presets, modes and easings, basemaps, terrain, and whether a
+  headless Chromium is available for visual checks.
+- `skills/mapbard` 0.2.0: a versioned agent workflow pack with format,
+  technique, layout, motion, cartography, diagnostic (every code, including
+  critic, `VISUAL_*` and budget codes) and data-honesty guidance, installed
+  by the CLI; the workflow includes `check --visual`.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
 - Examples: `examples/projects/potomac` (atlas) and
   `examples/projects/potomac-night` (night), with identical data and story
@@ -93,9 +100,11 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `knowledge` and `renderer` at 0.1.1, are published on npm, each with a README, MIT license, explicit published files,
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
-- Checks: 274 routine tests (schema 37, knowledge 30, core 80, renderer 85,
-  CLI 36, root 5, browser smoke 1), lint and `actionlint` pass; the Windows tarball
-  install smoke last passed before M2. A live OpenFreeMap style and multiple vector tiles loaded in headless
+  A pending changeset bumps all five packages to 0.2.0 for the M2 release.
+- Checks: 275 routine tests (schema 37, knowledge 30, core 80, renderer 85,
+  CLI 37, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
+  tarball install smoke passed on 2026-10-23 (at the 0.1.x versions, before
+  the changeset is applied). A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
 
 ## Known issues
@@ -145,6 +154,18 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Step 4.4 (L). `capabilities` lists themes, layouts, motion
+  options and visual-check readiness (it launches and closes a headless
+  Chromium, about 0.7 s); a test asserts the lists match the schema enums
+  the compiler accepts. Skill pack 0.2.0 with new `motion.md` and
+  `layout.md`, every M2 diagnostic code with its remedy, and
+  `check --visual` in the workflow. Package READMEs updated; a changeset
+  bumps all five packages to 0.2.0 (not applied). Build, 275 tests
+  (browser smoke included), lint and the tarball install smoke (via
+  npmmirror) pass. No player change, so no visual run. Not pushed or
+  published. Next: the owner decides on a push, which runs CI and the
+  `visual` job (the last V1 condition), then a 0.2.0 release.
 
 - 2026-10-23: Step 4.3 complete. The owner viewed both stories online in
   `preview` and scored atlas 77 and night 77 (place 13, encoding 16, motion

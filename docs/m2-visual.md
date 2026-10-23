@@ -1,8 +1,9 @@
 # M2 — Visual Engine: execution plan
 
 Updated 2026-10-23. Status: **active**. Waves 1–3 are complete; Wave 4 is
-staggered (see below): steps 4.1 (J1), 4.2 (J2 ‖ K) and 4.3 are complete
-(both Potomac variants scored 77), and step 4.4 (L) is next. Part of the
+staggered (see below): steps 4.1 (J1), 4.2 (J2 ‖ K), 4.3 (both Potomac
+variants scored 77) and 4.4 (L) are complete. V1 closes when the `visual`
+CI job passes, after the owner asks for a push. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -600,6 +601,15 @@ variants 77/100 the same day and named no defects, so L follows directly.
   tarball install smoke passes.
 - Push and publish only when the owner asks. Release through the existing
   workflow.
+
+As built (2026-10-23): `capabilities` also renames its old `techniques`
+list (capability IDs) to `capabilities` and returns the compiled techniques
+as `techniques`. The visual-check readiness comes from launching and closing
+a headless Chromium (`probeBrowser`), so it is accurate but takes about
+0.7 s. The skill pack moved the motion field reference from `format.md` to
+`motion.md`. The changeset is committed but not applied; `changeset
+version` runs when the owner asks for the release, and the tarball smoke
+passed at the 0.1.x versions.
 
 V1 closes when both variants score ≥ 75 and the `visual` CI job passes.
 Then V2 gets its detailed section here.

@@ -22,6 +22,10 @@ console.log(STAGE1_CAPABILITIES.ids, basemap);
 ```
 
 The catalog includes OpenFreeMap and VersaTiles styles plus Mapterhorn and AWS
-Terrarium terrain metadata. For an authoring CLI, see
+Terrarium terrain metadata. The package also provides the theme presets
+(`resolveTheme`, `THEME_PRESET_TOKENS`), layout frames (`resolveLayout`),
+display formatters for units, numbers and titles, WCAG contrast helpers, the
+critic rules (`critique`) and the publication size budgets (`sizeReport`,
+`budgetDiagnostics`). For an authoring CLI, see
 [`mapbard`](https://www.npmjs.com/package/mapbard). [Source and examples](https://github.com/GeoScenarioScripter/map-bard).
 MIT licensed.

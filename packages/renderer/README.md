@@ -24,7 +24,13 @@ else console.error(result.diagnostics);
 ```
 
 `compiled` and `publication` must satisfy the contracts in
-[`@mapbard/schema`](https://www.npmjs.com/package/@mapbard/schema). Most authors
+[`@mapbard/schema`](https://www.npmjs.com/package/@mapbard/schema) (compiled
+spec 0.3.0). The player draws the resolved theme and layout (with a phone
+bottom sheet), theme-tinted basemaps with terrain, hillshade and sky, legends,
+scale bars, and callouts placed clear of panels and controls every frame.
+Scroll progress drives camera, layer and callout tracks, and readers who ask
+for reduced motion get each scene's final view. The page exposes
+`data-mb-state` and a read-only `window.MapBardStory` hook for testing. Most authors
 should use [`mapbard build`](https://www.npmjs.com/package/mapbard), which handles
 validation, source files, and offline mode for them. [Source and examples](https://github.com/GeoScenarioScripter/map-bard).
 MIT licensed.

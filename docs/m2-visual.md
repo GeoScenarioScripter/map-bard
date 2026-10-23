@@ -627,7 +627,8 @@ were published at 0.2.0 the same day.
 Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
 marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
 day ([results](#50-results-2026-10-23)), and the owner confirmed its
-backend table; step 5.1 is next.
+backend table. Step 5.1 is done ([as built](#51-as-built-2026-10-23));
+step 5.2 (M ‖ N) is next.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
@@ -762,7 +763,8 @@ member scene's camera zoom:
   values.
 - **`hexbin`** aggregates points:
   `"aggregate": { "cellKm": 25, "op": "count" }` (`sum` and `mean` take a
-  quantity attribute), with any classification method, and optional
+  quantity `attribute`, which `count` must not have), with any
+  classification method, and optional
   `"extrude": { "maxHeightMeters": 40000 }`. The grid is flat-topped
   hexagons in Web Mercator, anchored at (0, 0) so cells don't move when
   the data changes. `cellKm` is the ground width at the data's centre
@@ -790,7 +792,8 @@ member scene's camera zoom:
 - **New diagnostic codes:** `ENCODING_AREA_DISTORTED`, and
   `DEPTH_UNSEEN`, a critic warning for a 3D layer in a scene whose camera
   never pitches. Everything else reuses existing codes.
-- **Theme token `light`** (direction, intensity, colour) per preset,
+- **Theme token `light`** per preset (`azimuth` and `altitude` in degrees,
+  `intensity` 0–1, `colour`; authored themes override single fields),
   applied as the MapLibre style `light`, so extrusions are shaded to suit
   each theme.
 
@@ -949,6 +952,40 @@ the framing.
   with only the version changed, and its goldens still match. A test story
   with a stub deck layer gets `tier-deck.js` and its script tag; Potomac
   gets neither.
+
+#### 5.1 as built (2026-10-23)
+
+Done in `cd39f47`. Notes for M and N:
+
+- **Where to plug in.** Each stub (`height.ts`, `change.ts`,
+  `aggregate.ts`, `flows.ts`) is a `TechniqueCompiler` (types in
+  `compile/techniques.ts`): it receives the authored layer, its source,
+  features, path and IDs, and returns diagnostics plus optional compiled
+  layer fields, `derived` sources and generated callouts, which
+  `compile.ts` merges. Listing a technique in the module's `*_READY` array
+  makes `capabilities` list it, with its capability IDs and track
+  properties (`compilerReady` in `compile/dispatch.ts`).
+- **Compiled layer fields per technique** (column footprint, arc colours,
+  trip time domain) are not in 0.4.0 yet: M and N each add theirs to
+  `ResolvedLayerSchema`, on separate lines.
+- **Already in place:** height and width scales (linear from 0; the default
+  tallest height is a fifth of the 900 px reference view at the first
+  member scene's zoom, to two figures), field and encoding misuse
+  diagnostics, `VERSION_UNSUPPORTED` for V2 in format 0.1, generated
+  callouts placed after the author's, a plain-text height and width legend
+  for M and N to replace, `heightMeters` in `resolved-style.ts`,
+  `projectAltitude` on the adapter, and columns reported to QA as base and
+  top. MapLibre layers still throw on `grow` and `morph` values; M wires
+  them (the adapter keeps a `grow` factor for the QA top symbol).
+- **Tiers.** A tier implements the adapter's layer methods plus
+  `whenDrawn()` and `dispose()`; `whenIdle()` already waits for
+  `whenDrawn()`. The stub (`player/tiers/deck/entry.ts`) counts its bound
+  layers in `data-mb-tier-deck` and draws nothing; N replaces it.
+- **Checks.** In headless Chrome from `file://`, a stub-deck story reached
+  `ready` with the layer bound to the tier, 0 requests (all blocked) and no
+  console errors; the size report counts `vendor/tier-deck.js` (338 B
+  gzip) as a tier. Potomac's compiled spec differs from 0.2.0's only by
+  version, `theme.light`, each layer's `backend` and an empty `derived`.
 
 ### M. MapLibre 3D data and change (step 5.2)
 

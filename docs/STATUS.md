@@ -9,8 +9,10 @@ with both `visual` jobs matching the Linux goldens exactly. All five
 packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
 0.2.1 (the `file://` worker fix), the others at 0.2.0. V2's detailed plan is in
 [m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); the owner settled
-its decisions, step 5.0 (spike) has run and the owner confirmed its
-[backend table](m2-visual.md#50-results-2026-10-23); next: step 5.1.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+its decisions, step 5.0 (spike) has run, the owner confirmed its
+[backend table](m2-visual.md#50-results-2026-10-23), and step 5.1 (the
+foundation: compiled 0.4.0, tier loading, altitude projection) is done;
+next: step 5.2, M ‖ N in parallel worktrees.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -106,7 +108,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   published files, exports and Node engine. Changesets, three-OS CI and a
   manual npm release workflow are configured. The public `mapbard@0.2.1`
   CLI installed from npm and reported 0.2.1.
-- Checks: 276 routine tests (schema 37, knowledge 30, core 80, renderer 85,
+- V2 foundation (step 5.1, unreleased): compiled spec 0.4.0 with a backend
+  per layer (`maplibre`, or `deck` for arcs and trips), derived sources,
+  height and width scales, `grow`, `morph` and `trail` tracks and a theme
+  `light` token. The V2 techniques (column, extrusion, change, hexbin, arc,
+  trip) parse and dispatch to stub modules that answer
+  `CAPABILITY_UNSUPPORTED`, so `capabilities` does not list them yet. The
+  player loads renderer tiers (`registerTier`; a stub
+  `vendor/tier-deck.js`, shipped only to stories that use it) and projects
+  points above the ground (`projectAltitude`).
+- Checks: 308 routine tests (schema 45, knowledge 30, core 95, renderer 94,
   CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
   tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -157,6 +168,21 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Owner confirmed the V2 backend table. Step 5.1 (`cd39f47`):
+  compiled 0.4.0 (layer backends, derived sources, height and width
+  scales, `grow`/`morph`/`trail` tracks, generated callouts, theme
+  `light`), V2 schema fields, stub technique modules answering
+  `CAPABILITY_UNSUPPORTED`, tier loading with a stub deck tier, and
+  `projectAltitude`. Checks: build, 308 tests, lint and browser smoke
+  pass; a stub-deck story ran from `file://` in headless Chrome (ready,
+  layer bound to the tier, 0 requests, no console errors) and the size
+  report counts the tier; Potomac's compiled spec differs from 0.2.0's
+  only by version, `theme.light`, backends and an empty `derived`; in the
+  Linux Docker image both Potomac variants matched their goldens (24/24
+  each, worst difference 0, 0 errors, 6 offline in-flight warnings as
+  before). Not run: `actionlint` (no workflow change), live runs, CI (no
+  push). Next: step 5.2, M ‖ N in parallel worktrees.
 
 - 2026-10-23: Owner settled the V2 decisions (MapLibre for columns,
   extrusions, change and hexbins; compile-time change values; ACS

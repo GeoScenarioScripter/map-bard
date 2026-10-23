@@ -1,9 +1,9 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-23. Status: **active**. Waves 1–3 are complete; Wave 4 is
-staggered (see below): steps 4.1 (J1), 4.2 (J2 ‖ K), 4.3 (both Potomac
-variants scored 77) and 4.4 (L) are complete. V1 closes when the `visual`
-CI job passes, after the owner asks for a push. Part of the
+Updated 2026-10-23. Status: **active; V1 closed 2026-10-23.** Waves 1–4
+are complete: both Potomac variants scored 77, and the `visual` CI job
+passed with the Linux goldens matching exactly. Next: write V2's detailed
+section. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -613,6 +613,12 @@ passed at the 0.1.x versions.
 
 V1 closes when both variants score ≥ 75 and the `visual` CI job passes.
 Then V2 gets its detailed section here.
+
+**V1 closed 2026-10-23.** Atlas and night each scored 77. The first pushed
+CI run (39910445623) passed on all three OSes, and both `visual` jobs
+matched all 24 goldens on ubuntu-latest (worst difference 0), with 0 errors
+and only the known in-flight symbol warnings. The 0.2.0 release is
+prepared (changeset committed) and waits for the owner.
 
 ## Later slices (outline)
 

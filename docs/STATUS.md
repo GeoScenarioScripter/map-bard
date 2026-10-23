@@ -2,12 +2,11 @@
 
 **Updated 2026-10-23. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
-Wave 4 is built: the owner
+V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
-variants 77/100 (target ≥ 75), and step 4.4 (L: skill pack, capabilities,
-READMEs, changeset) is committed. V1 closes when the `visual` CI job
-passes, which needs a push; pushing and the 0.2.0 release wait for the
-owner.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
+with both `visual` jobs matching the Linux goldens exactly. The 0.2.0
+release is prepared and waits for the owner. Next: V2's detailed plan.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -135,10 +134,9 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   flight, and under the legend in the limits push-in and scope pull-back.
   At some 2024 rest positions on phones, one of the three callouts can be
   hidden for lack of room; QA counts that as clean.
-- The `visual` CI job has not run (needs a push). The Linux goldens were
-  made in the `mcr.microsoft.com/playwright:v1.64.1-noble` image with the
-  CI Chromium build; the first CI run confirms they match ubuntu-latest.
-  Windows captures differ from them by 0.8–4.5% (DOM text wraps
+- The Linux goldens (made in the `mcr.microsoft.com/playwright:v1.64.1-noble`
+  image) matched ubuntu-latest exactly in the first `visual` CI run on
+  2026-10-23. Windows captures differ from them by 0.8–4.5% (DOM text wraps
   differently), so local Windows checks give one non-gating warning.
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
@@ -154,6 +152,14 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: V1 closed. Pushed 28 commits to `main` at the owner's
+  request. CI run 39910445623 passed: `verify` on ubuntu, macOS and
+  Windows, and `visual` for both Potomac variants (24/24 goldens matched,
+  worst difference 0; 0 errors; in-flight symbol warnings only, 6 offline
+  and 7 tiles-unavailable per variant, as on Windows).
+  Docs record V1 as closed. Not published; the 0.2.0 changeset waits for
+  the owner. Next: V2's detailed section in m2-visual.md.
 
 - 2026-10-23: Two CLI fixes found while the owner previewed Potomac.
   `preview` rebuilt forever (about 70% CPU per server) because the

@@ -293,12 +293,12 @@ needs M3 bindings for the callouts, or uses literal text until M3 lands.
 
 ## Delivery slices
 
-| Slice | Contents                                                                                                                                                                    | Done when                                                                  |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| V1    | Tier-0 polish: theming/tint, terrain, globe, sky; progress-driven motion and camera tracks; layouts/themes; legends and callout engine; visual QA pipeline and critic rules | Potomac with terrain, motion and fixed encoding scores ≥ 75; QA runs in CI |
-| V2    | Tier 1 deck.gl: columns, extrusions, change symbols, proportional symbols, arcs, trips, hexbin; GPU data transitions                                                        | Potomac columns + transitions; one flows example; budgets met              |
-| V3    | Tier 2 three.js: adapter, flow particles, glTF models, lighting                                                                                                             | Potomac particles; a model scene; 60 fps on reference laptop               |
-| V4    | Comparison and charts: swipe, synced maps, small multiples, inline charts                                                                                                   | Potomac swipe; one chart-linked scene; Potomac scores ≥ 85                 |
+| Slice                  | Contents                                                                                                                                                                    | Done when                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| V1 (closed 2026-10-23) | Tier-0 polish: theming/tint, terrain, globe, sky; progress-driven motion and camera tracks; layouts/themes; legends and callout engine; visual QA pipeline and critic rules | Potomac with terrain, motion and fixed encoding scores ≥ 75; QA runs in CI |
+| V2                     | Tier 1 deck.gl: columns, extrusions, change symbols, proportional symbols, arcs, trips, hexbin; GPU data transitions                                                        | Potomac columns + transitions; one flows example; budgets met              |
+| V3                     | Tier 2 three.js: adapter, flow particles, glTF models, lighting                                                                                                             | Potomac particles; a model scene; 60 fps on reference laptop               |
+| V4                     | Comparison and charts: swipe, synced maps, small multiples, inline charts                                                                                                   | Potomac swipe; one chart-linked scene; Potomac scores ≥ 85                 |
 
 ## Reliable tiles
 

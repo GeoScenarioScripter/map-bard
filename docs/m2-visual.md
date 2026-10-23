@@ -501,6 +501,63 @@ unavailable. A live run with OpenFreeMap tiles and Mapterhorn terrain has
 inspected screenshots of tint, hillshade, sky and pitch. The frame probe
 p99 is no worse than today's 8.5 ms.
 
+As built (2026-10-22):
+
+- **Context colours.** `contextPaint` in `@mapbard/knowledge` gives the
+  defaults. A fill is the land colour at 35% alpha, kept in the colour
+  (`#rrggbb59`) with opacity 1, because MapLibre draws a fill's outline at
+  the fill's opacity; the compiled layer carries `outline` (the theme's
+  boundary colour). Lines take water and points the accent, each moved in
+  lightness only until it has 3:1 against land (and water, for points), so
+  the defaults never trip the palette critic. On night, water on land was
+  about 1.1:1.
+- **maxRadius** sits on `encode` and on shared size scales. Members that set
+  a different value are `MEASUREMENT_INCOMPATIBLE`. One distinct value draws
+  at half of it. Potomac uses 26 px.
+- **Callout hiding** (`placeShownCallouts`). A callout whose target halo is
+  20% or more under a panel or off screen is hidden. While a placed callout
+  still collides with anything, the least important colliding callout is
+  hidden and the rest are placed again. A hidden callout's targets stay
+  obstacles for the others. It hides at once, so QA never sees a covered
+  label, and fades back in (0.25 s) when it returns. Potomac also fades its
+  2024 callouts with scrub tracks: they come in downstream during the
+  reveal, go out at p = 0.27–0.31 and return at 0.91–0.95.
+- **Attribution.** The credit line drops each `©` part whose provider name
+  the style's sources already show. It is recomputed when TileJSON metadata
+  arrives, because OpenFreeMap carries its attribution there. The Mapterhorn
+  credit is a link (`attributionUrl`) rather than a long URL. A tile error
+  after the style loads no longer moves down the style fallback, which had
+  switched providers on the first failed terrain tile.
+- **Phone rail.** With a basemap notice, the notice is a thin full-width
+  strip and media is capped at 15vh, so the rail never scrolls the photo
+  half out of view. That clipped photo was behind the 7 rest errors in J2's
+  unavailable run.
+- **TEXT_OVERFLOW_LIKELY** estimates on a 390×844 phone with a greedy word
+  wrap at 0.52 em per character, calibrated on the bundled fonts against
+  phone captures. To clear it, Potomac's narration was tightened and the
+  limits scene split. `limits` ("What the records mean") keeps the approval,
+  time zone, qualifier, regulation, hydroelectric, diversion and reservoir
+  text and pushes in to zoom 11. A new `scope` scene ("Where the comparison
+  stops") holds drainage area, travel time and the five things the dates do
+  not show, and pulls back from Little Falls to the overview.
+- **Camera.** The 2024 reveal starts from a Chesapeake view (`from`: center
+  [-77.0, 38.6], zoom 6.9). The fly-along pitches to 70°, because at 55° the
+  horizon and sky never entered the frame.
+- **Stub terrain.** `--network stub` aborts Mapterhorn tiles, which logs
+  console errors and keeps the map from going idle, so a terrain story
+  cannot pass stub. The smoke test now answers them with a flat terrarium
+  tile (`FLAT_DEM` in `tests/browser.mjs`). The same change in
+  `packages/cli/src/visual/capture.ts` is J2's to land. K verified stub
+  with it applied locally, uncommitted.
+- **Results** (both variants, 4 scenes, 24 captures and 98 sweep samples
+  each): 0 errors at stub (with the local stub-terrain patch), offline and
+  unavailable. Flight findings fell from 19 (stub) to 8 at stub, 6 offline
+  and 7 unavailable, all symbol warnings: a gauge under the media or legend
+  in the 2024 flight and in the limits and scope pull-backs on phones, and
+  under the story column on desktop at 2024 p = 0.9. No callout findings
+  remain at any sample. Frame probe on the offline atlas build: p99 8.5 ms
+  on desktop and phone.
+
 ### 4.3 Goldens and scoring
 
 Commit the goldens for both variants from the final look (Linux ones from

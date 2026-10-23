@@ -2,8 +2,9 @@
 
 Updated 2026-10-23. Status: **active; V1 closed 2026-10-23.** Waves 1–4
 are complete: both Potomac variants scored 77, and the `visual` CI job
-passed with the Linux goldens matching exactly. Next: write V2's detailed
-section. Part of the
+passed with the Linux goldens matching exactly. V2's detailed section is
+[written](#v2--3d-data-change-and-flows); its owner decisions are open.
+Next: step 5.0 (spike). Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -12,8 +13,9 @@ catalog, quality bar). This file is the order of work.
 
 M2 is delivered in the four slices V1–V4 from
 [visual-engine.md](visual-engine.md#delivery-slices). This plan details **V1**
-(Tier-0 polish, motion, layouts, callouts, visual QA and critic). V2–V4 get a
-detailed section here when V1 closes; their outline is at the end.
+(Tier-0 polish, motion, layouts, callouts, visual QA and critic) and **V2**
+(3D data, change and flows). V3 and V4 get a detailed section here when the
+slice before them closes; their outline is at the end.
 
 **V1 is done when** the redesigned Potomac story (terrain, motion, fixed
 encoding, no collisions) scores **≥ 75/100** on the
@@ -620,11 +622,407 @@ matched all 24 goldens on ubuntu-latest (worst difference 0), with 0 errors
 and only the known in-flight symbol warnings. All five packages
 were published at 0.2.0 the same day.
 
+## V2 — 3D data, change and flows
+
+Planned 2026-10-23. Status: **proposed.** Decisions marked **(owner)** wait
+for the owner; step 5.0 starts once they are settled.
+
+V2 is the second slice in
+[visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
+extrusions, change symbols, hexbins, arcs and trips, data transitions
+between scenes, and the deck.gl tier. Proportional symbols shipped in V1 as
+`graduated-symbol` (sqrt-area, nested-circle legend, largest drawn first),
+so V2 does nothing more for them.
+
+**V2 is done when:**
+
+1. Both Potomac variants show the gauges as 3D columns in 2024, and in 2025
+   the columns shrink from their 2024 heights while 2024 ghosts stay. In
+   live runs the columns stand on the terrain. `check` is clean, and
+   `check --visual` has 0 errors at stub, offline, unavailable and live.
+2. A flows example (arcs) builds online and offline, with 0 visual errors
+   and committed goldens.
+3. Every new technique meets the catalog rule (schema entry, compiler
+   resolution with diagnostics, player, legend, screenshot test, skill
+   page). The screenshot test is a scene in a technique gallery fixture
+   with goldens.
+4. Budgets: a story with no deck.gl technique loads no tier and keeps core
+   JS ≤ 450 KB gzip; `tier-deck.js` ≤ 400 KB gzip, so V3's three.js tier
+   still fits under 1.2 MB for all tiers.
+5. Frame probe on Potomac: p99 ≤ 16.7 ms on desktop and phone (default
+   WebGL path). A 1,000-feature morph also stays within 16.7 ms.
+6. The `visual` CI job passes with the new projects in its matrix.
+7. **(owner)** The owner scores both Potomac variants. Proposed target:
+   **≥ 80** (V1 was 77; V4 needs 85).
+
+### Decisions for V2
+
+- **(owner) Each technique uses the cheapest tier that draws it
+  correctly.** The design puts columns, extrusions, change symbols and
+  hexbins in deck.gl. Two facts point the other way. deck.gl layers draw
+  at sea level under MapLibre terrain: `@deck.gl/maplibre` 9.4 syncs the
+  camera's elevation but drapes nothing. Potomac, the V2 acceptance
+  story, uses terrain. MapLibre's `fill-extrusion` sits on terrain, shares
+  the style's lighting and label order, and adds no bytes. Proposal:
+  columns, extrusions, change symbols and hexbins are MapLibre layers, and
+  deck.gl draws what MapLibre cannot, arcs and trips. Step 5.0 confirms or
+  reverses this with measurements. If the owner prefers deck.gl columns
+  anyway, columns move from M to N, Potomac loads the deck tier, and N
+  also lifts each column base to the terrain elevation sampled at
+  runtime.
+- **deck.gl 9.4.0 through `@deck.gl/maplibre` 9.4.0** (MIT; new in 9.4,
+  peer `maplibre-gl` ^6), interleaved: deck.gl layers share MapLibre's
+  WebGL2 context and go below the labels through `beforeId`. The package
+  imports `maplibre-gl` for types only, so MapLibre is never bundled
+  twice. `@deck.gl/core`, `layers`, `geo-layers`, `maplibre` and the
+  `luma.gl` packages are pinned to exact versions.
+- **The compiler does data computations; the player does
+  tessellation.** Joined before-values (change symbols, morphs) and hexbin
+  aggregates are computed by the compiler. They go into the compiled data
+  as derived sources with provenance (input source IDs and hashes,
+  parameters), so legends and labels stay compiled text and every value
+  can be traced. Column footprints are tessellated in the player from the
+  points (a pure, tested function), so compiled data does not grow by a
+  polygon ring per point.
+- **(owner) Change values are computed at compile time, before M3.**
+  Change symbols need signed and percent change. The compiler computes
+  them from two declared observations matched by feature ID and lists the
+  inputs. M3 later moves the operation into lockfile results with the same
+  definition. Until then, change labels are generated text written by the
+  compiler, never by the author. The operation stays in one module
+  (`core/src/compile/change.ts`) so M3 can replace it.
+- **Formats.** The authored format stays 0.2.0 (optional additions only).
+  The compiled spec moves to **0.4.0** in the foundation commit: layer
+  backends, derived sources, height and width scales and new track
+  properties change the player contract.
+- **Heights are linear from zero** (bar semantics). Negative values cannot
+  be extruded; the diagnostic suggests change symbols.
+- **Height legends draw no pixel scale.** On-screen height changes with
+  pitch and zoom, so the legend names the attribute, the unit, "from 0" and
+  the tallest value. Exact values go in callouts.
+- **Not in V2:** heatmap (keeps its diagnostic), dot density, contours,
+  H3, picking and tooltips, CSV layers. deck.gl techniques on terrain or
+  globe are diagnosed as `CAPABILITY_UNSUPPORTED`, unless 5.0 shows globe
+  works; V3 revisits terrain, since its three.js adapter needs elevation
+  anyway. The phone layout gaps from the scoring sheet (tall attribution,
+  rail size) are a separate fix if the owner wants one.
+
+### Authored additions (format 0.2.0, all optional)
+
+Columns. `column.radiusMeters` sets the footprint. `maxHeightMeters`
+defaults to a fifth of the reference desktop view height at the first
+member scene's camera zoom:
+
+```json
+{
+  "id": "gauges",
+  "technique": "column",
+  "sourceId": "potomac-2024",
+  "encode": {
+    "attribute": "daily_mean_discharge",
+    "visualVariable": "height",
+    "maxHeightMeters": 30000
+  },
+  "column": { "radiusMeters": 1500 }
+}
+```
+
+- **Shared scales** gain `visualVariable: "height"` (with
+  `maxHeightMeters`) and `"width"` (with `maxWidth` in px), both linear
+  from 0 over every member.
+- **`extrusion`** extrudes polygons by `encode` height. It has the same
+  prerequisite as a numeric choropleth (a ratio with a declared
+  denominator), or `MEASUREMENT_REQUIRED`. An optional `classification`
+  colours it by the same attribute.
+- **`change`** draws before and after for each feature. It takes
+  `compare: { "sourceId": "potomac-2024", "labels": true }`. With
+  `visualVariable: "size"` it draws a ring (before) and a disc (after) on
+  the size scale; with `"height"`, a translucent ghost column and a solid
+  one. Colour follows the sign, from the ends of the theme's diverging
+  ramp. `labels` adds one compiled callout per feature, for example
+  "−21,580 ft³/s (−91%)", which goes through the normal callout placement
+  and QA. Both sources must declare the attribute with the same unit
+  (`MEASUREMENT_INCOMPATIBLE`). Every drawn feature must match a feature
+  ID in the compared source (`REFERENCE_MISSING`, listing the IDs).
+  Before-values must fit the layer's scale (`SCALE_INCONSISTENT`, remedy:
+  add the compared layer to the shared scale). A before-value of 0 drops
+  the percentage.
+- **`transition`** on a layer morphs its values from another scene's
+  layer: `"transition": { "from": { "sceneId": "context-2024" } }`
+  (`layerId` defaults to the same ID). Both layers must use the same
+  technique family and the same shared scale (`SCALE_INCONSISTENT`).
+  Features only in the new layer grow in, and features only in the old
+  one fade out. The compiler emits a `morph` track: by default `play`,
+  1,200 ms, `ease-in-out`, from the trigger; scene `motion.layers` can
+  override it with `property: "morph"`. Reduced motion steps to the final
+  values.
+- **`hexbin`** aggregates points:
+  `"aggregate": { "cellKm": 25, "op": "count" }` (`sum` and `mean` take a
+  quantity attribute), with any classification method, and optional
+  `"extrude": { "maxHeightMeters": 40000 }`. The grid is flat-topped
+  hexagons in Web Mercator, anchored at (0, 0) so cells don't move when
+  the data changes. `cellKm` is the ground width at the data's centre
+  latitude, and empty cells are not drawn. Legend titles are compiled
+  ("Count per 25 km cell"). A new critic warning,
+  `ENCODING_AREA_DISTORTED`, fires when cell ground area varies by more
+  than 10% across the data's latitude span.
+- **`arc`** draws two-vertex LineStrings from origin to destination
+  (other lines are `VALUE_INVALID`, listing feature IDs). Width is linear
+  from 0 (`visualVariable: "width"`, `maxWidth` in px). Colour runs from
+  an origin to a destination token so direction reads, or follows a
+  `classification`. `arc.greatCircle` is optional.
+- **`trip`** animates LineStrings with `trip: { "timeProperty": "times",
+"trailHours": 24 }`, where `times` holds one ISO 8601 UTC string per
+  vertex, in ascending order (`VALUE_INVALID` otherwise). The compiler
+  emits the time domain and en-US UTC clock labels.
+- **Track properties:** `grow` (height factor 0–1; can stagger), `morph`
+  (0 = from-values, 1 = own values) and `trail` (trip time; `scrub` by
+  default, so scroll moves the clock; reduced motion shows the full
+  tracks). `opacity` applies to every new technique, `line-reveal` to
+  arcs, and `highlight` to columns, extrusions and change symbols.
+- **Capability IDs:** `height.column`, `height.extrusion`,
+  `change.symbol`, `aggregate.hexbin`, `flow.arc`, `flow.trip`,
+  `motion.grow`, `motion.morph`, `motion.trail`.
+- **New diagnostic codes:** `ENCODING_AREA_DISTORTED`, and
+  `DEPTH_UNSEEN`, a critic warning for a 3D layer in a scene whose camera
+  never pitches. Everything else reuses existing codes.
+- **Theme token `light`** (direction, intensity, colour) per preset,
+  applied as the MapLibre style `light`, so extrusions are shaded to suit
+  each theme.
+
+### Steps
+
+Wave 5 is staggered like Waves 3 and 4:
+
+| Step | Work                                                                         | Runs                   |
+| ---- | ---------------------------------------------------------------------------- | ---------------------- |
+| 5.0  | Spike: measure the open questions and settle the backend table               | Lead, throwaway branch |
+| 5.1  | Foundation: compiled 0.4.0, schema, codes, tier loading, altitude projection | Lead                   |
+| 5.2  | M: MapLibre 3D and change ‖ N: deck.gl tier, arcs and trips                  | Parallel worktrees     |
+| 5.3  | O: Potomac V2, both variants ‖ P: flows example                              | Parallel worktrees     |
+| 5.4  | Goldens, CI matrix, live terrain checks, owner scoring                       | Lead; needs the owner  |
+| 5.5  | Q: skill pack, capabilities, READMEs, 0.3.0 changeset                        | Lead, last             |
+
+Owner checkpoints: the decisions above before 5.0, the backend table
+after 5.0, the flows dataset before P, scoring in 5.4, and any push or
+publish.
+
+### 5.0 Spike
+
+On a throwaway branch that is never merged. The answers and numbers are
+recorded here, and the backend table is confirmed with the owner.
+
+1. **MapLibre extrusions on terrain.** `fill-extrusion` columns at the
+   Potomac gauges, on Mapterhorn terrain, in the 2024 flight (pitch 70).
+   Pass: bases sit on the ground, without sinking or floating, in
+   inspected live screenshots.
+2. **deck.gl columns on terrain.** The same with an interleaved
+   `ColumnLayer`, to confirm sea-level placement. Also try `getPosition`
+   with a z from `map.queryTerrainElevation`, and note any jitter as the
+   DEM tiles change with zoom.
+3. **Morph cost.** 1,000 and 5,000 extrusions with heights changed every
+   frame through (a) `setPaintProperty` with a literal `t`, (b) feature
+   state and (c) `global-state`, if MapLibre 6.1 accepts it in
+   `fill-extrusion-height`. Report p95 and p99 from the frame probe on
+   desktop and phone. Pass: 1,000 features within 16.7 ms by at least one
+   method. Otherwise, morphs over a feature limit move to deck.gl
+   attribute transitions.
+4. **Tier size.** Gzip size of an IIFE with core, layers and `maplibre`
+   (ArcLayer), then with `TripsLayer` from `geo-layers`, tree-shaken.
+   Pass: ≤ 400 KB. If `geo-layers` brings in too much (loaders.gl,
+   mesh-layers), port `TripsLayer` (MIT, a `PathLayer` with a shader hook)
+   and credit it.
+5. **SwiftShader determinism.** Five runs of an arcs page, measuring the
+   pixel noise as J2 does.
+6. **`file://` and offline.** The tier loads from `file://`, makes zero
+   requests (no CDN debug loaders) and logs no console errors.
+7. **Globe.** deck.gl arcs on MapLibre's globe through `_GlobeView`: they
+   work, or V2 diagnoses the combination.
+8. **Altitude projection.** A no-op custom layer keeps the frame's
+   projection matrix and projects lng/lat/altitude to the screen. Pass:
+   within 0.5 px of `map.project` at altitude 0, and on the drawn column
+   tops in screenshots.
+
+### 5.1 Foundation (lead)
+
+- **Schema.** The technique enums (authored and `COMPILED_TECHNIQUES`),
+  `encode` height and width, the layer fields `column`, `compare`,
+  `transition`, `aggregate`, `extrude`, `arc` and `trip`, and height and
+  width shared scales. Compiled spec 0.4.0: each layer's `backend`
+  (`maplibre` or `deck`); `derived` sources with provenance;
+  `numeric-height` and `numeric-width` scale kinds; the `grow`, `morph`
+  and `trail` track properties; generated callouts with a `generated`
+  record of their inputs. Also the capability IDs, the two diagnostic
+  codes and the `light` theme token. Schema tests and the JSON Schema
+  export follow.
+- **Compile dispatch.** Each new technique goes to its own module
+  (`compile/height.ts`, `change.ts`, `aggregate.ts`, `flows.ts`). Each
+  starts as a stub that returns `CAPABILITY_UNSUPPORTED` until M or N
+  fills it in, so the workers never edit `compile.ts` at the same time.
+- **Tier loading.** `MapBardCompiledPlayer.registerTier(name, factory)`.
+  The adapter routes each layer by `backend`. `write-compiled` copies
+  `vendor/tier-<name>.js` and adds its script tag before
+  `compiled-app.js` only when the compiled spec uses that backend. A
+  `build-tier-deck.mjs` builds a stub tier first, which proves loading,
+  the size report, `file://` and zero offline requests before N adds
+  deck.gl.
+- **Altitude projection** (`projectAltitude`) through the probe custom
+  layer from 5.0. `MapBardStory.symbols()` can report a 3D symbol as two
+  circles, base and top, so the QA geometry in the CLI does not change.
+- Done when: build, tests, lint and browser smoke pass. Potomac compiles
+  with only the version changed, and its goldens still match. A test story
+  with a stub deck layer gets `tier-deck.js` and its script tag; Potomac
+  gets neither.
+
+### M. MapLibre 3D data and change (step 5.2)
+
+M owns `compile/height.ts`, `change.ts` and `aggregate.ts`; the player's
+MapLibre adapter, resolved style, legends and 3D callout anchors; the new
+critic rules; the theme `light` values; and `fixtures/visual/gallery-maplibre`.
+
+- **Columns:** 24-sided footprints tessellated in the player
+  (`columnFootprints`, unit-tested), `fill-extrusion` height from the
+  height scale times `grow`, theme colour, vertical gradient, theme
+  light.
+- **Extrusions:** `fill-extrusion` of polygons, with the choropleth
+  prerequisite.
+- **Change symbols:** size form (ring and disc) and height form (ghost
+  and solid column); colour by sign; compiled labels as generated
+  callouts.
+- **Morph:** compiled from-values in a derived source; the player
+  interpolates with the fastest method from 5.0.
+- **Hexbins:** the compile-time grid and aggregation as a derived polygon
+  source with provenance; drawn flat or extruded.
+- **Callouts on 3D layers** anchor at the column top through the altitude
+  projection, and avoid the projected column as an obstacle.
+- **Legends:** the height key (text, no pixel scale), the change key
+  (before and after named by their observation labels, colour by sign),
+  the hexbin ramp.
+- **Critic:** `DEPTH_UNSEEN`, `ENCODING_AREA_DISTORTED`, and the
+  extrusion, morph and change scale checks above.
+- **Gallery:** one scene per technique (column, extrusion, change in both
+  forms, morph, flat and extruded hexbin), offline-buildable, from real
+  public-domain data with recorded provenance: Potomac gauges for columns
+  and change; for example Census state polygons with population and land
+  area for extrusions, and USGS earthquake points for hexbins.
+- Done when: compile and diagnostic tests cover each technique and each
+  failure; player tests cover tessellation, morph values and grow with
+  stagger; the gallery has 0 errors in `check --visual` (stub and
+  offline), with captures inspected.
+
+### N. deck.gl tier, arcs and trips (step 5.2)
+
+N owns `player/tiers/deck/`, `scripts/build-tier-deck.mjs`,
+`compile/flows.ts`, the flow legends (`player/legend-flows.ts`) and
+`fixtures/visual/gallery-deck`.
+
+- **Tier:** `MapLibreOverlay` interleaved, below the first label layer,
+  with `pickable: false` and debug off. Scene bind and unbind update the
+  overlay's layer list. Track values (opacity, `line-reveal` through a
+  small `ArcLayer` subclass with a shader hook, `trail` as the current
+  time, stagger through accessors and `updateTriggers`) are applied each
+  frame.
+- **Arcs:** the width scale, the origin-to-destination gradient, the
+  great-circle option and two-vertex validation. Callouts on arcs anchor
+  at the destination.
+- **Trips:** time validation, `TripsLayer` current time, trail length, a
+  clock label in the rail (compiled text), and `loop` with the existing
+  pause control.
+- **Readiness:** `whenIdle()` also waits for the tier's first drawn frame,
+  so captures never catch shaders still compiling.
+- **Diagnostics:** deck.gl techniques with terrain or (per 5.0) globe are
+  `CAPABILITY_UNSUPPORTED`, with the remedy.
+- **Budgets:** the size report lists `tier-deck.js`, and
+  `BUDGET_EXCEEDED` also warns when one tier is over 400 KB gzip.
+- **Gallery:** an arcs scene (a subset of the flows dataset) and a trips
+  scene, for example NOAA HURDAT2 2024 hurricane tracks (U.S. public
+  domain).
+- Done when: the gallery builds online and offline, works from `file://`
+  with zero offline requests, has 0 errors in `check --visual`, stays
+  within the budgets, and has measured SwiftShader noise.
+
+### O. Potomac V2, both variants (step 5.3)
+
+O owns `examples/projects/potomac` and `potomac-night` and the root test
+that compares them.
+
+- **2024:** the gauges become columns on one shared height scale across
+  every scene, the compared source included. They rise downstream with
+  `grow` and a stagger during the reveal. Callouts anchor at the column
+  tops.
+- **2025:** `change` columns with `transition.from: context-2024`. The
+  solid columns shrink from their 2024 to their 2025 heights while
+  translucent 2024 ghosts stay, so the drop no longer depends on memory.
+  Compiled change labels name each gauge's change, which fills the "only
+  Point of Rocks has a 2025 callout" gap. A slow camera move (a low orbit
+  or an ease towards Point of Rocks) replaces the static view.
+- **Limits and scope:** 3D only where the camera pitches. The top-down
+  end of the scope pull-back uses the size form of the change symbols.
+- Narration keeps every value, date and qualification;
+  `TEXT_OVERFLOW_LIKELY` stays clean. The README describes the new
+  encoding.
+- Done when: both variants are critic-clean, with 0 `check --visual`
+  errors at stub, offline, unavailable and live. Inspected live captures
+  at 2024 p = 0.5 and 2025 p = 1 show the bases on the terrain. Remaining
+  in-flight warnings are listed in STATUS.md. Frame probe p99 ≤ 16.7 ms.
+
+### P. Flows example (step 5.3)
+
+- **(owner) Dataset.** Proposed: U.S. Census Bureau state-to-state
+  migration flows, the latest ACS release (U.S. public domain), for
+  example where movers from one state went. ACS margins of error stay
+  visible as the qualification.
+- `examples/projects/<name>`: three or four scenes (an overview of the top
+  flows, arcs revealed largest first, a regional focus, a limits card),
+  Mercator, no terrain, a theme other than atlas.
+- Done when: it builds online and offline, has 0 `check --visual` errors
+  at stub, offline and unavailable, and its budget report shows core and
+  tier within budget.
+
+New data needs network access to public hosts. If this machine cannot
+reach them, the owner supplies the files; either way the source URL,
+licence and retrieval date go in the attribution.
+
+### 5.4 Goldens, CI and scoring
+
+- Linux goldens from the Docker image for both Potomac variants (their
+  look changes), both galleries and the flows example. The `visual` CI
+  matrix grows from 2 projects to 5.
+- Non-gating live runs for Potomac's terrain columns, with inspected
+  captures.
+- V2 scoring sheets for both Potomac variants in
+  [m2-scoring.md](m2-scoring.md); the owner scores them. Named defects are
+  fixed before Q.
+- The CI part of done-when waits for a push, which the owner asks for.
+
+### Q. Skill pack and release (step 5.5)
+
+- `skills/mapbard`: each new technique in `techniques.md` with when to use
+  and when not to; the new fields in `format.md`; `grow`, `morph` and
+  `trail` in `motion.md`; the new codes and remedies in `diagnostics.md`;
+  height honesty and change symbols in `cartography.md`; generated change
+  labels and their inputs in `data-honesty.md`.
+- `capabilities` lists the new techniques and their backends, and its test
+  asserts they match the schema enums.
+- READMEs, and a changeset that bumps all five packages to 0.3.0 (compiled
+  0.4.0, new authored fields, the deck.gl tier). The tarball smoke passes.
+  Publish only when the owner asks.
+
+### Risks for V2
+
+- **deck.gl and MapLibre move together.** deck.gl 9.4 supports MapLibre 6
+  today, so a MapLibre upgrade needs a matching deck.gl check. Both stay
+  pinned, and 5.0 tests the pair.
+- **Terrain is not in the goldens.** Offline builds drop terrain, so column
+  placement on terrain is checked only in live runs and by eye. Stub runs
+  with flat terrain still exercise the code path.
+- **deck.gl under SwiftShader** may be noisier than MapLibre. The golden
+  tolerance is measured as in J2.
+- **Generated change labels overlap M3.** They stay in one module with
+  listed inputs, so M3 can replace them without changing the format.
+
 ## Later slices (outline)
 
-- **V2 — deck.gl tier:** interleaved `@deck.gl/maplibre`, 3D columns, change
-  symbols, extrusions with the normalization critic, arcs, trips, hexbin, GPU
-  data transitions; `tier-deck.js` emitted only when used.
 - **V3 — three.js tier:** in-house custom-layer adapter, flow particles along
   the river, glTF models from the starter pack, lighting; `tier-three.js`.
 - **V4 — comparison and charts:** swipe, synced maps, small multiples, inline

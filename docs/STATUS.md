@@ -6,7 +6,9 @@ V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
 variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
 with both `visual` jobs matching the Linux goldens exactly. All five
-packages are published at 0.2.0 (`latest`). Next: V2's detailed plan.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+packages are published at 0.2.0 (`latest`). V2's detailed plan is in
+[m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); next: the owner
+settles its open decisions, then step 5.0 (spike).** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -152,6 +154,17 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Planned V2 in m2-visual.md (Wave 5, steps 5.0–5.5): a
+  spike, a foundation commit (compiled 0.4.0, tier loading, altitude
+  projection), then M (MapLibre columns, extrusions, change symbols,
+  hexbins, morphs) ‖ N (deck.gl 9.4 tier via `@deck.gl/maplibre`, arcs,
+  trips), then O (Potomac V2) ‖ P (flows example), goldens and scoring,
+  and Q (skill pack, 0.3.0). Open owner decisions: MapLibre rather than
+  deck.gl for columns (deck.gl draws at sea level under terrain),
+  compile-time change values before M3, the flows dataset and a ≥ 80
+  score target. Docs only; no checks run. Next: owner decisions, then
+  step 5.0.
 
 - 2026-10-23: Released 0.2.0 at the owner's request. Applied the
   changeset (all five packages 0.2.0, changelogs), then build, 276 tests

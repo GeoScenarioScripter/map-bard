@@ -21,3 +21,6 @@ themes, layouts, motion options and whether visual checks can run. The
 authoring skill pack is 0.2.0, with new motion and layout references.
 `capabilities` now returns capability IDs as `capabilities` and the compiled
 techniques as `techniques`.
+
+Fixes: `preview` no longer rebuilds in a loop on its own staging output,
+and `lock` and `build` write the lockfile in the same key order.

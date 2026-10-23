@@ -101,8 +101,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   exports and Node engine. Changesets, three-OS CI and a manual npm release
   workflow are configured. The public `mapbard` CLI ran via `npm exec`.
   A pending changeset bumps all five packages to 0.2.0 for the M2 release.
-- Checks: 275 routine tests (schema 37, knowledge 30, core 80, renderer 85,
-  CLI 37, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
+- Checks: 276 routine tests (schema 37, knowledge 30, core 80, renderer 85,
+  CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
   tarball install smoke passed on 2026-10-23 (at the 0.1.x versions, before
   the changeset is applied). A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -154,6 +154,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-10-23: Two CLI fixes found while the owner previewed Potomac.
+  `preview` rebuilt forever (about 70% CPU per server) because the
+  watcher did not ignore the renderer's `..<output>.next-*` staging copy;
+  it now does, and a test saves one edit and asserts one rebuild. `lock`
+  wrote profiles in a different key order from `build`, so alternating
+  them moved `crs` in an unchanged lockfile; both now write schema order
+  (core test added). Build, 276 tests (browser smoke included) and lint
+  pass; `lock` and `check` leave both Potomac lockfiles unchanged.
 
 - 2026-10-23: Step 4.4 (L). `capabilities` lists themes, layouts, motion
   options and visual-check readiness (it launches and closes a headless

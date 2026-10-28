@@ -88,9 +88,13 @@ describe('critic', () => {
   it('flags the same attribute on different scales across scenes', () => {
     expect(inconsistentScaleRule(fixture)).toEqual([]);
     const compiled = story();
-    const local = { ...compiled.scales[0]!, id: 'mb-scale:b' };
+    const local = structuredClone({ ...compiled.scales[0]!, id: 'mb-scale:b' });
     compiled.scales.push(local);
     compiled.scenes[1]!.layers[0]!.scaleId = local.id;
+    // Two scales with one mapping draw equal values alike, so they agree.
+    expect(inconsistentScaleRule(compiled)).toEqual([]);
+    if (local.kind !== 'numeric-color') throw new Error('expected a colour scale');
+    local.edges = [0, 50, 90, 120];
     expect(inconsistentScaleRule(compiled)).toEqual([
       expect.objectContaining({
         code: 'SCALE_INCONSISTENT',

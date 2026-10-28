@@ -14,6 +14,7 @@ import {
   type DerivedSource,
   type Diagnostic,
   type LayerBinding,
+  type LayerTrack,
   type ResolvedScale,
   type Result,
   type V2Technique,
@@ -583,6 +584,10 @@ export function compileProject(
   const contexts = new Map<string, LayerContext>();
   const derived: DerivedSource[] = [];
   const generatedCallouts = new Map<string, Callout[]>();
+  // V2 modules: scales they resolve, checks that need every scale, and default tracks.
+  const moduleScales: ResolvedScale[] = [];
+  const scaleChecks: ((scales: readonly ResolvedScale[]) => Diagnostic[])[] = [];
+  const extraScaleValues = new Map<string, unknown[]>();
   const runtimeIds = new Set<string>();
   const compiledScenes: Compiled['scenes'] = [];
   for (const [sceneIndex, scene] of narrative.scenes.entries()) {
@@ -596,6 +601,7 @@ export function compileProject(
       { sceneId: scene.id },
     );
     const layers: Compiled['scenes'][number]['layers'] = [];
+    const defaultTracks: LayerTrack[] = [];
     for (const [layerIndex, layer] of scene.layers.entries()) {
       const at = ['scenes', sceneIndex, 'layers', layerIndex];
       const ids = { sceneId: scene.id, layerId: layer.id, sourceId: layer.dataSourceId };
@@ -788,11 +794,25 @@ export function compileProject(
               features,
               path: at,
               ids,
+              context: {
+                project,
+                theme,
+                ...(filter ? { filter } : {}),
+                featuresOf: (sourceId) => featureMap.get(sourceId) ?? [],
+                sharedScaleOf: (sceneId, layerId) => shared.get(key(sceneId, layerId))?.id,
+                capability: (capabilityId, path) =>
+                  capability(capabilities, capabilityId, diagnostics, path, ids),
+              },
             })
           : undefined;
       if (v2) {
         diagnostics.push(...v2.diagnostics);
         derived.push(...(v2.derived ?? []));
+        moduleScales.push(...(v2.scales ?? []));
+        if (v2.scaleValues) extraScaleValues.set(key(scene.id, layer.id), v2.scaleValues);
+        if (v2.afterScales) scaleChecks.push(v2.afterScales);
+        for (const track of v2.defaultTracks ?? [])
+          defaultTracks.push({ ...track, runtimeLayerId: id });
         if (v2.callouts?.length)
           generatedCallouts.set(scene.id, [
             ...(generatedCallouts.get(scene.id) ?? []),
@@ -1111,6 +1131,16 @@ export function compileProject(
       // Resolved below, once the scales that size the annotated symbols exist.
       callouts: [],
     });
+    // A module's default track (a transition's morph) yields to the author's own.
+    const motion = compiledScenes.at(-1)!.motion;
+    for (const track of defaultTracks)
+      if (
+        !motion.layers.some(
+          (item) =>
+            item.runtimeLayerId === track.runtimeLayerId && item.property === track.property,
+        )
+      )
+        motion.layers.push(track);
   }
 
   const scales: ResolvedScale[] = [];
@@ -1136,7 +1166,8 @@ export function compileProject(
             item.layer.classification.classes !== color.classes ||
             !sameBreaks(item.layer.classification.breaks)
           : item.layer.encode?.visualVariable !== variable ||
-            item.layer.classification !== undefined,
+            // An extrusion's classification colours it; its height stays on the shared scale.
+            (item.layer.classification !== undefined && item.layer.technique !== 'extrusion'),
       )
     )
       diagnostics.push(
@@ -1245,7 +1276,13 @@ export function compileProject(
       (layer.technique === 'categorical' || declaration.role !== 'quantity'
         ? 'category-color'
         : 'numeric-color');
-    if (continuous && continuous.kind !== 'numeric-size' && layer.classification)
+    if (
+      continuous &&
+      continuous.kind !== 'numeric-size' &&
+      layer.classification &&
+      // An extrusion's classification colours it by the same attribute (height.ts).
+      layer.technique !== 'extrusion'
+    )
       diagnostics.push(
         issue(
           'CAPABILITY_UNSUPPORTED',
@@ -1327,7 +1364,10 @@ export function compileProject(
       title: scaleTitle(declaration, layer.encode.attribute),
       memberKeys: [{ sceneId: context.sceneId, layerId: layer.id, sourceId: resource.id }],
       unit: declaration.unit,
-      values: valuesFor(context, diagnostics, kind !== 'category-color'),
+      values: [
+        ...valuesFor(context, diagnostics, kind !== 'category-color'),
+        ...(extraScaleValues.get(key(context.sceneId, layer.id)) ?? []),
+      ],
       palette: theme.palette,
       classes: layer.classification?.classes ?? 3,
       ...(layer.classification ? { method: layer.classification.method } : {}),
@@ -1345,6 +1385,8 @@ export function compileProject(
     const resolved = resolveScale(input, kind, diagnostics);
     if (resolved) scales.push(resolved);
   }
+  scales.push(...moduleScales);
+  for (const check of scaleChecks) diagnostics.push(...check(scales));
 
   for (const scene of compiledScenes) {
     const generated = generatedCallouts.get(scene.id) ?? [];

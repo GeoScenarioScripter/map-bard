@@ -229,6 +229,22 @@ export function hiddenContrastRule(input: CriticInput): Diagnostic[] {
   return findings;
 }
 
+/** What a scale maps values to; two scales with one mapping draw equal values alike. */
+function mapping(scale: ResolvedScale): string {
+  switch (scale.kind) {
+    case 'numeric-color':
+      return JSON.stringify([scale.edges, scale.colors]);
+    case 'category-color':
+      return JSON.stringify(scale.categories.map((item) => [item.value, item.color]));
+    case 'numeric-size':
+      return JSON.stringify([scale.domain, scale.radiusRange]);
+    case 'numeric-height':
+      return JSON.stringify([scale.domain, scale.maxHeightMeters]);
+    case 'numeric-width':
+      return JSON.stringify([scale.domain, scale.maxWidth]);
+  }
+}
+
 /** The same attribute compared across scenes should share one scale. */
 export function inconsistentScaleRule(compiled: Compiled): Diagnostic[] {
   const scales = new Map(compiled.scales.map((scale) => [scale.id, scale]));
@@ -245,14 +261,20 @@ export function inconsistentScaleRule(compiled: Compiled): Diagnostic[] {
     const sceneIds = new Set(members.map((member) => member.sceneId));
     const scaleIds = [...new Set(members.map((member) => member.layer.scaleId!))];
     if (sceneIds.size < 2 || scaleIds.length < 2) continue;
+    // Separate scales that resolved to one mapping (two hexbins of the same points) agree.
+    if (new Set(scaleIds.map((id) => mapping(scales.get(id)!))).size < 2) continue;
     const first = members[0]!;
+    // Hexbins aggregate into their own cells, so they cannot join a shared scale.
+    const hexbins = members.every((member) => member.layer.technique === 'hexbin');
     findings.push(
       warning(
         'SCALE_INCONSISTENT',
         'design',
         ['sharedScales'],
         `${first.layer.attribute} is encoded on ${scaleIds.length} different scales across ${sceneIds.size} scenes, so equal colours or sizes can mean different values.`,
-        'Add a shared scale with these layers as members, so every scene uses one mapping.',
+        hexbins
+          ? 'Give these hexbin layers the same manual classification, so every scene uses one mapping.'
+          : 'Add a shared scale with these layers as members, so every scene uses one mapping.',
         { sceneId: first.sceneId, layerId: first.layer.authoredLayerId },
       ),
     );
@@ -376,6 +398,90 @@ export function textOverflowRule(compiled: Compiled): Diagnostic[] {
   return findings;
 }
 
+/** Whether a compiled layer draws heights: columns, extrusions, change columns, extruded hexbins. */
+export function drawsHeight(layer: Layer): boolean {
+  return (
+    layer.technique === 'column' ||
+    layer.technique === 'extrusion' ||
+    (layer.technique === 'change' && layer.change?.form === 'height') ||
+    (layer.technique === 'hexbin' && layer.heightScaleId !== undefined)
+  );
+}
+
+/** 3D layers in a scene whose camera never pitches show only their tops, so height is unseen. */
+export function depthUnseenRule(compiled: Compiled): Diagnostic[] {
+  const findings: Diagnostic[] = [];
+  compiled.scenes.forEach((scene, sceneIndex) => {
+    const layer = scene.layers.find(drawsHeight);
+    if (!layer) return;
+    const track = scene.motion.camera;
+    const pitched =
+      track.final.pitch > 0 ||
+      track.keyframes.some((frame) => frame.pitch > 0) ||
+      (scene.camera.pitch ?? 0) > 0;
+    if (pitched) return;
+    findings.push(
+      warning(
+        'DEPTH_UNSEEN',
+        'narrative',
+        ['scenes', sceneIndex, 'camera'],
+        `Layer ${layer.authoredLayerId} draws heights, but the camera in scene ${scene.id} never pitches, so readers see only the tops.`,
+        'Pitch the camera (for example 45–60°), or use a flat form: graduated symbols, change symbols in size form or a flat hexbin.',
+        { sceneId: scene.id, layerId: layer.authoredLayerId },
+      ),
+    );
+  });
+  return findings;
+}
+
+/** Ground area of a Web Mercator cell falls with cos² of latitude; past this it misleads. */
+export const AREA_DISTORTION_LIMIT = 0.1;
+
+function latitudes(geometry: unknown, out: number[]): void {
+  if (!Array.isArray(geometry)) {
+    const coordinates = (geometry as { coordinates?: unknown } | null)?.coordinates;
+    if (coordinates !== undefined) latitudes(coordinates, out);
+    return;
+  }
+  if (typeof geometry[0] === 'number' && typeof geometry[1] === 'number') out.push(geometry[1]);
+  else for (const part of geometry) latitudes(part, out);
+}
+
+/**
+ * Hexbin cells are equal in Web Mercator, so their ground area varies with cos² of latitude. A
+ * count per cell then reads as a density that differs by region; flag a span over 10%.
+ */
+export function areaDistortedRule(compiled: Compiled): Diagnostic[] {
+  const findings: Diagnostic[] = [];
+  compiled.scenes.forEach((scene, sceneIndex) => {
+    for (const layer of scene.layers) {
+      if (layer.technique !== 'hexbin') continue;
+      const source = compiled.derived.find((item) => item.id === layer.sourceId);
+      const lats: number[] = [];
+      for (const feature of source?.data.features ?? []) latitudes(feature.geometry, lats);
+      if (!lats.length) continue;
+      const south = Math.min(...lats);
+      const north = Math.max(...lats);
+      const nearest = south <= 0 && north >= 0 ? 0 : Math.min(Math.abs(south), Math.abs(north));
+      const farthest = Math.max(Math.abs(south), Math.abs(north));
+      const area = (lat: number) => Math.cos((lat * Math.PI) / 180) ** 2;
+      const loss = 1 - area(farthest) / area(nearest);
+      if (loss <= AREA_DISTORTION_LIMIT) continue;
+      findings.push(
+        warning(
+          'ENCODING_AREA_DISTORTED',
+          'narrative',
+          ['scenes', sceneIndex, 'layers', layer.authoredLayerId, 'aggregate'],
+          `Hexbin cells of layer ${layer.authoredLayerId} cover ${Math.round(loss * 100)}% less ground at ${farthest.toFixed(1)}° than at ${nearest.toFixed(1)}°, so equal counts do not mean equal densities.`,
+          'Aggregate a region with a narrower latitude span (under 10% area change), or split it into scenes.',
+          { sceneId: scene.id, layerId: layer.authoredLayerId },
+        ),
+      );
+    }
+  });
+  return findings;
+}
+
 /** Run every static critic rule, in a fixed order. */
 export function critique(input: CriticInput): Diagnostic[] {
   return [
@@ -385,5 +491,7 @@ export function critique(input: CriticInput): Diagnostic[] {
     ...inconsistentScaleRule(input.compiled),
     ...paletteContrastRule(input.compiled),
     ...textOverflowRule(input.compiled),
+    ...depthUnseenRule(input.compiled),
+    ...areaDistortedRule(input.compiled),
   ];
 }

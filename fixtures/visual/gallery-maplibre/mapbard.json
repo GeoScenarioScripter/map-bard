@@ -1,0 +1,216 @@
+{
+  "formatVersion": "0.2.0",
+  "id": "gallery-maplibre",
+  "title": "MapLibre 3D and change techniques",
+  "intent": "One scene per V2 MapLibre technique (columns, a morph, change symbols in both forms, an extrusion, flat and extruded hexbins), drawn from real public-domain data, so each technique has a screenshot test.",
+  "theme": {
+    "preset": "editorial-light"
+  },
+  "basemap": {
+    "provider": "openfreemap",
+    "style": "positron",
+    "labels": "minimal",
+    "fallback": ["versatiles"],
+    "sky": true
+  },
+  "resources": {
+    "data": [
+      {
+        "id": "potomac-states-context",
+        "kind": "geojson",
+        "path": "data/potomac-states-context.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "state",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau 2024 generalized state boundaries",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2024/State_County/MapServer/8",
+          "license": "U.S. public domain",
+          "qualification": "Local geographic context only."
+        },
+        "name": "2024 generalized state outlines for Potomac context"
+      },
+      {
+        "id": "potomac-river-context",
+        "kind": "geojson",
+        "path": "data/potomac-river-context.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "Maryland iMAP Rivers and Streams — Generalized",
+          "url": "https://mdgeodata.md.gov/imap/rest/services/Hydrology/MD_Waterbodies/FeatureServer/0",
+          "qualification": "Named Potomac River segments are local geographic context, not a flow model."
+        },
+        "name": "Generalized Potomac River line"
+      },
+      {
+        "id": "potomac-2024",
+        "kind": "geojson",
+        "path": "data/potomac-2024-10-01.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "station_name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2024-10-01 (Eastern time); three distinct catchments."
+        },
+        "observationLabel": "2024-10-01",
+        "name": "USGS daily mean discharge, 2024-10-01"
+      },
+      {
+        "id": "potomac-2025",
+        "kind": "geojson",
+        "path": "data/potomac-2025-10-01.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "station_name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "daily_mean_discharge",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "ft^3/s",
+            "label": "Daily mean discharge"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey daily values",
+          "url": "https://api.waterdata.usgs.gov/docs/ogcapi/",
+          "license": "U.S. public domain",
+          "qualification": "Approved station-local daily means, 2025-10-01 (Eastern time); separate station-day summaries, not a trend."
+        },
+        "observationLabel": "2025-10-01",
+        "name": "USGS daily mean discharge, 2025-10-01"
+      },
+      {
+        "id": "census-states",
+        "kind": "geojson",
+        "path": "data/census-2020-states.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null
+          },
+          {
+            "name": "population_2020",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "people",
+            "label": "Population, 2020"
+          },
+          {
+            "name": "land_area_km2",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "km^2",
+            "label": "Land area"
+          },
+          {
+            "name": "density_per_km2",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "people/km^2",
+            "label": "Population density, 2020",
+            "denominator": {
+              "sourceId": "census-states",
+              "attribute": "land_area_km2",
+              "unit": "km^2"
+            }
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau, Census 2020 (TIGERweb states: POP100 and AREALAND)",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/80",
+          "license": "U.S. public domain",
+          "qualification": "Contiguous 48 states; outlines generalized to 0.05°. Density is the 2020 count divided by land area, computed for this fixture."
+        },
+        "name": "Census 2020 state population and land area"
+      },
+      {
+        "id": "earthquakes",
+        "kind": "geojson",
+        "path": "data/usgs-earthquakes-2024-socal.geojson",
+        "crs": "EPSG:4326",
+        "featureId": { "method": "geojson-id", "scope": "source" },
+        "attributes": [
+          {
+            "name": "place",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Geological Survey ComCat earthquake catalog",
+          "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2024-01-01&endtime=2025-01-01&minmagnitude=2.5&minlatitude=32.5&maxlatitude=36.5&minlongitude=-121&maxlongitude=-114.5&orderby=time-asc",
+          "license": "U.S. public domain",
+          "qualification": "Events of magnitude 2.5 and above in 2024 within 32.5–36.5° N, 121–114.5° W; catalog values may be revised."
+        },
+        "name": "USGS earthquakes M2.5+, southern California, 2024"
+      }
+    ],
+    "media": []
+  }
+}

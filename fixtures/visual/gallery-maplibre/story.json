@@ -1,0 +1,187 @@
+{
+  "formatVersion": "0.2.0",
+  "scenes": [
+    {
+      "id": "columns",
+      "title": "Columns",
+      "narration": "USGS daily mean discharge on 2024-10-01 as columns, linear from zero: 5,580 ft³/s at Hancock, 23,600 ft³/s at Point of Rocks and 17,300 ft³/s at Little Falls. The columns rise one after another, smallest first.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "potomac-states-context" },
+        { "id": "river-context", "technique": "line", "sourceId": "potomac-river-context" },
+        {
+          "id": "gauges",
+          "technique": "column",
+          "sourceId": "potomac-2024",
+          "encode": { "attribute": "daily_mean_discharge", "visualVariable": "height" },
+          "column": { "radiusMeters": 1800 }
+        }
+      ],
+      "camera": { "center": [-77.55, 39.22], "zoom": 8.1, "pitch": 55, "bearing": -20 },
+      "transitionIn": "cut",
+      "motion": {
+        "layers": [
+          {
+            "layerId": "gauges",
+            "property": "grow",
+            "stagger": { "delayMs": 300, "order": "ascending" }
+          }
+        ]
+      },
+      "annotations": [
+        {
+          "id": "point-of-rocks",
+          "text": "Point of Rocks: 23,600 ft³/s",
+          "at": [-77.5431111111111, 39.273583333333335],
+          "target": {
+            "kind": "features",
+            "sourceId": "potomac-2024",
+            "featureIds": ["USGS-01638500"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "morph",
+      "title": "Morph",
+      "narration": "The same columns morph to 2025-10-01 on one shared height scale: 580 ft³/s at Hancock, 2,020 ft³/s at Point of Rocks and 1,800 ft³/s at Little Falls.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "potomac-states-context" },
+        { "id": "river-context", "technique": "line", "sourceId": "potomac-river-context" },
+        {
+          "id": "gauges",
+          "technique": "column",
+          "sourceId": "potomac-2025",
+          "encode": { "attribute": "daily_mean_discharge", "visualVariable": "height" },
+          "column": { "radiusMeters": 1800 },
+          "transition": { "from": { "sceneId": "columns" } }
+        }
+      ],
+      "camera": { "center": [-77.55, 39.22], "zoom": 8.1, "pitch": 55, "bearing": -20 },
+      "annotations": []
+    },
+    {
+      "id": "change-height",
+      "title": "Change columns",
+      "narration": "Change in height form: a translucent 2024-10-01 ghost behind each solid 2025-10-01 column, coloured by the sign of the change. The labels are computed from the two published values.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "potomac-states-context" },
+        { "id": "river-context", "technique": "line", "sourceId": "potomac-river-context" },
+        {
+          "id": "gauges",
+          "technique": "change",
+          "sourceId": "potomac-2025",
+          "encode": { "attribute": "daily_mean_discharge", "visualVariable": "height" },
+          "column": { "radiusMeters": 1800 },
+          "compare": { "sourceId": "potomac-2024", "labels": true }
+        }
+      ],
+      "camera": { "center": [-77.55, 39.22], "zoom": 8.1, "pitch": 55, "bearing": -20 },
+      "annotations": []
+    },
+    {
+      "id": "change-size",
+      "title": "Change symbols",
+      "narration": "Change in size form: each ring is the 2024-10-01 value and each disc the 2025-10-01 value, on one area scale from zero.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "potomac-states-context" },
+        { "id": "river-context", "technique": "line", "sourceId": "potomac-river-context" },
+        {
+          "id": "gauges",
+          "technique": "change",
+          "sourceId": "potomac-2025",
+          "encode": {
+            "attribute": "daily_mean_discharge",
+            "visualVariable": "size",
+            "maxRadius": 26
+          },
+          "compare": { "sourceId": "potomac-2024", "labels": true }
+        }
+      ],
+      "camera": { "center": [-77.6, 39.3], "zoom": 8 },
+      "annotations": []
+    },
+    {
+      "id": "extrusion",
+      "title": "Extrusion",
+      "narration": "Census 2020 population density by state, extruded linearly from zero and coloured in five quantile classes. Density is people per square kilometre of land, so tall means dense rather than big.",
+      "layers": [
+        {
+          "id": "density",
+          "technique": "extrusion",
+          "sourceId": "census-states",
+          "encode": {
+            "attribute": "density_per_km2",
+            "visualVariable": "height",
+            "maxHeightMeters": 400000
+          },
+          "classification": { "method": "quantile", "classes": 5 }
+        }
+      ],
+      "camera": { "center": [-96, 37.2], "zoom": 3.3, "pitch": 50, "bearing": -12 },
+      "annotations": []
+    },
+    {
+      "id": "hexbin-flat",
+      "title": "Hexbins",
+      "narration": "USGS-catalogued earthquakes of magnitude 2.5 and above in southern California during 2024, counted in 25 km hexagons. Empty cells are not drawn.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "census-states" },
+        {
+          "id": "quakes",
+          "technique": "hexbin",
+          "sourceId": "earthquakes",
+          "aggregate": { "cellKm": 25, "op": "count" },
+          "classification": { "method": "natural-breaks", "classes": 4 }
+        }
+      ],
+      "camera": { "center": [-117.6, 34.5], "zoom": 6.3 },
+      "annotations": []
+    },
+    {
+      "id": "hexbin-extruded",
+      "title": "Extruded hexbins",
+      "narration": "The same counts per 25 km hexagon, extruded linearly from zero.",
+      "layers": [
+        { "id": "state-context", "technique": "fill", "sourceId": "census-states" },
+        {
+          "id": "quakes",
+          "technique": "hexbin",
+          "sourceId": "earthquakes",
+          "aggregate": { "cellKm": 25, "op": "count" },
+          "classification": { "method": "natural-breaks", "classes": 4 },
+          "extrude": { "maxHeightMeters": 60000 }
+        }
+      ],
+      "camera": { "center": [-117.6, 34.2], "zoom": 6.2, "pitch": 55, "bearing": 15 },
+      "annotations": []
+    }
+  ],
+  "sharedScales": [
+    {
+      "id": "discharge-height",
+      "title": "Daily mean discharge",
+      "visualVariable": "height",
+      "maxHeightMeters": 30000,
+      "members": [
+        {
+          "sceneId": "columns",
+          "layerId": "gauges",
+          "sourceId": "potomac-2024",
+          "observationLabel": "2024-10-01"
+        },
+        {
+          "sceneId": "morph",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01"
+        },
+        {
+          "sceneId": "change-height",
+          "layerId": "gauges",
+          "sourceId": "potomac-2025",
+          "observationLabel": "2025-10-01"
+        }
+      ]
+    }
+  ]
+}

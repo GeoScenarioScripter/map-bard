@@ -16,10 +16,14 @@ export {
 } from './themes.js';
 export { LAYOUT_FRAMES, resolveLayout } from './layouts.js';
 export {
+  AREA_DISTORTION_LIMIT,
   MIN_MARK_CONTRAST,
   REFERENCE_PHONE,
+  areaDistortedRule,
   caretUnitRule,
   critique,
+  depthUnseenRule,
+  drawsHeight,
   hiddenContrastRule,
   inconsistentScaleRule,
   paletteContrastRule,

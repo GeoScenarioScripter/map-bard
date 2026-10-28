@@ -201,6 +201,44 @@ export const DerivedSourceSchema = z
   })
   .strict();
 
+/** Sign classes of a change symbol, coloured from the ends of the theme's diverging ramp. */
+export const CHANGE_SIGNS = ['decrease', 'increase', 'unchanged'] as const;
+
+/**
+ * A change layer (step 5.2, M): each feature's before-value, joined by feature ID from the
+ * compared observation, sits in the layer's derived source beside its own value.
+ */
+export const CompiledChangeSchema = z
+  .object({
+    /** `size`: a ring (before) and a disc (after); `height`: a ghost and a solid column. */
+    form: z.enum(['size', 'height']),
+    /** Derived-source properties holding the before-value and the sign (-1, 0 or 1). */
+    beforeAttribute: IdSchema,
+    signAttribute: IdSchema,
+    /** The two observations, named for the legend by their observation labels. */
+    before: z.object({ sourceId: IdSchema, label: z.string().min(1) }).strict(),
+    after: z.object({ sourceId: IdSchema, label: z.string().min(1) }).strict(),
+    colors: z
+      .object({ decrease: HexColorSchema, increase: HexColorSchema, unchanged: HexColorSchema })
+      .strict(),
+    /** The signs that occur, in CHANGE_SIGNS order, so the legend lists only those. */
+    signs: z.array(z.enum(CHANGE_SIGNS)),
+  })
+  .strict();
+
+/**
+ * A morph (step 5.2, M): the layer's derived source carries each feature's value in the layer
+ * it transitions from; `morph` tracks blend from it (0) to the layer's own value (1). Features
+ * only in the old layer have `fadeAttribute` 1 and a value of 0, so they shrink and fade out.
+ */
+export const CompiledMorphSchema = z
+  .object({
+    from: z.object({ sceneId: IdSchema, layerId: IdSchema }).strict(),
+    fromAttribute: IdSchema,
+    fadeAttribute: IdSchema,
+  })
+  .strict();
+
 const ResolvedLayerSchema = z
   .object({
     sceneId: IdSchema,
@@ -218,6 +256,15 @@ const ResolvedLayerSchema = z
     constant: LayerConstantSchema.optional(),
     /** Polygon outline colour; set when a fill takes its colour from the theme. */
     outline: z.string().optional(),
+    // M (step 5.2): MapLibre 3D data and change.
+    /** Column footprint radius in metres; the player tessellates it around each point. */
+    column: z.object({ radiusMeters: z.number().finite().positive() }).strict().optional(),
+    /** An extrusion's colour classes, beside its height scale in `scaleId`. */
+    colorScaleId: IdSchema.optional(),
+    /** An extruded hexbin's height scale, beside its colour scale in `scaleId`. */
+    heightScaleId: IdSchema.optional(),
+    change: CompiledChangeSchema.optional(),
+    morph: CompiledMorphSchema.optional(),
   })
   .strict()
   .refine((layer) => TECHNIQUE_BACKENDS[layer.technique] === layer.backend, {
@@ -462,3 +509,6 @@ export type DerivedSource = z.infer<typeof DerivedSourceSchema>;
 export type BasemapTint = z.infer<typeof BasemapTintSchema>;
 export type ResolvedAssets = z.infer<typeof ResolvedAssetsSchema>;
 export type CapabilityCatalog = z.infer<typeof CapabilityCatalogSchema>;
+export type CompiledChange = z.infer<typeof CompiledChangeSchema>;
+export type CompiledMorph = z.infer<typeof CompiledMorphSchema>;
+export type ChangeSign = (typeof CHANGE_SIGNS)[number];

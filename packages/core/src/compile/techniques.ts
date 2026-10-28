@@ -5,10 +5,29 @@ import type {
   DerivedSource,
   Diagnostic,
   LayerBinding,
+  LayerTrack,
+  ResolvedScale,
+  ResolvedTheme,
+  ValidatedProject,
 } from '@mapbard/schema';
-import type { Feature } from './data.js';
+import type { CapabilityId } from '@mapbard/knowledge';
+import type { Comparison, Feature } from './data.js';
 
 type CompiledLayer = Compiled['scenes'][number]['layers'][number];
+
+/** What a technique module may look up beyond its own layer: other sources, scenes and scales. */
+export type TechniqueContext = {
+  project: ValidatedProject;
+  theme: ResolvedTheme;
+  /** The layer's checked comparison filter, if any. */
+  filter?: Comparison;
+  /** Checked features of any GeoJSON data resource (empty for an unknown one). */
+  featuresOf(sourceId: string): Feature[];
+  /** The shared scale a layer belongs to, if any. */
+  sharedScaleOf(sceneId: string, layerId: string): string | undefined;
+  /** Whether the catalog has a capability; a missing one is diagnosed at `path`. */
+  capability(id: CapabilityId, path: Diagnostic['path']): boolean;
+};
 
 /** What a V2 technique module sees of one authored layer. */
 export type TechniqueInput = {
@@ -19,6 +38,8 @@ export type TechniqueInput = {
   /** The authored layer's diagnostic path and IDs. */
   path: Diagnostic['path'];
   ids: Diagnostic['ids'];
+  /** Supplied by the compiler; tests of modules that need no lookups may leave it out. */
+  context?: TechniqueContext;
 };
 
 /** A module's additions for one layer; errors keep the layer out of the build. */
@@ -28,6 +49,17 @@ export type TechniqueOutput = {
   layer?: Partial<CompiledLayer>;
   derived?: DerivedSource[];
   callouts?: Callout[];
+  /** Scales the module resolves itself, such as a hexbin's colour classes over its cells. */
+  scales?: ResolvedScale[];
+  /**
+   * Values the layer draws besides its own attribute (a change symbol's before-values); they
+   * join the layer's local scale. A shared scale spans only its member layers.
+   */
+  scaleValues?: unknown[];
+  /** Checks that need every resolved scale; they run before callouts are placed. */
+  afterScales?: (scales: readonly ResolvedScale[]) => Diagnostic[];
+  /** Tracks the layer gets unless the author animates the same property. */
+  defaultTracks?: Omit<LayerTrack, 'runtimeLayerId'>[];
 };
 
 export type TechniqueCompiler = (input: TechniqueInput) => TechniqueOutput;

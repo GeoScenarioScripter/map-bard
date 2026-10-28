@@ -35,9 +35,9 @@ const scaleInput = (values: unknown[], extra: Partial<ScaleInput> = {}): ScaleIn
 });
 
 describe('V2 technique dispatch (step 5.1)', () => {
-  it('gives every V2 technique a module, none of them ready yet', () => {
+  it('gives every V2 technique a module', () => {
     expect(Object.keys(TECHNIQUE_COMPILERS).sort()).toEqual([...V2_TECHNIQUES].sort());
-    expect(READY_V2_TECHNIQUES).toEqual([]);
+    expect(READY_V2_TECHNIQUES.every((t) => V2_TECHNIQUES.includes(t))).toBe(true);
   });
 
   it('compiles V1 layers with the maplibre backend and no derived sources', async () => {
@@ -49,7 +49,7 @@ describe('V2 technique dispatch (step 5.1)', () => {
     expect(new Set(backends)).toEqual(new Set(['maplibre']));
   });
 
-  it.each(V2_TECHNIQUES)(
+  it.each(V2_TECHNIQUES.filter((technique) => !READY_V2_TECHNIQUES.includes(technique)))(
     'answers CAPABILITY_UNSUPPORTED for %s until its module is ready',
     async (technique) => {
       const project = await fixture();

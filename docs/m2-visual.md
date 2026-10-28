@@ -1054,6 +1054,74 @@ N owns `player/tiers/deck/`, `scripts/build-tier-deck.mjs`,
   with zero offline requests, has 0 errors in `check --visual`, stays
   within the budgets, and has measured SwiftShader noise.
 
+#### N as built (2026-10-27)
+
+Notes for the merge and for O, P and Q:
+
+- **Dependencies.** deck.gl 9.4.0 (`@deck.gl/core`, `layers`,
+  `geo-layers`, `maplibre`, plus the `extensions` and `mesh-layers` peers
+  of `geo-layers`), luma.gl 9.4.2 and `@loaders.gl/core` 4.5.4, all MIT
+  and pinned exactly. They are renderer dev dependencies: the tier is a
+  prebuilt IIFE in `dist/vendor/`, so consumers never install deck.gl.
+- **Compiler** (`compile/flows.ts`). Arcs need two-position LineStrings;
+  trips need LineStrings with one ascending ISO 8601 UTC time per vertex
+  (`Z` or `+00:00`). Both list the offending feature IDs (`VALUE_INVALID`).
+  A deck technique with `basemap.terrain` or a globe projection is
+  `CAPABILITY_UNSUPPORTED` on the authored basemap, so an offline build of
+  such a story fails too. Compiled fields (`arc`, `trip` in
+  `schema/src/flows.ts`): arc origin (the theme's second sequential
+  colour) and destination (accent) colours, `greatCircle`, a rise of 0.25
+  of the arc's length (deck.gl's default 1 filled the sky), a 2 px width
+  without a width scale; the trip's start, end, duration and trail in
+  seconds, a range label and en-US UTC clock labels at the smallest
+  aligned step (1 h to 30 days) giving fewer than 400 labels. A trail
+  track defaults to a linear scrub. An encoded arc may still `line-reveal`.
+  Callouts targeting arc features point to the destination. Technique
+  modules now also receive `project` and the resolved `theme`.
+- **Tier** (`player/tiers/deck/`). One interleaved `MapLibreOverlay` per
+  story, layers before the first label layer, picking off. Arcs use
+  `RevealArcLayer`, an `ArcLayer` whose fragment shader discards past the
+  reveal fraction (`geometry.uv.x`). They tilt 12° so a flow and its
+  reverse bow apart, and draw without depth testing, widest last: the
+  first captures showed reversed pairs z-fighting on one curve. Trips: the
+  clock is `trail × duration` with the compiled trail and fade; with no
+  trail track, or under reduced motion (unless the scene keeps motion),
+  the full tracks show and the clock reads the range label. On a trip,
+  `line-reveal` draws the tracks on up to that time. Opacity, highlight (a
+  wider line), visibility and opacity controls, and staggered opacity
+  (per-arc alpha through `updateTriggers`) apply each frame; `grow` and
+  `morph` throw, as the compiler never sends them. `whenDrawn()` waits for
+  two overlay frames after the last change with every layer loaded (10 s
+  cap). The tier may bundle `resolved-style.ts` (pure helpers), nothing
+  else of the player, and no MapLibre.
+- **Legends** (`player/legend-flows.ts`). A width scale draws its examples
+  as lines; an arc without a colour scale adds an origin-to-destination
+  gradient key; a trip shows its trail ("the last 2 days") and a clock
+  (`data-mb-clock`) that the tier fills from the compiled labels.
+- **Budgets.** `tier-deck.js` is 240.5 KB gzip at level 9 (246.3 KB as
+  the size report measures it); the build fails above 400 KB. The size
+  report lists each tier, and `BUDGET_EXCEEDED` warns per tier over 400 KB.
+- **Gallery** (`fixtures/visual/gallery-deck`, night theme). Arcs: the 30
+  largest 2024 ACS state-to-state flows (California to Texas 77,161
+  ±9,059) between 2020 centers of population. Trips: HURDAT2 tracks of
+  Francine, Helene and Milton (Sep 8 to Oct 11, 2024, so p = 0.5 shows
+  Helene). Both scenes draw generalized Census state outlines, which the
+  `unavailable` run needs. The README has the sources, retrieval date and
+  selection; `scripts/make-data.mjs` rebuilds the data. No goldens yet
+  (5.4).
+- **Checks** (Windows, headless Chromium with SwiftShader). Build, 330
+  tests, lint and browser smoke pass. `check` is clean. `check --visual`:
+  0 errors and 0 warnings offline (0 remote requests, from `file://`), at
+  stub and with the network unavailable. `--update` measured noise 0 over
+  five runs, and a gated rerun matched (worst 0); these Windows goldens
+  were not kept. Online and offline builds both ship the tier; Potomac
+  ships none (core 412 KB gzip either way). Contact sheets and full-size
+  captures inspected (offline and live). **Not clean:** live runs hit the
+  15 s idle limit at one or two captures each time, but Potomac (no deck
+  tier) did too that day, so the live tile host was slow; recheck live in
+  5.4. `--frames` on the gallery: desktop p95 33.4 ms, p99 50 ms; phone
+  p99 16.8 ms (software WebGL, 30 arcs at 1440 × 900).
+
 ### O. Potomac V2, both variants (step 5.3)
 
 O owns `examples/projects/potomac` and `potomac-night` and the root test

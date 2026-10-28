@@ -5,9 +5,14 @@ import type { Diagnostic } from '@mapbard/schema';
 /**
  * Gzip budgets in bytes. Core is the JavaScript every story loads (MapLibre main thread and
  * worker, the player, the compiled app); all tiers adds the optional deck.gl and three.js tiers.
- * MapLibre 6.1 alone is about 384 KB gzip, so the owner set the core budget to 450 KB.
+ * MapLibre 6.1 alone is about 384 KB gzip, so the owner set the core budget to 450 KB. Each tier
+ * also has its own budget, so V3's three.js tier still fits under the all-tier one.
  */
-export const SIZE_BUDGETS = { coreGzip: 450 * 1024, allTiersGzip: 1200 * 1024 } as const;
+export const SIZE_BUDGETS = {
+  coreGzip: 450 * 1024,
+  allTiersGzip: 1200 * 1024,
+  tierGzip: 400 * 1024,
+} as const;
 
 /** core and tier count against a budget; the rest is reported only. */
 export type SizeKind = 'core' | 'tier' | 'data' | 'media' | 'style' | 'font' | 'other';
@@ -38,13 +43,15 @@ export type SizeReport = {
   budgets: {
     core: { gzipBytes: number; limit: number; ok: boolean };
     allTiers: { gzipBytes: number; limit: number; ok: boolean };
+    /** Each tier script on its own. */
+    tiers: { path: string; gzipBytes: number; limit: number; ok: boolean }[];
   };
 };
 
 /** Sum the measured files by kind and compare core and all-tier JavaScript with the budgets. */
 export function sizeReport(
   files: readonly SizedFile[],
-  budgets: { coreGzip: number; allTiersGzip: number } = SIZE_BUDGETS,
+  budgets: { coreGzip: number; allTiersGzip: number; tierGzip: number } = SIZE_BUDGETS,
 ): SizeReport {
   const kinds: SizeKind[] = ['core', 'tier', 'data', 'media', 'style', 'font', 'other'];
   const totals = Object.fromEntries(
@@ -69,6 +76,14 @@ export function sizeReport(
         limit: budgets.allTiersGzip,
         ok: allTiers <= budgets.allTiersGzip,
       },
+      tiers: sized
+        .filter((file) => file.kind === 'tier')
+        .map((file) => ({
+          path: file.path,
+          gzipBytes: file.gzipBytes,
+          limit: budgets.tierGzip,
+          ok: file.gzipBytes <= budgets.tierGzip,
+        })),
     },
   };
 }
@@ -79,7 +94,7 @@ const kilobytes = (bytes: number): string => `${(bytes / 1024).toFixed(1)} KB`;
 export function budgetDiagnostics(report: SizeReport): Diagnostic[] {
   const over = (
     name: string,
-    budget: SizeReport['budgets']['core'],
+    budget: { gzipBytes: number; limit: number; ok: boolean },
     remedy: string,
   ): Diagnostic[] =>
     budget.ok
@@ -105,6 +120,13 @@ export function budgetDiagnostics(report: SizeReport): Diagnostic[] {
       'All-tier',
       report.budgets.allTiers,
       'Use fewer techniques that need the deck.gl or three.js tiers, so the story loads fewer of them.',
+    ),
+    ...report.budgets.tiers.flatMap((tier) =>
+      over(
+        `Tier ${tier.path}`,
+        tier,
+        'Rebuild with this CLI version; if the tier still goes over, report a MapBard bug.',
+      ),
     ),
   ];
 }

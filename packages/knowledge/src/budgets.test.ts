@@ -49,10 +49,32 @@ describe('size budgets', () => {
     expect(diagnostics.map((entry) => [entry.code, entry.severity])).toEqual([
       ['BUDGET_EXCEEDED', 'warning'],
       ['BUDGET_EXCEEDED', 'warning'],
+      ['BUDGET_EXCEEDED', 'warning'],
     ]);
     expect(diagnostics[0]!.message).toBe(
       'Core JavaScript is 451.0 KB gzip, over the 450.0 KB budget by 1.0 KB.',
     );
+    expect(diagnostics[2]!.message).toBe(
+      'Tier tier-deck.js JavaScript is 1200.0 KB gzip, over the 400.0 KB budget by 800.0 KB.',
+    );
+  });
+
+  it('warns when one tier is over its own 400 KB budget, even with room in the total', () => {
+    const report = sizeReport([
+      { path: 'player.js', bytes: 1, gzipBytes: 10 * KB },
+      { path: 'vendor/tier-deck.js', bytes: 1, gzipBytes: 401 * KB },
+    ]);
+    expect(report.budgets.allTiers.ok).toBe(true);
+    expect(report.budgets.tiers).toEqual([
+      { path: 'vendor/tier-deck.js', gzipBytes: 401 * KB, limit: 400 * KB, ok: false },
+    ]);
+    expect(budgetDiagnostics(report)).toEqual([
+      expect.objectContaining({
+        code: 'BUDGET_EXCEEDED',
+        message:
+          'Tier vendor/tier-deck.js JavaScript is 401.0 KB gzip, over the 400.0 KB budget by 1.0 KB.',
+      }),
+    ]);
   });
 
   it('counts the budget limit itself as within budget', () => {

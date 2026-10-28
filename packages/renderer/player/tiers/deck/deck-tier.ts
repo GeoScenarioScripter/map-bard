@@ -34,6 +34,8 @@ export type DeckLibrary = {
   tripsLayer(props: Record<string, unknown>): DeckLayer;
 };
 
+/** Arc tilt in degrees, so opposite flows between two places stay apart. */
+export const ARC_TILT = 12;
 /** Default opacity of flows without an authored constant. */
 const FLOW_OPACITY = 0.9;
 /** Frames drawn after the last change before captures may read the canvas. */
@@ -123,7 +125,11 @@ export function createDeckTier(deck: DeckLibrary): TierFactory {
           getTargetColor: (row: ArcRow) => fade(row.destination, factor(row)),
           getWidth: (row: ArcRow) => row.width,
           getHeight: layer.arc!.height,
+          // Tilted arcs: a flow and its reverse bow to opposite sides instead of sharing a curve.
+          getTilt: ARC_TILT,
           greatCircle: layer.arc!.greatCircle,
+          // Arcs overlap only one another, so draw order (widest last) decides, not depth.
+          parameters: { depthCompare: 'always', depthWriteEnabled: false },
           revealFraction: entry.reveal,
           updateTriggers: { getSourceColor: triggers, getTargetColor: triggers },
         });

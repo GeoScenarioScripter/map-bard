@@ -88,7 +88,7 @@ export type ArcRow = {
   destination: Rgba;
 };
 
-/** One row per drawn arc: origin and destination, width and end colours. */
+/** One row per drawn arc: origin and destination, width and end colours, widest last. */
 export function arcRows(
   layer: CompiledLayer,
   scale: ResolvedScale | undefined,
@@ -96,7 +96,7 @@ export function arcRows(
 ): ArcRow[] {
   const arc = layer.arc;
   if (!arc) throw new Error(`Layer ${layer.runtimeId} has no compiled arc fields`);
-  return drawnFeatures(layer, data).flatMap(({ index, properties, path }) => {
+  const rows = drawnFeatures(layer, data).flatMap(({ index, properties, path }) => {
     if (path.length !== 2) return [];
     const value = layer.attribute ? properties[layer.attribute] : undefined;
     const encoded = scale ? scaleColor(scale, value) : undefined;
@@ -112,6 +112,8 @@ export function arcRows(
       },
     ];
   });
+  // Without depth testing the last arc drawn is on top, so the largest flows stay visible.
+  return rows.sort((a, b) => a.width - b.width || a.index - b.index);
 }
 
 export type TripRow = {

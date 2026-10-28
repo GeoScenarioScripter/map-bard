@@ -35,7 +35,7 @@ function directionKey(layer: CompiledLayer): string {
   const id = `mb-arc-${layer.runtimeId.replace(/[^A-Za-z0-9_-]/g, '_')}`;
   const svg =
     `<svg class="mb-legend-direction" aria-hidden="true" width="${LINE_LENGTH}" height="8" viewBox="0 0 ${LINE_LENGTH} 8">` +
-    `<defs><linearGradient id="${id}"><stop offset="0" stop-color="${escapeHtml(arc.origin)}"/><stop offset="1" stop-color="${escapeHtml(arc.destination)}"/></linearGradient></defs>` +
+    `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="2" y1="0" x2="${LINE_LENGTH - 2}" y2="0"><stop offset="0" stop-color="${escapeHtml(arc.origin)}"/><stop offset="1" stop-color="${escapeHtml(arc.destination)}"/></linearGradient></defs>` +
     `<line x1="2" y1="4" x2="${LINE_LENGTH - 2}" y2="4" stroke="url(#${id})" stroke-width="3" stroke-linecap="round"/></svg>`;
   return `<ul class="mb-legend-flow-direction"><li>${svg}<span>From origin to destination</span></li></ul>`;
 }

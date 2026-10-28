@@ -183,14 +183,14 @@ describe('deck tier data (step 5.2, N)', () => {
     expect(hexRgba('#00000080')).toEqual([0, 0, 0, 128]);
   });
 
-  it('turns arcs into rows: filtered, width on the linear scale, gradient ends', () => {
+  it('turns arcs into rows: filtered, width on the linear scale, gradient ends, widest last', () => {
     const { arc } = story();
     const rows = arcRows(arc, widthScale, arcs);
-    expect(rows.map((row) => row.index)).toEqual([0, 1, 2]);
-    expect(rows.map((row) => row.width)).toEqual([2, 8, 1]);
+    expect(rows.map((row) => row.index)).toEqual([2, 0, 1]);
+    expect(rows.map((row) => row.width)).toEqual([1, 2, 8]);
     expect(rows[0]).toMatchObject({
       from: [-77, 39],
-      to: [-90, 35],
+      to: [-88, 35],
       origin: hexRgba(ARC.origin),
       destination: hexRgba(ARC.destination),
     });
@@ -240,6 +240,8 @@ describe('deck tier layers', () => {
       pickable: false,
       opacity: 0.8,
       getHeight: 0.25,
+      getTilt: 12,
+      parameters: { depthCompare: 'always', depthWriteEnabled: false },
       greatCircle: false,
       widthUnits: 'pixels',
       revealFraction: 1,
@@ -306,7 +308,7 @@ describe('deck tier layers', () => {
       updateTriggers: { getTargetColor: number };
     };
     const alphas = props.data.map((row) => props.getTargetColor(row)[3]);
-    expect(alphas).toEqual([0, 255, 0]);
+    expect(alphas).toEqual([0, 0, 255]);
     expect(props.updateTriggers.getTargetColor).toBe(1);
   });
 

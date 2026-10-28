@@ -306,7 +306,18 @@ describe('renderer tiers and derived sources (compiled 0.4.0)', () => {
   const deckStory = (): Compiled => {
     const story = structuredClone(fixture);
     const layer = story.scenes[0]!.layers[0]!;
-    Object.assign(layer, { technique: 'arc', geometry: 'line', backend: 'deck' });
+    Object.assign(layer, {
+      technique: 'arc',
+      geometry: 'line',
+      backend: 'deck',
+      arc: {
+        origin: '#66c2a4',
+        destination: '#0b3d91',
+        greatCircle: false,
+        height: 0.25,
+        width: 2,
+      },
+    });
     return story;
   };
 

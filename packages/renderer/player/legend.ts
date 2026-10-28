@@ -1,5 +1,6 @@
 import type { ResolvedScale } from '@mapbard/schema';
 import { escapeHtml } from './media.js';
+import { flowLegendMarkup, widthLegendBody } from './legend-flows.js';
 import type { CompiledLayer, CompiledScene, CompiledStory } from './types.js';
 
 /** Space between the nested circles and their value labels, in CSS pixels. */
@@ -20,7 +21,8 @@ export function legendMarkup(scene: CompiledScene, story: CompiledStory): string
       // Unstyled symbols are painted in the theme accent, so their legend is too.
       return oneLegend(scale, layer, story.theme.colors.accent);
     })
-    .join('');
+    .join('')
+    .concat(flowLegendMarkup(scene, story));
 }
 
 function swatch(color: string, geometry: CompiledLayer['geometry'], extra = ''): string {
@@ -85,7 +87,7 @@ function oneLegend(scale: ResolvedScale, layer: CompiledLayer, accent: string): 
     body = `<ul>${row('', `Height from 0 to ${scale.tallest.label}`)}</ul>`;
   } else if (scale.kind === 'numeric-width') {
     kind = 'widths';
-    body = `<ul>${scale.legend.map((entry) => row('', entry.label)).join('')}</ul>`;
+    body = widthLegendBody(scale, layer.arc?.destination ?? layer.constant?.color ?? accent);
   } else {
     kind = 'sizes';
     // Nothing to nest when every value maps to zero area: list the compiled labels instead.

@@ -1,39 +1,23 @@
-import type { TierFactory, registerTier } from '../../tiers.js';
+import { TripsLayer } from '@deck.gl/geo-layers';
+import { MapLibreOverlay } from '@deck.gl/maplibre';
+import type { registerTier } from '../../tiers.js';
+import { createDeckTier, type DeckLayer, type DeckOverlay } from './deck-tier.js';
+import { RevealArcLayer } from './reveal-arc-layer.js';
 
 /**
- * Stub deck.gl tier (step 5.1). It proves tier loading, the size report, `file://` and zero
- * offline requests before step N replaces it with deck.gl's `MapLibreOverlay`. It draws
- * nothing; `data-mb-tier-deck` on the root element counts its bound layers.
+ * The deck.gl tier script (`vendor/tier-deck.js`): deck.gl 9.4 through `@deck.gl/maplibre`,
+ * interleaved in MapLibre's context. It registers itself with the player, which loads first.
  */
-const createDeckTier: TierFactory = () => {
-  const bound = new Set<string>();
-  const root = document.documentElement;
-  const show = () => {
-    root.dataset.mbTierDeck = String(bound.size);
-  };
-  show();
-  return {
-    bindLayer(layer) {
-      bound.add(layer.runtimeId);
-      show();
-    },
-    unbindLayer(runtimeId) {
-      bound.delete(runtimeId);
-      show();
-    },
-    setControl() {},
-    setLayerProperty() {},
-    staggerCount: () => 0,
-    setLayerFeatureValues() {},
-    whenDrawn: () => Promise.resolve(),
-    dispose() {
-      bound.clear();
-      delete root.dataset.mbTierDeck;
-    },
-  };
-};
+const tier = createDeckTier({
+  overlay: (props) =>
+    new MapLibreOverlay(
+      props as unknown as ConstructorParameters<typeof MapLibreOverlay>[0],
+    ) as unknown as DeckOverlay,
+  arcLayer: (props) => new RevealArcLayer(props) as unknown as DeckLayer,
+  tripsLayer: (props) => new TripsLayer(props) as unknown as DeckLayer,
+});
 
 const player = (globalThis as { MapBardCompiledPlayer?: { registerTier?: typeof registerTier } })
   .MapBardCompiledPlayer;
 if (!player?.registerTier) throw new Error('Load player.js before vendor/tier-deck.js');
-player.registerTier('deck', createDeckTier);
+player.registerTier('deck', tier);

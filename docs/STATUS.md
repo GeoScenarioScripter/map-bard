@@ -11,8 +11,9 @@ packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
 [m2-visual.md](m2-visual.md#v2--3d-data-change-and-flows); the owner settled
 its decisions, step 5.0 (spike) has run, the owner confirmed its
 [backend table](m2-visual.md#50-results-2026-10-23), and step 5.1 (the
-foundation: compiled 0.4.0, tier loading, altitude projection) is done;
-next: step 5.2, M ‖ N in parallel worktrees.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+foundation: compiled 0.4.0, tier loading, altitude projection) and step
+5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) are done;
+next: step 5.3, O ‖ P in parallel worktrees.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -112,12 +113,20 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   per layer (`maplibre`, or `deck` for arcs and trips), derived sources,
   height and width scales, `grow`, `morph` and `trail` tracks and a theme
   `light` token. The V2 techniques (column, extrusion, change, hexbin, arc,
-  trip) parse and dispatch to stub modules that answer
-  `CAPABILITY_UNSUPPORTED`, so `capabilities` does not list them yet. The
-  player loads renderer tiers (`registerTier`; a stub
-  `vendor/tier-deck.js`, shipped only to stories that use it) and projects
-  points above the ground (`projectAltitude`).
-- Checks: 308 routine tests (schema 45, knowledge 30, core 95, renderer 94,
+  trip) compile and draw (step 5.2, unreleased; `capabilities` lists
+  them). M: columns (24-sided footprints, staggered `grow`), extrusions,
+  change symbols (ring and disc, or ghost and solid column; compiled
+  change labels as generated callouts), morphs through feature state and
+  hexbins (flat or extruded) as MapLibre layers, with callouts on column
+  tops, height, change and hexbin legends, theme light for 3D stories and
+  the critic rules `DEPTH_UNSEEN` and `ENCODING_AREA_DISTORTED`. N: a
+  deck.gl 9.4 tier (`vendor/tier-deck.js`, 240.5 KB gzip, shipped only to
+  stories that use it) drawing arcs and trips through an interleaved
+  `MapLibreOverlay`, with flow legends, a trip clock, a per-tier 400 KB
+  budget warning, and `CAPABILITY_UNSUPPORTED` for deck techniques with
+  terrain or globe. Technique galleries: `fixtures/visual/gallery-maplibre`
+  and `gallery-deck`, from public-domain data (no goldens yet).
+- Checks: 368 routine tests (schema 45, knowledge 31, core 128, renderer 121,
   CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
   tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
   Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
@@ -169,6 +178,18 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-10-28: Step 5.2 merged (`5c6a8fe`): M (columns, extrusions,
+  change symbols, morph, hexbins, `DEPTH_UNSEEN`,
+  `ENCODING_AREA_DISTORTED`, gallery-maplibre) and N (deck.gl 9.4 tier,
+  arcs, trips, flow legends, per-tier budget, gallery-deck), built in
+  parallel worktrees; see each "as built" note in m2-visual.md. Checks on
+  the merge: build, 368 tests and lint pass; `check --visual` 0 errors on
+  both galleries (offline and stub, 0 warnings beyond the offline-basemap
+  notice) and both Potomac variants (offline 6 and stub 8 in-flight
+  warnings, as before); both gallery contact sheets inspected. Not run:
+  live and unavailable runs on the merge (N saw live idle timeouts, also
+  on Potomac), frame budgets (gallery-deck desktop p99 50 ms under
+  SwiftShader), Linux goldens (5.4), CI (no push). Next: step 5.3, O ‖ P.
 - 2026-10-23: Owner confirmed the V2 backend table. Step 5.1 (`cd39f47`):
   compiled 0.4.0 (layer backends, derived sources, height and width
   scales, `grow`/`morph`/`trail` tracks, generated callouts, theme

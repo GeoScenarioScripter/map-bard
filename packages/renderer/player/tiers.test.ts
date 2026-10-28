@@ -177,8 +177,8 @@ describe('renderer tiers', () => {
       `unbind ${deck.runtimeId}`,
       'dispose',
     ]);
-    // MapLibre layers do not draw V2 tracks until steps M and N.
-    expect(() => adapter.setLayerProperty(libre.runtimeId, 'grow', 1)).toThrow(/grow tracks/);
+    // Trips are deck.gl's; MapLibre layers draw grow and morph (step 5.2, M) but no trail.
+    expect(() => adapter.setLayerProperty(libre.runtimeId, 'trail', 1)).toThrow(/trail tracks/);
   });
 
   it('reports a column as two symbols, its base and its top', () => {
@@ -202,6 +202,7 @@ describe('renderer tiers', () => {
     story.scales[0] = height;
     const layer = story.scenes[0]!.layers[0]!;
     layer.technique = 'column';
+    layer.column = { radiusMeters: 500 };
     const map = {
       ...baseMap(),
       getLayer: () => true,

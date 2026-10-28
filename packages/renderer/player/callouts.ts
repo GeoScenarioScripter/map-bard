@@ -13,8 +13,10 @@ import {
 import type { CompiledScene, MapAdapter, MarkerHandle } from './types.js';
 
 type Callout = CompiledScene['callouts'][number];
-export type SymbolPoint = { at: readonly [number, number]; radius: number };
-type Projector = Pick<MapAdapter, 'onFrame' | 'project'>;
+/** A drawn symbol; `height` (metres) places it above the ground, as a column's body or top. */
+export type SymbolPoint = { at: readonly [number, number]; radius: number; height?: number };
+type Projector = Pick<MapAdapter, 'onFrame' | 'project'> &
+  Partial<Pick<MapAdapter, 'projectAltitude'>>;
 
 export interface CalloutOverlayOptions {
   /** Screen UI the labels must avoid, as client rects: the card area, the rail, map controls. */
@@ -75,12 +77,13 @@ export function nearbySymbols(
   project: (at: readonly [number, number]) => Point,
   viewport: { width: number; height: number },
   requests: readonly CalloutRequest[],
+  projectSymbol: (symbol: SymbolPoint) => Point = (symbol) => project(symbol.at),
 ): Circle[] {
   const targets = requests.flatMap((request) => request.targets);
   const reaches = requests.map((request) => ({ ...request.anchor, reach: reachOf(request) }));
   const result: Circle[] = [];
   for (const symbol of symbols) {
-    const point = project(symbol.at);
+    const point = projectSymbol(symbol);
     if (
       point.x < -SYMBOL_MARGIN ||
       point.y < -SYMBOL_MARGIN ||
@@ -143,7 +146,19 @@ export function createCalloutOverlay(
   /** Opacity of each callout of the shown scene, set by callout tracks; 1 when untracked. */
   let setOpacity: ((id: string, value: number) => void) | undefined;
 
-  function show(callouts: readonly Callout[], symbols: () => readonly SymbolPoint[]): MarkerHandle {
+  /**
+   * `heightAt` gives the current top (metres) of a 3D symbol drawn at a coordinate, so a
+   * callout on a column points at its top rather than its base.
+   */
+  function show(
+    callouts: readonly Callout[],
+    symbols: () => readonly SymbolPoint[],
+    heightAt?: (at: readonly [number, number]) => number,
+  ): MarkerHandle {
+    const lifted = (at: readonly [number, number], height: number) =>
+      height > 0 && map.projectAltitude ? map.projectAltitude(at, height) : map.project(at);
+    const projectAt = (at: readonly [number, number]) => lifted(at, heightAt?.(at) ?? 0);
+    const projectSymbol = (symbol: SymbolPoint) => lifted(symbol.at, symbol.height ?? 0);
     const ordered = [...callouts].sort((a, b) => a.priority - b.priority);
     const root = document.createElement('div');
     root.className = 'mb-callouts';
@@ -211,12 +226,16 @@ export function createCalloutOverlay(
       }));
       const requests = calloutRequests(
         live.map((part) => part.callout),
-        map.project,
+        projectAt,
         sizes,
       );
       const placements = placeShownCallouts(
         requests,
-        { viewport, panels, symbols: nearbySymbols(symbols(), map.project, viewport, requests) },
+        {
+          viewport,
+          panels,
+          symbols: nearbySymbols(symbols(), projectAt, viewport, requests, projectSymbol),
+        },
         previous,
       );
       previous = new Map(placements.map((item) => [item.id, item.position]));

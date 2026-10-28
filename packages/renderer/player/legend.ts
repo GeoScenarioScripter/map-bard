@@ -1,4 +1,4 @@
-import type { ResolvedScale } from '@mapbard/schema';
+import type { ChangeSign, CompiledChange, ResolvedScale } from '@mapbard/schema';
 import { escapeHtml } from './media.js';
 import type { CompiledLayer, CompiledScene, CompiledStory } from './types.js';
 
@@ -11,16 +11,60 @@ const LABEL_GAP = 10;
  * labels are compiled; this module only lays them out.
  */
 export function legendMarkup(scene: CompiledScene, story: CompiledStory): string {
-  const ids = [...new Set(scene.layers.map((layer) => layer.scaleId).filter(Boolean))];
-  return ids
-    .map((id) => {
-      const scale = story.scales.find((item) => item.id === id);
-      if (!scale) throw new Error(`Missing resolved scale ${id}`);
-      const layer = scene.layers.find((item) => item.scaleId === id)!;
-      // Unstyled symbols are painted in the theme accent, so their legend is too.
-      return oneLegend(scale, layer, story.theme.colors.accent);
-    })
-    .join('');
+  // A layer's own scale, then an extrusion's colour classes or an extruded hexbin's heights.
+  const scaleIds = (layer: CompiledLayer) =>
+    [layer.colorScaleId, layer.scaleId, layer.heightScaleId].filter((id): id is string => !!id);
+  const ids = [...new Set(scene.layers.flatMap(scaleIds))];
+  let previous = '';
+  const scales = ids.map((id) => {
+    const scale = story.scales.find((item) => item.id === id);
+    if (!scale) throw new Error(`Missing resolved scale ${id}`);
+    const layer = scene.layers.find((item) => scaleIds(item).includes(id))!;
+    // An extrusion's height key follows its colour key under the same title, so says it once.
+    const heading = `${scale.title}\u0000${scale.unitLabel ?? ''}`;
+    const headed = heading !== previous;
+    previous = heading;
+    // Unstyled symbols are painted in the theme accent, so their legend is too.
+    return oneLegend(scale, layer, story.theme.colors.accent, headed);
+  });
+  const changes = scene.layers.flatMap((layer) =>
+    layer.change ? [changeLegend(layer.change, story.theme.colors)] : [],
+  );
+  return [...scales, ...changes].join('');
+}
+
+/** A small column, so the height key reads as heights; it draws no pixel scale. */
+function columnGlyph(color: string, opacity = 1): string {
+  return `<svg class="mb-legend-glyph" aria-hidden="true" width="14" height="18" viewBox="0 0 14 18"><rect x="3" y="2" width="8" height="15" rx="1" fill="${escapeHtml(color)}" fill-opacity="${opacity}"/></svg>`;
+}
+
+function circleGlyph(color: string, filled: boolean): string {
+  const colour = escapeHtml(color);
+  return `<svg class="mb-legend-glyph" aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="${filled ? colour : 'none'}" stroke="${colour}" stroke-width="1.5"/></svg>`;
+}
+
+const SIGN_LABELS: Record<ChangeSign, string> = {
+  decrease: 'Decrease',
+  increase: 'Increase',
+  unchanged: 'No change',
+};
+
+/**
+ * The change key: before and after named by their observation labels, drawn as the symbols
+ * the map uses (ring and disc, or ghost and solid column), then a colour per sign that occurs.
+ */
+export function changeLegend(
+  change: CompiledChange,
+  colors: { ink: string; muted: string },
+): string {
+  const height = change.form === 'height';
+  const glyph = (color: string, filled = true, opacity = 1) =>
+    height ? columnGlyph(color, opacity) : circleGlyph(color, filled);
+  const before = glyph(colors.muted, false, 0.35);
+  const after = glyph(colors.ink);
+  const signs = change.signs.map((sign) => row(glyph(change.colors[sign]), SIGN_LABELS[sign]));
+  const title = `Change, ${change.before.label} to ${change.after.label}`;
+  return `<section class="mb-legend mb-legend--change" aria-label="${escapeHtml(title)} legend"><h3>${escapeHtml(title)}</h3><ul>${row(before, `${change.before.label} (before)`)}${row(after, `${change.after.label} (after)`)}</ul><ul class="mb-legend-signs">${signs.join('')}</ul></section>`;
 }
 
 function swatch(color: string, geometry: CompiledLayer['geometry'], extra = ''): string {
@@ -66,7 +110,12 @@ export function nestedCircles(
   return `<svg class="mb-legend-nested" role="img" aria-label="${escapeHtml(name)}" width="${labelX + labelWidth}" height="${height}" viewBox="0 -6 ${labelX + labelWidth} ${height}">${parts.join('')}</svg>`;
 }
 
-function oneLegend(scale: ResolvedScale, layer: CompiledLayer, accent: string): string {
+function oneLegend(
+  scale: ResolvedScale,
+  layer: CompiledLayer,
+  accent: string,
+  headed = true,
+): string {
   const geometry = layer.geometry;
   const missing = scale.counts.missing + scale.counts.invalid > 0;
   let body: string;
@@ -82,7 +131,7 @@ function oneLegend(scale: ResolvedScale, layer: CompiledLayer, accent: string): 
   } else if (scale.kind === 'numeric-height') {
     // On-screen height changes with pitch and zoom, so the key states the range in words.
     kind = 'heights';
-    body = `<ul>${row('', `Height from 0 to ${scale.tallest.label}`)}</ul>`;
+    body = `<ul>${row(columnGlyph(accent), `Height from 0 to ${scale.tallest.label}`)}</ul>`;
   } else if (scale.kind === 'numeric-width') {
     kind = 'widths';
     body = `<ul>${scale.legend.map((entry) => row('', entry.label)).join('')}</ul>`;
@@ -104,5 +153,6 @@ function oneLegend(scale: ResolvedScale, layer: CompiledLayer, accent: string): 
   const unit = scale.unitLabel
     ? ` <span class="mb-legend-unit">(${escapeHtml(scale.unitLabel)})</span>`
     : '';
-  return `<section class="mb-legend mb-legend--${kind}" aria-label="${escapeHtml(scale.title)} legend"><h3>${escapeHtml(scale.title)}${unit}</h3>${body}${noData}</section>`;
+  const heading = headed ? `<h3>${escapeHtml(scale.title)}${unit}</h3>` : '';
+  return `<section class="mb-legend mb-legend--${kind}" aria-label="${escapeHtml(scale.title)} legend">${heading}${body}${noData}</section>`;
 }

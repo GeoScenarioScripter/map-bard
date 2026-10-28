@@ -755,7 +755,8 @@ function resolveLayerTrack(
     );
     return undefined;
   }
-  if (track.property === 'line-reveal' && layer.scaleId) {
+  // Arcs reveal in their shader, so an encoded arc can still draw on.
+  if (track.property === 'line-reveal' && layer.scaleId && layer.technique !== 'arc') {
     problem(
       'CAPABILITY_UNSUPPORTED',
       { artifact: where.artifact, path: [...where.path, 'property'] },
@@ -782,8 +783,11 @@ function resolveLayerTrack(
   }
   const type = track.type ?? 'data';
   const kind = defaults(type);
-  const mode = track.mode ?? kind.mode;
-  const easing = resolveEasing(track.easing ?? kind.easing);
+  // A trip's clock follows scroll at an even pace unless the author times it.
+  const mode = track.mode ?? (track.property === 'trail' ? 'scrub' : kind.mode);
+  const easing = resolveEasing(
+    track.easing ?? (track.property === 'trail' ? 'linear' : kind.easing),
+  );
   let keyframes: LayerTrack['keyframes'];
   if (track.keyframes)
     keyframes = track.keyframes.map((frame, index) => ({

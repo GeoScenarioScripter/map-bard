@@ -1,5 +1,6 @@
 import type { Annotation, Callout, Compiled, JsonValue, ResolvedScale } from '@mapbard/schema';
 import { matchesFilter, type Feature } from './data.js';
+import { arcEndRadius } from './flows.js';
 
 type CompiledLayer = Compiled['scenes'][number]['layers'][number];
 
@@ -11,7 +12,12 @@ export const POINT_SYMBOL_RADIUS = 7;
 export const POINT_SYMBOL_STROKE = 1;
 
 /** A feature of a compiled source with its point positions (none for lines and polygons). */
-export type PointFeature = { feature: Feature; points: [number, number][] };
+export type PointFeature = {
+  feature: Feature;
+  points: [number, number][];
+  /** A two-position line's end, where callouts on arcs point. */
+  destination?: [number, number];
+};
 export type PointLookup = (sourceId: string, featureId: string) => PointFeature | undefined;
 
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -65,8 +71,18 @@ export function resolveSceneCallouts(
           const drawn = pointSymbolRadius(layer, scale, found.feature.properties);
           radius = Math.max(radius ?? 0, drawn);
         }
-        if (radius === undefined) continue;
-        for (const at of found.points) targets.push({ at: [at[0], at[1]], radius });
+        if (radius !== undefined)
+          for (const at of found.points) targets.push({ at: [at[0], at[1]], radius });
+        // A callout on an arc points to its destination.
+        for (const layer of layers) {
+          if (layer.technique !== 'arc' || layer.sourceId !== target.sourceId || !layer.arc)
+            continue;
+          if (!found.destination || (layer.filter && !matchesFilter(found.feature, layer.filter)))
+            continue;
+          const scale = scales.find((item) => item.id === layer.scaleId);
+          const end = arcEndRadius(layer.arc, scale, found.feature.properties, layer.attribute);
+          targets.push({ at: [found.destination[0], found.destination[1]], radius: end });
+        }
       }
     }
     return {

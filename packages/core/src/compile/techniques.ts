@@ -5,6 +5,8 @@ import type {
   DerivedSource,
   Diagnostic,
   LayerBinding,
+  ResolvedTheme,
+  ValidatedProject,
 } from '@mapbard/schema';
 import type { Feature } from './data.js';
 
@@ -19,6 +21,10 @@ export type TechniqueInput = {
   /** The authored layer's diagnostic path and IDs. */
   path: Diagnostic['path'];
   ids: Diagnostic['ids'];
+  /** The whole project, for raw geometry, other sources and the authored basemap. */
+  project: ValidatedProject;
+  /** The resolved theme, for colours a technique derives. */
+  theme: ResolvedTheme;
 };
 
 /** A module's additions for one layer; errors keep the layer out of the build. */

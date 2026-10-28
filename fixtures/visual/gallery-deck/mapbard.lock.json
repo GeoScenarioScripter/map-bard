@@ -194,5 +194,23 @@
         }
       }
     }
+  },
+  "lastCompileInputs": {
+    "manifestSha256": "sha256:49bf61c86b20cb8fe32d8d72356c5d0c33c1036780143f4f5188025c85e21ebf",
+    "storySha256": "sha256:0f7324e1e95e655d1e1e98180ba15e642f2297515556bc6488384f511c168549",
+    "resources": [
+      {
+        "id": "hurricane-tracks",
+        "sha256": "sha256:80dfb4f5b3e6436548ffc7560ae2a9669e272355f896f8aee56bb3ff0a72d2e8"
+      },
+      {
+        "id": "state-flows",
+        "sha256": "sha256:209ff4195071c03422528a481e78aab61c5280d57b0a96636d43baa1ffac5665"
+      },
+      {
+        "id": "states-context",
+        "sha256": "sha256:9227c9ee590815d9b232afe19ec155b961e648921bdac9d137196f70dfad8c24"
+      }
+    ]
   }
 }

@@ -1,0 +1,116 @@
+{
+  "formatVersion": "0.2.0",
+  "scenes": [
+    {
+      "id": "arcs",
+      "title": "Arcs: the largest moves between states",
+      "narration": "The 30 largest state-to-state flows in the 2024 American Community Survey. The largest, California to Texas, is an estimated 77,161 movers (±9,059). Width is linear from zero; colour runs from origin to destination.",
+      "content": {
+        "semantics": "People who lived in another state one year earlier, by origin and destination state.",
+        "location": "United States, between 2020 state centers of population.",
+        "geometry": "One arc per origin and destination pair.",
+        "attribute": "movers in people, with 90% margins of error"
+      },
+      "discourse": {
+        "narrativeRole": "establish",
+        "emphasis": "medium",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "flows",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width",
+            "maxWidth": 10
+          }
+        }
+      ],
+      "camera": {
+        "center": [-97, 38],
+        "zoom": 3,
+        "pitch": 30
+      },
+      "transitionIn": "cut",
+      "motion": {
+        "scrollLength": 2,
+        "layers": [
+          {
+            "layerId": "flows",
+            "property": "line-reveal",
+            "mode": "scrub",
+            "range": [0, 0.6]
+          }
+        ]
+      },
+      "annotations": [
+        {
+          "id": "california-texas",
+          "text": "California to Texas: 77,161 movers (±9,059)",
+          "at": [-101, 27.5],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["california-to-texas"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "trips",
+      "title": "Trips: three Gulf hurricanes in 2024",
+      "narration": "NOAA best tracks for Francine, Helene and Milton, from September 8 to October 11, 2024. Scrolling moves the clock in UTC; each track keeps a 48-hour trail.",
+      "content": {
+        "semantics": "Best-track storm positions over time.",
+        "location": "Gulf of Mexico and the southeastern U.S., September to October 2024.",
+        "geometry": "One timed track per storm.",
+        "attribute": "position fixes with UTC times"
+      },
+      "discourse": {
+        "narrativeRole": "develop",
+        "emphasis": "medium",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "tracks",
+          "technique": "trip",
+          "sourceId": "hurricane-tracks",
+          "trip": {
+            "timeProperty": "times",
+            "trailHours": 48
+          }
+        }
+      ],
+      "camera": {
+        "center": [-85, 26.5],
+        "zoom": 3.9,
+        "pitch": 20
+      },
+      "transitionIn": "ease",
+      "motion": {
+        "scrollLength": 2,
+        "layers": [
+          {
+            "layerId": "tracks",
+            "property": "trail"
+          }
+        ]
+      },
+      "annotations": []
+    }
+  ],
+  "sharedScales": []
+}

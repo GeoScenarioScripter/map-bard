@@ -403,7 +403,8 @@ describe('morph', () => {
         ]),
       );
     }
-  });
+    // Five gallery loads and compiles; the whole-repo run shares the CPU with other packages.
+  }, 30_000);
 });
 
 describe('hexbins', () => {

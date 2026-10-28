@@ -1023,6 +1023,71 @@ critic rules; the theme `light` values; and `fixtures/visual/gallery-maplibre`.
   stagger; the gallery has 0 errors in `check --visual` (stub and
   offline), with captures inspected.
 
+#### M as built (2026-10-27)
+
+Done in a parallel worktree (commits on its branch; the lead merges). Notes:
+
+- **Compiler.** `height.ts` compiles columns (default radius 6 px at the
+  scene camera, to two figures) and extrusions (the choropleth
+  prerequisite; an optional classification gives colour classes of the same
+  attribute in `colorScaleId`, beside the height scale). `change.ts` holds
+  the change operation (`changeValue`, `changeLabel`) for M3 to replace,
+  joins before-values by feature ID into a `change` derived source
+  (properties `mb:before`, `mb:change`, `mb:percent`, `mb:sign`) and writes
+  generated callouts that list both inputs. It also resolves `transition`
+  into a `morph` derived source (`mb:from`, `mb:fade`) and a default
+  `play` track of 1,200 ms; an authored `morph` track wins. `aggregate.ts`
+  bins points into flat-topped Web Mercator hexagons anchored at (0, 0),
+  with `count`, `sum` and `mean`, a compiled ramp and, with `extrude`, a
+  height scale in `heightScaleId`.
+- **Contract additions** (all optional, so N's direct module calls still
+  compile): `TechniqueInput.context` (project, theme, filter, other
+  sources' features, shared-scale lookup, capability check) and, on the
+  output, module-resolved `scales`, `scaleValues` (a change layer's local
+  scale spans its before-values, since it draws them), `afterScales` checks
+  and `defaultTracks`. `compile.ts` changes are the plumbing for these and
+  two exceptions that let an extrusion keep a classification.
+- **Where the scale checks live.** They need data, so they are compile
+  errors rather than critic warnings: change before-values above a shared
+  scale (`SCALE_INCONSISTENT`, remedy: add the compared layer to the shared
+  scale), morphs between layers that are not on one shared scale or not of
+  one family (`SCALE_INCONSISTENT`), and the extrusion prerequisite
+  (`MEASUREMENT_REQUIRED`). The critic adds `DEPTH_UNSEEN` and
+  `ENCODING_AREA_DISTORTED`, and `SCALE_INCONSISTENT` now ignores separate
+  scales with one mapping (two hexbins of the same points) and tells hexbins
+  to share a manual classification, since they cannot join a shared scale.
+- **Not compiled:** hexbin transitions (`CAPABILITY_UNSUPPORTED`, remedy:
+  separate scenes on one manual classification). Morph and change derived
+  sources hold only the drawn features, so their compiled layers carry no
+  filter.
+- **Player.** `layerStyles` gives each technique its style layers (a change
+  symbol has two: solid and ghost columns, or disc and ring; the ghost is
+  1.25 times wider so the faces never z-fight). Column footprints are
+  tessellated per layer (`columnFootprints`, one footprint per source
+  feature so generated IDs match). Grow and morph are feature state on
+  every feature, per rank for a stagger. `fill-extrusion-opacity` cannot
+  read feature state, so opacity and highlight on 3D layers are whole-layer
+  values (a staggered opacity follows the features' mean). Stories with a
+  3D layer get the theme light through `map.setLight`; flat stories are
+  untouched. Callouts on columns anchor at the current top, and placement
+  avoids the column's base, middle and top at its projected footprint
+  width.
+- **Gallery** (`fixtures/visual/gallery-maplibre`, provenance in its
+  README): Potomac gauges (columns, morph, change in both forms), Census
+  2020 state density (extrusion, quantile classes) and 457 USGS M2.5+
+  earthquakes in southern California, 2024 (flat and extruded 25 km
+  hexbins; the 4° latitude span keeps cell area within 10%). Critic-clean.
+  No goldens yet: 5.4 makes Linux ones.
+- **Checks.** 345 routine tests (schema 45, knowledge 30, core 118,
+  renderer 109, CLI 38, root 5), lint, browser smoke. `check --visual` on
+  the gallery (Windows, SwiftShader): 42 captures, 0 errors and 0 warnings
+  at stub and offline; contact sheets and full-size captures inspected
+  (columns with the callout on the top, ghosts and solids, rings and
+  discs, extrusion, flat and extruded hexbins, phone layouts). Potomac
+  offline is unchanged (0 errors, the same 6 flight warnings). Not run:
+  live and unavailable runs of the gallery, the frame probe and the
+  1,000-feature morph probe, terrain.
+
 ### N. deck.gl tier, arcs and trips (step 5.2)
 
 N owns `player/tiers/deck/`, `scripts/build-tier-deck.mjs`,

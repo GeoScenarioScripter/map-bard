@@ -1,5 +1,6 @@
 import type { ChangeSign, CompiledChange, ResolvedScale } from '@mapbard/schema';
 import { escapeHtml } from './media.js';
+import { flowLegendMarkup, widthLegendBody } from './legend-flows.js';
 import type { CompiledLayer, CompiledScene, CompiledStory } from './types.js';
 
 /** Space between the nested circles and their value labels, in CSS pixels. */
@@ -30,7 +31,7 @@ export function legendMarkup(scene: CompiledScene, story: CompiledStory): string
   const changes = scene.layers.flatMap((layer) =>
     layer.change ? [changeLegend(layer.change, story.theme.colors)] : [],
   );
-  return [...scales, ...changes].join('');
+  return [...scales, ...changes].join('').concat(flowLegendMarkup(scene, story));
 }
 
 /** A small column, so the height key reads as heights; it draws no pixel scale. */
@@ -134,7 +135,7 @@ function oneLegend(
     body = `<ul>${row(columnGlyph(accent), `Height from 0 to ${scale.tallest.label}`)}</ul>`;
   } else if (scale.kind === 'numeric-width') {
     kind = 'widths';
-    body = `<ul>${scale.legend.map((entry) => row('', entry.label)).join('')}</ul>`;
+    body = widthLegendBody(scale, layer.arc?.destination ?? layer.constant?.color ?? accent);
   } else {
     kind = 'sizes';
     // Nothing to nest when every value maps to zero area: list the compiled labels instead.

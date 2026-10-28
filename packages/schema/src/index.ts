@@ -12,6 +12,7 @@ export * from './authored-motion.js';
 export * from './easing.js';
 export * from './callout.js';
 export * from './techniques.js';
+export * from './flows.js';
 export * from './compiled.js';
 export * from './diagnostics.js';
 export * from './project-validation.js';

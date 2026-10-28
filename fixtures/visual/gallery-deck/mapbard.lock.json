@@ -1,0 +1,216 @@
+{
+  "lockVersion": "0.2.0",
+  "projectId": "gallery-deck",
+  "revision": 4,
+  "inputs": {
+    "manifestSha256": "sha256:49bf61c86b20cb8fe32d8d72356c5d0c33c1036780143f4f5188025c85e21ebf",
+    "storySha256": "sha256:0f7324e1e95e655d1e1e98180ba15e642f2297515556bc6488384f511c168549",
+    "resources": [
+      {
+        "id": "hurricane-tracks",
+        "sha256": "sha256:80dfb4f5b3e6436548ffc7560ae2a9669e272355f896f8aee56bb3ff0a72d2e8"
+      },
+      {
+        "id": "state-flows",
+        "sha256": "sha256:209ff4195071c03422528a481e78aab61c5280d57b0a96636d43baa1ffac5665"
+      },
+      {
+        "id": "states-context",
+        "sha256": "sha256:9227c9ee590815d9b232afe19ec155b961e648921bdac9d137196f70dfad8c24"
+      }
+    ]
+  },
+  "profiles": {
+    "states-context": {
+      "geometryType": "polygon",
+      "featureCount": 51,
+      "attributes": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Alabama",
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California"
+          ]
+        }
+      ],
+      "extent": [
+        -179.137,
+        18.913,
+        179.778,
+        71.353
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "name": {
+          "present": 51,
+          "missing": 0
+        }
+      }
+    },
+    "state-flows": {
+      "geometryType": "line",
+      "featureCount": 30,
+      "attributes": [
+        {
+          "name": "origin",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "California",
+            "New York",
+            "Florida",
+            "Texas",
+            "New Jersey"
+          ]
+        },
+        {
+          "name": "destination",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Texas",
+            "New Jersey",
+            "Nevada",
+            "Arizona",
+            "Georgia"
+          ]
+        },
+        {
+          "name": "movers",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            77161,
+            56799,
+            53289,
+            52383,
+            52371
+          ]
+        },
+        {
+          "name": "movers_moe",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            9059,
+            8244,
+            6970,
+            6890,
+            8290
+          ]
+        }
+      ],
+      "extent": [
+        -122.5883,
+        27.8393,
+        -74.4245,
+        47.3295
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "origin": {
+          "present": 30,
+          "missing": 0
+        },
+        "destination": {
+          "present": 30,
+          "missing": 0
+        },
+        "movers": {
+          "present": 30,
+          "missing": 0,
+          "min": 27574,
+          "max": 77161
+        },
+        "movers_moe": {
+          "present": 30,
+          "missing": 0,
+          "min": 3746,
+          "max": 12219
+        }
+      }
+    },
+    "hurricane-tracks": {
+      "geometryType": "line",
+      "featureCount": 3,
+      "attributes": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Francine",
+            "Helene",
+            "Milton"
+          ]
+        },
+        {
+          "name": "peak_wind_kt",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            90,
+            120,
+            155
+          ]
+        },
+        {
+          "name": "times",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "2024-09-08T18:00:00Z,2024-09-09T00:00:00Z,2024-09-09T06:00:00Z,2024-09-09T12:00:00Z,2024-09-09T18:00:00Z,2024-09-10T00:00:00Z,2024-09-10T06:00:00Z,2024-09-10T12:00:00Z,2024-09-10T18:00:00Z,2024-09-11T00:00:00Z,2024-09-11T06:00:00Z,2024-09-11T12:00:00Z,2024-09-11T18:00:00Z,2024-09-11T22:00:00Z,2024-09-12T00:00:00Z,2024-09-12T06:00:00Z,2024-09-12T12:00:00Z,2024-09-12T18:00:00Z,2024-09-13T00:00:00Z,2024-09-13T06:00:00Z,2024-09-13T12:00:00Z,2024-09-13T18:00:00Z,2024-09-14T00:00:00Z",
+            "2024-09-23T12:00:00Z,2024-09-23T18:00:00Z,2024-09-24T00:00:00Z,2024-09-24T06:00:00Z,2024-09-24T12:00:00Z,2024-09-24T18:00:00Z,2024-09-25T00:00:00Z,2024-09-25T06:00:00Z,2024-09-25T12:00:00Z,2024-09-25T18:00:00Z,2024-09-26T00:00:00Z,2024-09-26T06:00:00Z,2024-09-26T12:00:00Z,2024-09-26T18:00:00Z,2024-09-27T00:00:00Z,2024-09-27T03:10:00Z,2024-09-27T05:00:00Z,2024-09-27T06:00:00Z,2024-09-27T09:00:00Z,2024-09-27T12:00:00Z,2024-09-27T18:00:00Z,2024-09-28T00:00:00Z,2024-09-28T06:00:00Z,2024-09-28T12:00:00Z,2024-09-28T18:00:00Z",
+            "2024-10-04T18:00:00Z,2024-10-05T00:00:00Z,2024-10-05T06:00:00Z,2024-10-05T12:00:00Z,2024-10-05T18:00:00Z,2024-10-06T00:00:00Z,2024-10-06T06:00:00Z,2024-10-06T12:00:00Z,2024-10-06T18:00:00Z,2024-10-07T00:00:00Z,2024-10-07T06:00:00Z,2024-10-07T12:00:00Z,2024-10-07T18:00:00Z,2024-10-07T20:00:00Z,2024-10-08T00:00:00Z,2024-10-08T06:00:00Z,2024-10-08T12:00:00Z,2024-10-08T18:00:00Z,2024-10-08T22:05:00Z,2024-10-09T00:00:00Z,2024-10-09T02:05:00Z,2024-10-09T06:00:00Z,2024-10-09T08:25:00Z,2024-10-09T12:00:00Z,2024-10-09T18:00:00Z,2024-10-10T00:00:00Z,2024-10-10T00:30:00Z,2024-10-10T06:00:00Z,2024-10-10T12:00:00Z,2024-10-10T18:00:00Z,2024-10-11T00:00:00Z,2024-10-11T06:00:00Z,2024-10-11T12:00:00Z,2024-10-11T18:00:00Z"
+          ]
+        }
+      ],
+      "extent": [
+        -96.2,
+        17.2,
+        -65.9,
+        38.1
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "name": {
+          "present": 3,
+          "missing": 0
+        },
+        "peak_wind_kt": {
+          "present": 3,
+          "missing": 0,
+          "min": 90,
+          "max": 155
+        },
+        "times": {
+          "present": 3,
+          "missing": 0
+        }
+      }
+    }
+  },
+  "lastCompileInputs": {
+    "manifestSha256": "sha256:49bf61c86b20cb8fe32d8d72356c5d0c33c1036780143f4f5188025c85e21ebf",
+    "storySha256": "sha256:0f7324e1e95e655d1e1e98180ba15e642f2297515556bc6488384f511c168549",
+    "resources": [
+      {
+        "id": "hurricane-tracks",
+        "sha256": "sha256:80dfb4f5b3e6436548ffc7560ae2a9669e272355f896f8aee56bb3ff0a72d2e8"
+      },
+      {
+        "id": "state-flows",
+        "sha256": "sha256:209ff4195071c03422528a481e78aab61c5280d57b0a96636d43baa1ffac5665"
+      },
+      {
+        "id": "states-context",
+        "sha256": "sha256:9227c9ee590815d9b232afe19ec155b961e648921bdac9d137196f70dfad8c24"
+      }
+    ]
+  }
+}

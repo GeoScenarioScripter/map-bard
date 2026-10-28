@@ -54,6 +54,7 @@ import {
 import { REFERENCE_VIEWPORT, resolveSceneMotion } from './motion.js';
 import { resolveSceneCallouts } from './callouts.js';
 import { TECHNIQUE_COMPILERS } from './dispatch.js';
+import { arcDestination } from './flows.js';
 
 export const COMPILER_VERSION = 's1-w3-a.1';
 
@@ -794,6 +795,8 @@ export function compileProject(
               features,
               path: at,
               ids,
+              project,
+              theme,
               context: {
                 project,
                 theme,
@@ -1396,7 +1399,13 @@ export function compileProject(
       scales,
       (sourceId, id) => {
         const feature = featureMap.get(sourceId)?.find((entry) => entry.id === id);
-        return feature && { feature, points: featurePoints(project, sourceId, feature) };
+        if (!feature) return undefined;
+        const destination = arcDestination(project, sourceId, feature);
+        return {
+          feature,
+          points: featurePoints(project, sourceId, feature),
+          ...(destination ? { destination } : {}),
+        };
       },
     );
     // Generated callouts (change labels) place after the author's, in the order compiled.

@@ -38,6 +38,7 @@ describe('V2 technique dispatch (step 5.1)', () => {
   it('gives every V2 technique a module', () => {
     expect(Object.keys(TECHNIQUE_COMPILERS).sort()).toEqual([...V2_TECHNIQUES].sort());
     expect(READY_V2_TECHNIQUES.every((t) => V2_TECHNIQUES.includes(t))).toBe(true);
+    expect(READY_V2_TECHNIQUES).toEqual(expect.arrayContaining(['arc', 'trip']));
   });
 
   it('compiles V1 layers with the maplibre backend and no derived sources', async () => {

@@ -1,0 +1,143 @@
+{
+  "formatVersion": "0.2.0",
+  "id": "gallery-deck",
+  "title": "deck.gl technique gallery",
+  "intent": "One scene per deck.gl technique: arcs for the largest 2024 state-to-state migration flows and trips for the tracks of three 2024 Gulf of Mexico hurricanes, for screenshot tests.",
+  "theme": {
+    "preset": "night"
+  },
+  "basemap": {
+    "provider": "openfreemap",
+    "style": "positron",
+    "labels": "minimal",
+    "fallback": ["versatiles"]
+  },
+  "resources": {
+    "data": [
+      {
+        "id": "states-context",
+        "kind": "geojson",
+        "path": "data/census-2024-states-context.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null,
+            "label": "State"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau 2024 generalized state boundaries (TIGERweb)",
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2024/State_County/MapServer/8",
+          "license": "U.S. public domain",
+          "accessedAt": "2026-10-27T00:00:00Z",
+          "qualification": "Local geographic context only, simplified to about 0.05 degrees; the outlines carry no flow or storm data."
+        },
+        "name": "2024 generalized state outlines"
+      },
+      {
+        "id": "state-flows",
+        "kind": "geojson",
+        "path": "data/acs-2024-top-state-flows.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "origin",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null,
+            "label": "State of residence one year ago"
+          },
+          {
+            "name": "destination",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "category",
+            "level": "nominal",
+            "unit": null,
+            "label": "State of current residence"
+          },
+          {
+            "name": "movers",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "people",
+            "label": "Movers"
+          },
+          {
+            "name": "movers_moe",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "people",
+            "label": "Margin of error"
+          }
+        ],
+        "attribution": {
+          "label": "U.S. Census Bureau, 2024 American Community Survey 1-year estimates, State-to-State Migration Flows (Table 1)",
+          "url": "https://www2.census.gov/programs-surveys/demo/tables/geographic-mobility/2024/state-to-state-migration/State_to_State_Migration_Table_2024_T13.xlsx",
+          "license": "U.S. public domain",
+          "accessedAt": "2026-10-27T00:00:00Z",
+          "qualification": "The 30 largest flows between states (people 1 year and over who lived in another state one year earlier), excluding Puerto Rico and abroad. Survey estimates with 90% margins of error (movers_moe); the smallest shown flows overlap within their margins. Arcs join 2020 state centers of population (U.S. Census Bureau, CenPop2020_Mean_ST), not actual routes."
+        },
+        "name": "Largest state-to-state migration flows, ACS 2024"
+      },
+      {
+        "id": "hurricane-tracks",
+        "kind": "geojson",
+        "path": "data/hurdat2-2024-gulf-hurricanes.geojson",
+        "crs": "EPSG:4326",
+        "featureId": {
+          "method": "geojson-id",
+          "scope": "source"
+        },
+        "attributes": [
+          {
+            "name": "name",
+            "observedType": "string",
+            "inferredLevel": "nominal",
+            "role": "identifier",
+            "level": "nominal",
+            "unit": null,
+            "label": "Storm"
+          },
+          {
+            "name": "peak_wind_kt",
+            "observedType": "number",
+            "inferredLevel": "ratio",
+            "role": "quantity",
+            "level": "ratio",
+            "unit": "kn",
+            "label": "Peak sustained wind"
+          }
+        ],
+        "attribution": {
+          "label": "NOAA National Hurricane Center, Atlantic hurricane database (HURDAT2), 1851-2024",
+          "url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2024-040425.txt",
+          "license": "U.S. public domain",
+          "accessedAt": "2026-10-27T00:00:00Z",
+          "qualification": "Best-track positions for Francine, Helene and Milton, the 2024 hurricanes that made landfall from the Gulf of Mexico in September and October, usually six-hourly plus landfall fixes, in UTC. Lines join the fixes; they are not continuous observations."
+        },
+        "name": "2024 Gulf hurricane best tracks (HURDAT2)"
+      }
+    ],
+    "media": []
+  }
+}

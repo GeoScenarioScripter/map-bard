@@ -386,6 +386,19 @@ h3 {
   font-size: var(--mb-text-small);
   font-variant-numeric: tabular-nums;
 }
+/* flows: example widths, the arc direction gradient and a trip's clock */
+.mb-legend-width,
+.mb-legend-direction {
+  flex: none;
+  overflow: visible;
+}
+.mb-legend-clock {
+  margin: 6px 0 0;
+  font-size: var(--mb-text-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mb-ink);
+}
 .mb-legend-tick {
   stroke: var(--mb-muted);
   stroke-width: 0.75px;

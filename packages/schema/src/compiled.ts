@@ -22,6 +22,7 @@ import {
   RelativePathSchema,
 } from './project.js';
 import { V2_TECHNIQUES } from './techniques.js';
+import { CompiledArcSchema, CompiledTripSchema } from './flows.js';
 
 const CountsSchema = z
   .object({
@@ -265,11 +266,23 @@ const ResolvedLayerSchema = z
     heightScaleId: IdSchema.optional(),
     change: CompiledChangeSchema.optional(),
     morph: CompiledMorphSchema.optional(),
+    /** Arcs (step 5.2, N). */
+    arc: CompiledArcSchema.optional(),
+    /** Trips (step 5.2, N). */
+    trip: CompiledTripSchema.optional(),
   })
   .strict()
   .refine((layer) => TECHNIQUE_BACKENDS[layer.technique] === layer.backend, {
     message: 'A layer is drawn by its technique backend.',
     path: ['backend'],
+  })
+  .refine((layer) => (layer.technique === 'arc') === (layer.arc !== undefined), {
+    message: 'Arc layers, and only they, carry arc fields.',
+    path: ['arc'],
+  })
+  .refine((layer) => (layer.technique === 'trip') === (layer.trip !== undefined), {
+    message: 'Trip layers, and only they, carry trip fields.',
+    path: ['trip'],
   });
 
 const ResolvedControlSchema = z

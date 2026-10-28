@@ -40,6 +40,10 @@ export type TechniqueInput = {
   ids: Diagnostic['ids'];
   /** Supplied by the compiler; tests of modules that need no lookups may leave it out. */
   context?: TechniqueContext;
+  /** The whole project, for raw geometry, other sources and the authored basemap. */
+  project: ValidatedProject;
+  /** The resolved theme, for colours a technique derives. */
+  theme: ResolvedTheme;
 };
 
 /** A module's additions for one layer; errors keep the layer out of the build. */

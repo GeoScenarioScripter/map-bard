@@ -407,7 +407,7 @@
           "pitch": 35,
           "range": [0.1, 0.9],
           "zoom": 11,
-          "bearing": 0
+          "bearing": 25
         }
       },
       "annotations": [
@@ -480,7 +480,7 @@
               "center": [-77.12763888888888, 38.949777777777776],
               "zoom": 11,
               "pitch": 35,
-              "bearing": 0
+              "bearing": 25
             },
             {
               "at": 1,

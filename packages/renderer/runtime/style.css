@@ -687,6 +687,15 @@ h3 {
     padding: 4px 10px;
     line-height: 1.35;
   }
+  /* with a notice, the height cap moves to the row below it: a two-section legend (height
+     and change) fills 26vh on its own, and must not be scrolled out of view by the notice */
+  .mb-rail:has(> #mb-basemap-notice) {
+    max-height: none;
+  }
+  .mb-rail:has(> #mb-basemap-notice) > :not(#mb-basemap-notice) {
+    max-height: 26vh;
+    overflow: auto;
+  }
   .mb-compiled-media {
     padding: 8px;
   }

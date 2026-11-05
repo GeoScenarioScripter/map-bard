@@ -95,6 +95,39 @@ async function openStory(browser, file, online) {
   }
 }
 
+/**
+ * On a phone with every tile host down, the basemap notice joins the rail above the legend.
+ * The 2025 scene's legend has two sections (height and change), which filled the rail's
+ * height cap with the notice included, so the rail scrolled the legend's foot out of view
+ * and callouts were placed against the clipped rail, under the legend's real box.
+ */
+async function checkPhoneRail(browser, file) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  try {
+    await page.route(/^https?:\/\//, (route) => route.abort());
+    await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
+    await page.locator('#mb-basemap-notice').waitFor({ timeout: 30000 });
+    await page.locator('[data-scene-id="compare-2025"]').scrollIntoViewIfNeeded();
+    await page.locator('[data-scene-id="compare-2025"].is-active').waitFor({ timeout: 10000 });
+    await page.locator('#legends:not([hidden])').waitFor({ timeout: 10000 });
+    const boxes = await page.evaluate(() => {
+      const rail = globalThis.document.querySelector('#mb-rail');
+      const legends = globalThis.document.querySelector('#legends');
+      return {
+        scroll: rail.scrollHeight - rail.clientHeight,
+        railBottom: rail.getBoundingClientRect().bottom,
+        legendBottom: legends.getBoundingClientRect().bottom,
+        legendScroll: legends.scrollHeight - legends.clientHeight,
+      };
+    });
+    assert(boxes.scroll <= 1, `the phone rail scrolls: ${JSON.stringify(boxes)}`);
+    assert(boxes.legendBottom <= boxes.railBottom + 1, JSON.stringify(boxes));
+    assert(boxes.legendScroll <= 1, `the phone legend scrolls: ${JSON.stringify(boxes)}`);
+  } finally {
+    await page.close();
+  }
+}
+
 test(
   'Potomac publication plays on scroll and declares only its online basemap requests',
   { timeout: 90000 },
@@ -111,6 +144,7 @@ test(
       browser = await launchBrowser();
       const onlineRequests = await openStory(browser, join(project, 'online', 'index.html'), true);
       assert(onlineRequests.some((url) => url.startsWith('https://tiles.openfreemap.org/')));
+      await checkPhoneRail(browser, join(project, 'online', 'index.html'));
       const offlineRequests = await openStory(
         browser,
         join(project, 'offline', 'index.html'),

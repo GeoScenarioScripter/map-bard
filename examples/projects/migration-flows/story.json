@@ -1,0 +1,379 @@
+{
+  "formatVersion": "0.2.0",
+  "scenes": [
+    {
+      "id": "overview",
+      "title": "The largest moves between states",
+      "narration": "The 30 largest state-to-state flows in the 2024 American Community Survey, each an estimated 27,574 movers or more. California to Texas leads with 77,161 (±9,059). Width is linear from zero; colour runs from origin to destination.",
+      "content": {
+        "semantics": "People who lived in another state one year earlier, by origin and destination state.",
+        "location": "The 50 states and DC, between 2020 state centers of population.",
+        "geometry": "One arc per origin and destination pair.",
+        "attribute": "movers in people, with 90% margins of error"
+      },
+      "discourse": {
+        "narrativeRole": "establish",
+        "emphasis": "medium",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "flows",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width"
+          }
+        }
+      ],
+      "camera": {
+        "center": [-96.5, 38],
+        "zoom": 3.6,
+        "pitch": 20
+      },
+      "transitionIn": "cut",
+      "motion": {
+        "scrollLength": 2,
+        "layers": [
+          {
+            "layerId": "flows",
+            "property": "line-reveal",
+            "mode": "scrub",
+            "range": [0, 0.6]
+          }
+        ],
+        "callouts": [
+          {
+            "calloutId": "california-texas",
+            "mode": "scrub",
+            "keyframes": [
+              { "at": 0, "value": 0 },
+              { "at": 0.4, "value": 0 },
+              { "at": 0.55, "value": 1 }
+            ]
+          }
+        ]
+      },
+      "annotations": [
+        {
+          "id": "california-texas",
+          "text": "California to Texas: 77,161 movers (±9,059)",
+          "at": [-97.3287, 30.9096],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["california-to-texas"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "largest-first",
+      "title": "Largest first",
+      "narration": "The flows appear in rank order. Third to sixth place, from California to Nevada (53,289 ±6,970) down to Florida to Texas (52,219 ±8,571), are closer together than their margins of error, so their order is not settled.",
+      "content": {
+        "semantics": "The same flows, ranked by estimate.",
+        "attribute": "movers in people, with 90% margins of error",
+        "relationship": "Ranks whose estimates overlap within their margins are not distinguishable."
+      },
+      "discourse": {
+        "narrativeRole": "develop",
+        "emphasis": "high",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "flows",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width"
+          }
+        }
+      ],
+      "camera": {
+        "center": [-96.5, 37.5],
+        "zoom": 3.65,
+        "pitch": 35,
+        "bearing": -8
+      },
+      "transitionIn": "ease",
+      "motion": {
+        "scrollLength": 1.5,
+        "layers": [
+          {
+            "layerId": "flows",
+            "property": "opacity",
+            "mode": "play",
+            "durationMs": 500,
+            "stagger": {
+              "delayMs": 120,
+              "order": "descending"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "calloutId": "california-nevada",
+            "mode": "play",
+            "delayMs": 900,
+            "durationMs": 500
+          },
+          {
+            "calloutId": "florida-texas",
+            "mode": "play",
+            "delayMs": 1100,
+            "durationMs": 500
+          }
+        ]
+      },
+      "annotations": [
+        {
+          "id": "california-nevada",
+          "text": "California to Nevada: 53,289 (±6,970)",
+          "at": [-116.1738, 37.0159],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["california-to-nevada"]
+          }
+        },
+        {
+          "id": "florida-texas",
+          "text": "Florida to Texas: 52,219 (±8,571)",
+          "at": [-97.3287, 30.9096],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["florida-to-texas"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "east-coast",
+      "title": "East Coast neighbours",
+      "narration": "Closer in, many large flows join neighbours and run both ways: New York to New Jersey 56,799 (±8,244) and back 36,002 (±5,753); North Carolina to South Carolina 33,151 (±5,633) and back 29,982 (±4,618). Florida draws from all along the coast.",
+      "content": {
+        "semantics": "The largest flows among the East Coast states.",
+        "location": "From New York to Florida.",
+        "attribute": "movers in people, with 90% margins of error",
+        "relationship": "Flows between neighbouring states in both directions."
+      },
+      "discourse": {
+        "narrativeRole": "drill",
+        "emphasis": "high",
+        "readerAgency": "guided"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "flows",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width"
+          }
+        }
+      ],
+      "camera": {
+        "center": [-78.6, 35],
+        "zoom": 4.4,
+        "pitch": 20
+      },
+      "transitionIn": "ease",
+      "motion": {
+        "scrollLength": 2,
+        "camera": [
+          {
+            "preset": "reveal-from-overview",
+            "range": [0, 0.4],
+            "from": {
+              "center": [-96.5, 37.5],
+              "zoom": 3.65
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "calloutId": "new-york-new-jersey",
+            "mode": "scrub",
+            "keyframes": [
+              { "at": 0, "value": 0 },
+              { "at": 0.3, "value": 0 },
+              { "at": 0.42, "value": 1 }
+            ]
+          },
+          {
+            "calloutId": "north-carolina-south-carolina",
+            "mode": "scrub",
+            "keyframes": [
+              { "at": 0, "value": 0 },
+              { "at": 0.3, "value": 0 },
+              { "at": 0.42, "value": 1 }
+            ]
+          }
+        ]
+      },
+      "annotations": [
+        {
+          "id": "new-york-new-jersey",
+          "text": "New York to New Jersey: 56,799 (±8,244)",
+          "at": [-74.4245, 40.4382],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["new-york-to-new-jersey"]
+          }
+        },
+        {
+          "id": "north-carolina-south-carolina",
+          "text": "North Carolina to South Carolina: 33,151 (±5,633)",
+          "at": [-80.9965, 34.0225],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["north-carolina-to-south-carolina"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "limits",
+      "title": "Limits of the estimates",
+      "narration": "2024 ACS 1-year survey estimates, with 90% margins of error. The ten smallest flows shown, 27,574 to 29,982 movers, overlap within their margins, as do flows just below the cut. Moves from abroad are left out; arcs join 2020 centers of population, not routes.",
+      "content": {
+        "semantics": "The meaning and limits of the survey estimates.",
+        "attribute": "movers in people, with 90% margins of error",
+        "relationship": "The smallest flows shown cannot be ranked against each other."
+      },
+      "discourse": {
+        "narrativeRole": "resolve",
+        "emphasis": "medium",
+        "readerAgency": "none"
+      },
+      "layers": [
+        {
+          "id": "states",
+          "technique": "fill",
+          "sourceId": "states-context"
+        },
+        {
+          "id": "flows-larger",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width"
+          },
+          "filter": {
+            "attribute": "movers",
+            "op": ">=",
+            "value": 30000
+          },
+          "constant": {
+            "opacity": 0.25
+          }
+        },
+        {
+          "id": "flows-smallest",
+          "technique": "arc",
+          "sourceId": "state-flows",
+          "encode": {
+            "attribute": "movers",
+            "visualVariable": "width"
+          },
+          "filter": {
+            "attribute": "movers",
+            "op": "<",
+            "value": 30000
+          }
+        }
+      ],
+      "camera": {
+        "center": [-96.5, 38],
+        "zoom": 3.6
+      },
+      "transitionIn": "ease",
+      "annotations": [
+        {
+          "id": "texas-colorado",
+          "text": "Texas to Colorado, 30th: 27,574 (±4,594)",
+          "at": [-105.1854, 39.5347],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["texas-to-colorado"]
+          }
+        },
+        {
+          "id": "texas-florida",
+          "text": "Texas to Florida: 45,259 (±12,219), the widest margin",
+          "at": [-81.636, 27.8393],
+          "target": {
+            "kind": "features",
+            "sourceId": "state-flows",
+            "featureIds": ["texas-to-florida"]
+          }
+        }
+      ]
+    }
+  ],
+  "sharedScales": [
+    {
+      "id": "movers-width",
+      "title": "Movers, 2024",
+      "members": [
+        {
+          "sceneId": "overview",
+          "layerId": "flows",
+          "sourceId": "state-flows",
+          "observationLabel": "ACS 2024"
+        },
+        {
+          "sceneId": "largest-first",
+          "layerId": "flows",
+          "sourceId": "state-flows",
+          "observationLabel": "ACS 2024 (ranked)"
+        },
+        {
+          "sceneId": "east-coast",
+          "layerId": "flows",
+          "sourceId": "state-flows",
+          "observationLabel": "ACS 2024 (East Coast)"
+        },
+        {
+          "sceneId": "limits",
+          "layerId": "flows-larger",
+          "sourceId": "state-flows",
+          "observationLabel": "ACS 2024 (30,000 or more)"
+        },
+        {
+          "sceneId": "limits",
+          "layerId": "flows-smallest",
+          "sourceId": "state-flows",
+          "observationLabel": "ACS 2024 (under 30,000)"
+        }
+      ],
+      "visualVariable": "width",
+      "maxWidth": 10
+    }
+  ]
+}

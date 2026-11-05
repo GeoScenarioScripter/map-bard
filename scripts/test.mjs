@@ -14,6 +14,7 @@ const steps = [
       'run',
       'tests/g3.integration.test.mjs',
       'tests/potomac-variants.test.mjs',
+      'tests/migration-flows.test.mjs',
       // Agent worktrees under .claude/ hold their own copies of these tests.
       '--exclude',
       '**/.claude/**',

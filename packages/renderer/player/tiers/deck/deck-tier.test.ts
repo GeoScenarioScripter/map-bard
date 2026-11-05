@@ -346,4 +346,24 @@ describe('flow legends', () => {
     expect(html).toContain('Trail: the last 6 hours');
     expect(html).toContain(`data-mb-clock="mb:trip">${TRIP.rangeLabel}</p>`);
   });
+
+  it('draws one direction key for arc layers that split one source', () => {
+    const { story: compiled, arc } = story();
+    compiled.resources.push({ id: 'arcs', kind: 'data', name: 'State-to-state movers' });
+    const rest: CompiledLayer = {
+      ...arc,
+      runtimeId: 'mb:arc-rest',
+      filter: { attribute: 'kind', op: '!=', value: 'keep' },
+      constant: { opacity: 0.25 },
+    };
+    const recoloured: CompiledLayer = {
+      ...arc,
+      runtimeId: 'mb:arc-recoloured',
+      arc: { ...ARC, destination: '#c8102e' },
+    };
+    const scene = { ...compiled.scenes[0]!, layers: [arc, rest, recoloured] };
+    const keys = legendMarkup(scene, compiled).match(/From origin to destination/g) ?? [];
+    // The filtered halves share a key; different colours still get their own.
+    expect(keys).toHaveLength(2);
+  });
 });

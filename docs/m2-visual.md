@@ -1322,6 +1322,71 @@ New data needs network access to public hosts. If this machine cannot
 reach them, the owner supplies the files; either way the source URL,
 licence and retrieval date go in the attribution.
 
+#### P as built (2026-11-04)
+
+Notes for the merge and for 5.4 and Q:
+
+- **Project** (`examples/projects/migration-flows`, newsroom theme,
+  `full-bleed` layout, OpenFreeMap Positron with VersaTiles fallback,
+  Mercator, no terrain). Four scenes: `overview` (the 30 arcs drawn on by
+  a scrubbed `line-reveal`, a callout on California to Texas, 77,161
+  ±9,059, fading in once its arc is drawn), `largest-first` (the arcs
+  again, an opacity `play` track staggered `descending` by movers, with
+  callouts on third and sixth place, whose estimates overlap), `east-coast`
+  (`reveal-from-overview` from the national view to New York–Florida,
+  callouts on New York to New Jersey and North Carolina to South Carolina
+  fading in as the camera arrives) and `limits` (two arc layers filtered
+  at 30,000 movers: the ten smallest flows solid, the rest at 0.25
+  opacity; callouts on the 30th flow and the widest margin, Texas to
+  Florida ±12,219). One linear width scale (`movers-width`, 10 px) spans
+  all five arc layers. Callouts on arcs set `at` to the destination, which
+  anchors their leader; an `at` off the target leaves only a stub.
+- **Layout.** `sidecar` left the continental view about 650 px wide on
+  desktop, and on phones the zoom offset (−2.3 with the basemap notice)
+  put the national view at zoom 0.7, where MapLibre clamps the centre to
+  the world's edge and pushed the US under the legend
+  (`VISUAL_OCCLUSION` with the network unavailable). `full-bleed` frames
+  the authored camera in a wide, short area that suits the US, so phones
+  show it at about zoom 2 across the full width. The phone reference
+  frame and that clamp are engine behaviour left as they are; stories
+  that zoom out to a continent on `sidecar` will meet them too.
+- **Data.** The gallery-deck pipeline without the hurricane tracks
+  (`scripts/make-data.mjs`). The ACS 2024 Table 1 XLSX, the 2020 centers
+  of population and the TIGERweb states were downloaded again from
+  census.gov on 2026-11-04 (2024 is the latest release; the 2025 directory
+  does not exist yet), and the outputs match the gallery's bytes. U.S.
+  public domain; source URLs, licence and `accessedAt` are in each
+  attribution. The 31st flow, 26,956 ±4,931, overlaps the 30th, so the
+  narration says the cut-off is uncertain too.
+- **Engine fix** (separate commit): the flow legend drew one
+  origin-to-destination key per arc layer, so the limits scene repeated
+  it; keys now dedupe by source and arc colours (renderer test added).
+- **Tests.** `tests/migration-flows.test.mjs` (in `scripts/test.mjs`):
+  the project is current and critic-clean, online and offline; arcs are
+  deck.gl on the shared scale, Mercator, no terrain, not atlas, ranked
+  descending; the data has the 30 largest flows with margins and census.gov
+  attribution; every number in the narration and callouts is an estimate,
+  margin or the filter threshold, each "estimate (±margin)" pair is one
+  flow's, and callouts anchor at their arc's destination.
+- **Checks** (Windows, headless Chromium with SwiftShader). `check` clean
+  (no `TEXT_OVERFLOW_LIKELY`). `check --visual`: offline 0 errors (one
+  expected `CAPABILITY_UNSUPPORTED` warning for the removed basemap),
+  0 remote requests, from `file://`; stub 0 errors, 0 warnings;
+  unavailable 0 errors, 0 warnings; live 0 errors, 0 warnings (OpenFreeMap
+  loaded, credit shown). The real `build --offline` output, captured from
+  `file://` with every request blocked: 0 requests, 0 findings, no console
+  errors. Online and offline builds both ship `vendor/tier-deck.js`. Size
+  report: core 406.3 KB gzip (budget 450), `tier-deck.js` 240.5 KB (400),
+  all tiers 646.8 KB (1,200). Contact sheets inspected in every mode, and
+  full-size captures (overview, largest-first, east-coast, limits; desktop
+  and phone). Build, lint and `pnpm test` pass: 374 tests (schema 45,
+  knowledge 31, core 128, renderer 122, CLI 38, root 9, browser smoke 1).
+  A first run on 2026-11-04 timed out 14 core tests (none failed an
+  assertion) while another worktree's visual matrix held the CPU at 100%;
+  core passed 128/128 with a longer timeout then, and the whole suite
+  passed unchanged once the machine was idle.
+- **Not done:** goldens (5.4), the CI matrix entry (5.4), `--frames`.
+
 ### 5.4 Goldens, CI and scoring
 
 - Linux goldens from the Docker image for both Potomac variants (their

@@ -48,15 +48,22 @@ function trailText(hours: number): string {
   return `Trail: the last ${hours === 1 ? 'hour' : `${hours} hours`}`;
 }
 
-/** Flow keys for the scene's arcs and trips; scale legends come from legend.ts. */
+/**
+ * Flow keys for the scene's arcs and trips; scale legends come from legend.ts. Arc layers that
+ * split one source (for example by a filter) share one direction key when their colours match.
+ */
 export function flowLegendMarkup(scene: CompiledScene, story: CompiledStory): string {
   const sourceName = (id: string) => story.resources.find((item) => item.id === id)?.name ?? id;
+  const directions = new Set<string>();
   return scene.layers
     .map((layer) => {
       if (layer.technique === 'arc' && layer.arc) {
         // A colour scale replaces the gradient, so only uncoloured arcs show a direction key.
         const scale = story.scales.find((item) => item.id === layer.scaleId);
         if (scale && scale.kind !== 'numeric-width') return '';
+        const key = [layer.sourceId, layer.arc.origin, layer.arc.destination].join('\n');
+        if (directions.has(key)) return '';
+        directions.add(key);
         const title = escapeHtml(sourceName(layer.sourceId));
         return `<section class="mb-legend mb-legend--direction" aria-label="${title} direction legend"><h3>${title}</h3>${directionKey(layer)}</section>`;
       }

@@ -1,0 +1,149 @@
+{
+  "lockVersion": "0.2.0",
+  "projectId": "migration-flows",
+  "revision": 7,
+  "inputs": {
+    "manifestSha256": "sha256:e6077e34d3afa63e7d607f8fba3ff779059ee80861503b6e6102ad540a196205",
+    "storySha256": "sha256:d6d4c0526da32922547790f52de03597783d7fd46ecda2d96ba254f92eebf912",
+    "resources": [
+      {
+        "id": "state-flows",
+        "sha256": "sha256:209ff4195071c03422528a481e78aab61c5280d57b0a96636d43baa1ffac5665"
+      },
+      {
+        "id": "states-context",
+        "sha256": "sha256:9227c9ee590815d9b232afe19ec155b961e648921bdac9d137196f70dfad8c24"
+      }
+    ]
+  },
+  "profiles": {
+    "states-context": {
+      "geometryType": "polygon",
+      "featureCount": 51,
+      "attributes": [
+        {
+          "name": "name",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Alabama",
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California"
+          ]
+        }
+      ],
+      "extent": [
+        -179.137,
+        18.913,
+        179.778,
+        71.353
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "name": {
+          "present": 51,
+          "missing": 0
+        }
+      }
+    },
+    "state-flows": {
+      "geometryType": "line",
+      "featureCount": 30,
+      "attributes": [
+        {
+          "name": "origin",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "California",
+            "New York",
+            "Florida",
+            "Texas",
+            "New Jersey"
+          ]
+        },
+        {
+          "name": "destination",
+          "dataType": "string",
+          "measurement": "nominal",
+          "sample": [
+            "Texas",
+            "New Jersey",
+            "Nevada",
+            "Arizona",
+            "Georgia"
+          ]
+        },
+        {
+          "name": "movers",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            77161,
+            56799,
+            53289,
+            52383,
+            52371
+          ]
+        },
+        {
+          "name": "movers_moe",
+          "dataType": "number",
+          "measurement": "ratio",
+          "sample": [
+            9059,
+            8244,
+            6970,
+            6890,
+            8290
+          ]
+        }
+      ],
+      "extent": [
+        -122.5883,
+        27.8393,
+        -74.4245,
+        47.3295
+      ],
+      "crs": "EPSG:4326",
+      "attributeStats": {
+        "origin": {
+          "present": 30,
+          "missing": 0
+        },
+        "destination": {
+          "present": 30,
+          "missing": 0
+        },
+        "movers": {
+          "present": 30,
+          "missing": 0,
+          "min": 27574,
+          "max": 77161
+        },
+        "movers_moe": {
+          "present": 30,
+          "missing": 0,
+          "min": 3746,
+          "max": 12219
+        }
+      }
+    }
+  },
+  "lastCompileInputs": {
+    "manifestSha256": "sha256:e6077e34d3afa63e7d607f8fba3ff779059ee80861503b6e6102ad540a196205",
+    "storySha256": "sha256:d6d4c0526da32922547790f52de03597783d7fd46ecda2d96ba254f92eebf912",
+    "resources": [
+      {
+        "id": "state-flows",
+        "sha256": "sha256:209ff4195071c03422528a481e78aab61c5280d57b0a96636d43baa1ffac5665"
+      },
+      {
+        "id": "states-context",
+        "sha256": "sha256:9227c9ee590815d9b232afe19ec155b961e648921bdac9d137196f70dfad8c24"
+      }
+    ]
+  }
+}

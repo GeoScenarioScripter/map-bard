@@ -12,8 +12,9 @@ packages are published (`latest`): `mapbard` and `@mapbard/renderer` at
 its decisions, step 5.0 (spike) has run, the owner confirmed its
 [backend table](m2-visual.md#50-results-2026-10-23), and step 5.1 (the
 foundation: compiled 0.4.0, tier loading, altitude projection) and step
-5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) are done;
-next: step 5.3, O ‖ P in parallel worktrees.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) and
+step 5.3 (O: Potomac V2; P: the migration-flows example) are done; next:
+step 5.4 (Linux goldens, CI matrix, live terrain checks, owner scoring).** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -95,11 +96,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   A direct CLI trial from raw Potomac files reached `check` and `build`.
 - Examples: `examples/projects/potomac` (atlas) and
   `examples/projects/potomac-night` (night), with identical data and story
-  (format 0.2, four scenes, gauges as graduated symbols on one shared size
-  scale up to 26 px; a reveal from the Chesapeake region, a fly-along of the
-  river pitched to the horizon, a push-in on Little Falls and a pull-back),
-  Mapterhorn terrain with hillshade and sky, and committed Linux goldens.
-  Both build online and offline. The format 0.1
+  (format 0.2, four scenes; V2 since 5.3: 2024 gauges as 3D columns on one
+  shared height scale that grow downstream, 2025 change columns that shrink
+  from their 2024 heights beside 2024 ghosts with compiled change labels and
+  a scrub orbit, a push-in on Little Falls and a pull-back with size-form
+  change symbols), Mapterhorn terrain with hillshade and sky. Both build
+  online and offline; their committed Linux goldens are V1 and stale until
+  5.4. `examples/projects/migration-flows` (newsroom, full-bleed, deck.gl
+  arcs): the 30 largest 2024 ACS state-to-state flows with margins of
+  error, in four scenes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
 - A root README has a five-minute human and coding-agent quickstart.
 - Release packages: all five (`mapbard`, `@mapbard/core`, `schema`,
@@ -151,14 +156,18 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
-- `check --visual` passes on both Potomac variants (0 errors at stub,
-  offline, unavailable and live), with in-flight symbol warnings only: 8 at
-  stub and live, 6 offline, 7 unavailable. On desktop a gauge passes under
-  the media at 2024 p = 0.45 and under the story column at p = 0.9. On
-  phones a gauge passes under the attribution or a scale bar in the 2024
-  flight, and under the legend in the limits push-in and scope pull-back.
-  At some 2024 rest positions on phones, one of the three callouts can be
-  hidden for lack of room; QA counts that as clean.
+- `check --visual` on both Potomac V2 variants: 0 errors at stub, offline
+  and unavailable, with 11 in-flight symbol warnings in each. Live runs on
+  2026-11-04/05 stopped at 1–3 `VISUAL_RUNTIME` 15 s idle timeouts in the
+  2024 flight (mostly phone p = 0.6); V1 from `main` timed out at the same
+  sample, so slow tile hosts are the likely cause; recheck in 5.4. On
+  desktop a gauge passes under the media at 2024 p = 0.45 and under the
+  story column at p = 0.9. On phones gauges pass under the media at
+  p = 0.3–0.45 and under the attribution, scale bars or north arrow at
+  p = 0.7–0.85 in the 2024 flight, and Point of Rocks under the legend at
+  scope p = 0.35–0.4. Offline frame probe: desktop p99 50 ms (V1 the same),
+  phone 16.8 ms. For scoring: night-theme 2024 ghosts read faintly, and the
+  2025 phone overview columns are only a few pixels tall.
 - The Linux goldens (made in the `mcr.microsoft.com/playwright:v1.64.1-noble`
   image) matched ubuntu-latest exactly in the first `visual` CI run on
   2026-10-23. Windows captures differ from them by 0.8–4.5% (DOM text wraps
@@ -178,6 +187,22 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-11-05: Step 5.3 merged: O (Potomac V2 columns and change symbols,
+  both variants; phone rail CSS fix beside a basemap notice) fast-forwarded,
+  then P (`examples/projects/migration-flows`; arc legend key deduped per
+  source and colours) merged; built in parallel worktrees, see each "as
+  built" note in m2-visual.md. Old 5.2 worktrees removed. Checks on the
+  merge: build, 374 tests and lint pass; `check --visual` 0 errors on both
+  Potomac variants (offline 13 warnings: 11 in flight, the offline notice,
+  the Windows golden mismatch; unavailable 11), migration-flows (offline
+  only the offline notice; unavailable 0) and both galleries offline (only
+  the offline notice); Potomac and migration-flows contact sheets
+  inspected. From the agents only: stub runs, live runs (Potomac 1–3
+  idle-timeout errors per variant, as V1 from main that day),
+  frame probe (offline desktop p99 50 ms, phone 16.8 ms, V1 the same).
+  Not met: Potomac live 0 errors, desktop p99 ≤ 16.7 ms. Not run: the
+  1,000-feature morph probe, CI (no push; the `visual` job will fail on the
+  stale Potomac goldens until 5.4). Next: step 5.4.
 - 2026-10-28: Step 5.2 merged (`5c6a8fe`): M (columns, extrusions,
   change symbols, morph, hexbins, `DEPTH_UNSEEN`,
   `ENCODING_AREA_DISTORTED`, gallery-maplibre) and N (deck.gl 9.4 tier,

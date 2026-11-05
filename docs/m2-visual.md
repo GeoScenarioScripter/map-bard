@@ -628,7 +628,7 @@ Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
 marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
 day ([results](#50-results-2026-10-23)), and the owner confirmed its
 backend table. Step 5.1 is done ([as built](#51-as-built-2026-10-23)),
-and step 5.2 (M ‖ N) is merged; step 5.3 (O ‖ P) is next.
+and steps 5.2 (M ‖ N) and 5.3 (O ‖ P) are merged; step 5.4 is next.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,

@@ -40,4 +40,51 @@ describe('Potomac variants', () => {
     ]);
     expect([atlasManifest.theme.preset, nightManifest.theme.preset]).toEqual(['atlas', 'night']);
   });
+
+  // V2 acceptance (docs/m2-visual.md, O): 2024 columns, 2025 change columns that morph from
+  // them beside 2024 ghosts, one height scale, and the size form where the view is top-down.
+  it('draw the gauges as columns and change symbols on one height scale', async () => {
+    for (const root of [atlas, night]) {
+      const story = await json(root, 'story.json');
+      const gauges = Object.fromEntries(
+        story.scenes.map((scene) => [
+          scene.id,
+          scene.layers.find((layer) => layer.id === 'gauges'),
+        ]),
+      );
+      expect(gauges['context-2024']).toMatchObject({
+        technique: 'column',
+        sourceId: 'potomac-2024',
+        encode: { visualVariable: 'height' },
+      });
+      expect(gauges['compare-2025']).toMatchObject({
+        technique: 'change',
+        sourceId: 'potomac-2025',
+        encode: { visualVariable: 'height' },
+        compare: { sourceId: 'potomac-2024', labels: true },
+        transition: { from: { sceneId: 'context-2024' } },
+      });
+      expect(gauges.limits).toMatchObject({ technique: 'column', sourceId: 'potomac-2025' });
+      expect(gauges.scope).toMatchObject({
+        technique: 'change',
+        encode: { visualVariable: 'size' },
+        compare: { sourceId: 'potomac-2024' },
+      });
+
+      const height = story.sharedScales.find((scale) => scale.visualVariable === 'height');
+      const members = height.members.map((member) => `${member.sceneId}/${member.sourceId}`);
+      expect(members).toEqual([
+        'context-2024/potomac-2024',
+        'compare-2025/potomac-2025',
+        'limits/potomac-2025',
+      ]);
+      // Every scene that draws heights pitches its camera at rest.
+      for (const scene of story.scenes)
+        if (gauges[scene.id].encode.visualVariable === 'height')
+          expect(scene.camera.pitch).toBeGreaterThan(0);
+      // The 2024 columns rise downstream, one after another.
+      const grow = story.scenes[0].motion.layers.find((track) => track.property === 'grow');
+      expect(grow).toMatchObject({ layerId: 'gauges', stagger: { delayMs: expect.any(Number) } });
+    }
+  });
 });

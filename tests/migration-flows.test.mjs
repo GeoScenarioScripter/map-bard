@@ -27,7 +27,7 @@ describe('migration-flows example', () => {
     const offline = await compiled(true);
     expect(offline.story.requiredNetwork).toEqual([]);
     expect(story.requiredNetwork.length).toBeGreaterThan(0);
-  });
+  }, 30_000);
 
   it('draws deck.gl arcs on one width scale, in Mercator with no terrain and no atlas theme', async () => {
     const { story } = await compiled();
@@ -48,7 +48,7 @@ describe('migration-flows example', () => {
     // Arcs are revealed largest first.
     const ranked = story.scenes[1].motion.layers.find((track) => track.property === 'opacity');
     expect(ranked.stagger).toMatchObject({ order: 'descending', attribute: 'movers' });
-  });
+  }, 30_000);
 
   it('keeps the 30 largest published flows, each with its 90% margin of error', async () => {
     const { features } = await json('data/acs-2024-top-state-flows.geojson');

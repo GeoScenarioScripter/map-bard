@@ -1212,6 +1212,99 @@ that compares them.
   at 2024 p = 0.5 and 2025 p = 1 show the bases on the terrain. Remaining
   in-flight warnings are listed in STATUS.md. Frame probe p99 ≤ 16.7 ms.
 
+#### O as built (2026-11-05)
+
+Done in a parallel worktree (commits on its branch; the lead merges). Both
+variants share one `story.json`; their `mapbard.json` files are unchanged.
+
+- **2024.** The gauges are `column` layers (2 km footprint radius) on one
+  shared height scale, `daily-discharge`, with `maxHeightMeters` 30,000 for
+  23,600 ft³/s. Its members are the 2024 columns, the 2025 change columns
+  and the limits columns, so the compared source (`potomac-2024`) is on
+  the scale. The resting camera pitches to 45° at zoom 8.4 (V1: flat, zoom
+  8). The reveal starts at a 30° overview, and a `grow` play track (900
+  ms, a 300 ms delay, 450 ms stagger in data order) raises the columns
+  from Hancock downstream. The fly-along and the callout keyframes are
+  as in V1; callouts sit on the column tops.
+- **2025.** `change` columns compare with `potomac-2024` (labels on) and
+  morph from `context-2024` (the default 1,200 ms play track), so the
+  solid columns shrink from their 2024 heights while 2024 ghosts stay.
+  The three compiled labels (−5,000 ft³/s (−90%), −21,580 ft³/s (−91%),
+  −15,500 ft³/s (−90%)) replace the single authored Point of Rocks
+  callout. They name the change, not the gauge, so the narration still
+  carries the station names and 2025 values. The highlight track is gone;
+  a scrub `orbit` of −20° at pitch 45 is the slow camera move.
+- **Limits and scope.** Limits draws the 2025 values as plain columns,
+  without ghosts: at the push-in's zoom 11, a 2024 ghost at Little Falls
+  would rise far out of frame and take the callout with it. The push-in
+  turns from −20° to +25°. At its end, Point of Rocks then lies to the
+  side, not under the phone rail, which held a two-section legend and,
+  when tiles fail, the basemap notice. Scope is change symbols in size
+  form (ring 2024, disc 2025, 26 px largest radius, local scale) for the
+  whole pull-back, which turns back to north. I chose that over a
+  crossfade from columns, because both layers' legends would show at
+  once and fill the phone rail.
+- **Narration.** One word changes in 2024 ("The columns mark"), and
+  the 2025 encoding sentence is now "Columns shrink from their 2024
+  heights on one scale from zero; pale ghosts keep 2024-10-01." Every
+  value, date and qualification is kept, and `check` is clean, including
+  `TEXT_OVERFLOW_LIKELY`. The READMEs describe the encoding, and the root
+  variant test pins it (2024 columns, 2025 change columns that compare
+  and morph, limits columns, scope size form, the three height members,
+  a pitched rest camera wherever heights draw, the staggered grow).
+- **Engine fix** (`db47520`, outside the examples). On phones the rail is
+  capped at 26vh. With the basemap notice, the 2025 two-section legend
+  overflowed it by 10 px, so the rail scrolled the legend's foot out of
+  view, and callouts were placed against the clipped rail, under the
+  legend's real box. `unavailable` reported that as an error in the 2025
+  orbit, because a callout under a panel gates even in flight.
+  With a notice, the cap now applies to the row below it
+  (`runtime/style.css`, `:has()`); stories without a notice are
+  unchanged. The browser smoke test now opens Potomac at phone size with
+  every request aborted and asserts that neither rail nor legend scrolls.
+  Both galleries stay at 0 errors and 0 warnings at `unavailable`.
+- **Checks** (Windows, headless Chromium with SwiftShader, final state
+  `019ec3e`). Build, 370 tests (schema 45, knowledge 31, core 128,
+  renderer 121, CLI 38, root 6, browser smoke 1) and lint pass. `check` is
+  clean on both. `check --visual`, identical counts for atlas and night:
+  stub 0 errors and 11 warnings; offline 0 and 13 (11 in flight, plus the
+  offline-basemap notice and the cross-platform golden mismatch);
+  unavailable 0 and 11; live 1 error and 12 warnings. Core JS is 406.2 KB
+  gzip, and no tier ships.
+- **Live.** Each variant ran live three times (2026-11-04 and 11-05).
+  Every run stopped at 1–3 `VISUAL_RUNTIME` idle timeouts (15 s), all in
+  the 2024 scene, most often at phone flight p = 0.6. The V1 Potomac from
+  `64741e5`, run live as a control right before the last V2 run, failed
+  the same way at the same sample. So the live tile hosts were slow, as
+  N saw, but **0 live errors is not met** on this machine. Inspected live
+  captures (both variants) at 2024 p = 0.5 and 2025 p = 1 show the column
+  bases on the hillshaded terrain at the gauges, with no gap or sinking.
+  The gauges lie low (tens to under 200 m), so the 5.0 spike's ridge
+  test is still the stronger evidence.
+- **Remaining in-flight warnings** (all symbol occlusion; a column counts
+  as base and top, `#0`–`#5`). Desktop: in the 2024 flight a gauge passes
+  under the media at p = 0.45 and under the story column at p = 0.9.
+  Unavailable also has one under the legend at p = 0.45. Phone: in the
+  2024 flight, gauges pass under the media at p = 0.3–0.45 (the figure
+  sits in the rail), then under the attribution, scale bars or north
+  arrow at p = 0.7–0.85. In the scope pull-back, Point of Rocks passes
+  under the legend at p = 0.35–0.4 (stub, unavailable and live).
+- **Frames** (`scripts/frame-probe.mjs`, default WebGL, 60 Hz here).
+  Online builds: desktop p99 1.1 s (atlas) and 2.3 s (night); V1 measured
+  1.7 s on the same run. Live tile and terrain loading dominate, so these
+  numbers are not about the story. Offline builds isolate the player:
+  phone p99 16.8 ms in every scene, for both variants and V1. Desktop
+  (1440 × 900) p99 is 50 ms overall: atlas 33.5–50 ms per camera track,
+  night up to 66.7 ms in 2025. V1 measures 50 ms on this machine too. So
+  the columns add no measurable cost, but **desktop p99 ≤ 16.7 ms is not
+  met** here. The 1,000-feature morph probe was not run.
+- **For 5.4 and scoring.** The committed Linux goldens are stale (every
+  capture changed), so the `visual` CI job fails until 5.4 regenerates
+  them; no goldens were made here. On the night theme the 2024 ghosts
+  (theme `muted` at the engine's fixed 0.35 opacity) read faintly on the
+  dark basemap. On phones the 2025 overview is small: columns of a few
+  pixels between the legend and the attribution.
+
 ### P. Flows example (step 5.3)
 
 - **(owner) Dataset.** Settled 2026-10-23: U.S. Census Bureau state-to-state

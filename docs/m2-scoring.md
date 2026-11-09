@@ -22,18 +22,43 @@ at p = 0.5 and the 2025 scene at p = 1 as well.
 | Performance and polish (10)       | Loading, smooth interaction and failed-network behavior                       | Pending     | Pending     |
 | **Total (100)**                   | **Target ≥ 80 for each variant**                                              | **Pending** | **Pending** |
 
-### V2 known gaps to review
+### V2 named gaps — review fixes (2026-11-08)
 
-- Night-theme 2024 ghosts were faint in the step 5.3 captures.
-- The 2025 phone overview columns were only a few pixels tall.
-- Step 5.3 recorded 11 in-flight symbol warnings per Potomac variant.
-- Live checks previously timed out waiting for map idle; desktop offline
-  p99 was 50 ms under software WebGL, also measured on V1. These are not
-  evidence of meeting the 16.7 ms target or of real-device performance.
-- The 1,000-feature morph probe remains unrun.
+The owner confirmed this recorded list as the defect list and requested
+step 5.5 preparation. Scores remain **pending**; neither that instruction
+nor the V1 scores constitutes V2 visual approval.
 
-Owner's V2 scores, review date and named defects: **pending**. Fix named
-defects before step 5.5; do not treat the V1 scores as V2 approval.
+- **Faint ghosts:** use theme foreground at 45% opacity, with the same
+  legend key. Inspected night offline/stub/live captures show the before
+  columns more clearly.
+- **Small phone columns:** double the common display height to 60,000 m
+  for 23,600 ft³/s, use 2.6 km footprints and a closer comparison camera.
+  Both periods retain the same zero-based scale and every observed value.
+  Very small after values remain proportionately small; they are labelled.
+- **Flight occlusions:** widen the river flight, return through a wide
+  north-up view, and start the closing pull-back with all gauges in view.
+  Both final Linux offline and unavailable sweeps have zero findings (24
+  captures, 134 flight samples per variant), including the taller fallback
+  notice. All 90 affected golden images match exactly. See the execution
+  plan for the complete validation record.
+- **Live idle checks:** an earlier night sweep recorded two 15 s timeouts
+  (2024 desktop p = 0.65 and phone p = 0.55) and a scope phone overlap.
+  After the final framing changes, with Docker stopped and captures run
+  serially, night passes all 24 captures and 134 flight samples with zero
+  findings. Atlas has no overlaps but retains one 15 s idle timeout at
+  2024 phone p = 0.55. The live gap remains open. The timeout is unchanged;
+  complete-looking screenshots were never counted as successful idle checks.
+- **Performance remains open:** skip symbol projection while no callouts
+  are visible. The new `scripts/morph-probe.mjs` runs the production adapter
+  with 1,000 explicitly synthetic columns, reporting frame intervals and
+  feature-state update cost separately. With Docker stopped, the final
+  default-WebGL run still selected SwiftShader: morph p99 33.4 ms desktop /
+  16.8 ms phone, update p95 0.6 / 0.3 ms. The final night story measured
+  50.1 / 16.8 ms. This does not meet the 16.7 ms desktop target or establish
+  real-device performance. The previously missing probe is now run.
+
+Step 5.5 preparation has started at the owner's request. Release review
+still needs V2 scores and disposition of the open live/performance gaps.
 
 ## V1 review (historical)
 

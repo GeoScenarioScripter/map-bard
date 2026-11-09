@@ -1,6 +1,6 @@
 # MapBard — Status
 
-**Updated 2026-10-23. [M2 — Visual Engine](visual-engine.md) is active; its
+**Updated 2026-11-09. [M2 — Visual Engine](visual-engine.md) is active; its
 execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
 V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
@@ -14,9 +14,11 @@ its decisions, step 5.0 (spike) has run, the owner confirmed its
 foundation: compiled 0.4.0, tier loading, altitude projection) and step
 5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) and
 step 5.3 (O: Potomac V2; P: the migration-flows example) are done.
-Step 5.4's five-project Linux goldens are generated and independently
-verified (126/126 exact matches); next: owner V2 scoring and named fixes.
-Live terrain captures were inspected, but live idle timeouts remain.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+Step 5.4 review fixes improve ghost contrast, phone column legibility and
+flight framing. Step 5.5 is started: the 0.3.0 skill pack, backend capability
+listing, READMEs and all-five-package Changeset are prepared. Owner V2
+scores, live idle timeouts and desktop performance remain open; release
+versions have not been applied and nothing has been pushed or published.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -41,7 +43,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   token-driven (generated `theme.css`, bundled OFL Inter and Source Serif 4);
   layouts `sidecar`, `overlay-cards` and `full-bleed` with a phone bottom
   sheet, camera padding and responsive zoom; theme-tinted OpenFreeMap and
-  VersaTiles styles, hillshade, sky and globe projection. Compiled spec 0.3.0:
+  VersaTiles styles, hillshade, sky and globe projection. Compiled spec 0.4.0:
   scroll progress over each card's rest phase drives camera, layer and callout
   tracks (scrub, play, loop, step; staggered features through feature state;
   reduced motion; a pause control for loops). Callouts (label, leader, halo)
@@ -91,10 +93,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `capabilities` lists capability IDs, compiled techniques, themes, layouts,
   motion presets, modes and easings, basemaps, terrain, and whether a
   headless Chromium is available for visual checks.
-- `skills/mapbard` 0.2.0: a versioned agent workflow pack with format,
+- `skills/mapbard` 0.3.0 (prepared, unreleased): a versioned agent workflow pack with format,
   technique, layout, motion, cartography, diagnostic (every code, including
   critic, `VISUAL_*` and budget codes) and data-honesty guidance, installed
-  by the CLI; the workflow includes `check --visual`.
+  by the CLI; the workflow includes `check --visual`. It documents V2
+  techniques/backends, height/width and comparison fields, grow/morph/trail,
+  hexbin ground-area distortion and generated change-label provenance.
   A direct CLI trial from raw Potomac files reached `check` and `build`.
 - Examples: `examples/projects/potomac` (atlas) and
   `examples/projects/potomac-night` (night), with identical data and story
@@ -133,10 +137,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   budget warning, and `CAPABILITY_UNSUPPORTED` for deck techniques with
   terrain or globe. Technique galleries: `fixtures/visual/gallery-maplibre`
   and `gallery-deck`, from public-domain data, with Linux goldens.
-- Checks: 368 routine tests (schema 45, knowledge 31, core 128, renderer 121,
-  CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
-  tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
-  Chrome with HTTP 200 and no failed requests; the screenshot was inspected.
+- Checks (2026-11-09): final build, lint and expanded tarball smoke pass.
+  All 377 tests have passing final results (schema 45, knowledge 31,
+  core 128, renderer 124, CLI 38, root 10, browser smoke 1), across Linux
+  and an isolated Windows publication-test rerun. Default-worker runs had
+  timeouts; core passed with one worker, and the publication test passed
+  with Docker stopped. No timeouts or assertions were relaxed. The smoke
+  installs the 0.3.0 skill pack and
+  builds both a plain story and a deck-tier flow story outside the workspace.
+  Changeset status resolves all five packages to 0.3.0. Visual results are
+  recorded below; no new CI run or real-device performance check.
 
 ## Known issues
 
@@ -158,18 +168,25 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
-- `check --visual` on both Potomac V2 variants: 0 errors at stub, offline
-  and unavailable, with 11 in-flight symbol warnings in each. Live runs on
-  2026-11-04/05 stopped at 1–3 `VISUAL_RUNTIME` 15 s idle timeouts in the
-  2024 flight (mostly phone p = 0.6); V1 from `main` timed out at the same
-  sample, so slow tile hosts are the likely cause; recheck in 5.4. On
-  desktop a gauge passes under the media at 2024 p = 0.45 and under the
-  story column at p = 0.9. On phones gauges pass under the media at
-  p = 0.3–0.45 and under the attribution, scale bars or north arrow at
-  p = 0.7–0.85 in the 2024 flight, and Point of Rocks under the legend at
-  scope p = 0.35–0.4. Offline frame probe: desktop p99 50 ms (V1 the same),
-  phone 16.8 ms. For scoring: night-theme 2024 ghosts read faintly, and the
-  2025 phone overview columns are only a few pixels tall.
+- V2 review fixes: foreground-colour ghosts at 45% opacity, a shared
+  60 km maximum display height (same quantities and zero baseline), 2.6 km
+  footprints and a closer comparison view improve phone readability. The
+  river flight is wider and its return and final pull-back keep gauges
+  clear of panels. Both variants pass final Linux offline and unavailable
+  sweeps with zero findings (24 captures and 134 flight samples each).
+  All 90 affected goldens match exactly, with five-run noise 0 and the
+  unchanged 0.0005 tolerance. The final night live sweep also has zero
+  findings with Docker stopped; its earlier two idle timeouts and scope
+  overlap did not recur. Atlas has zero overlaps but retains one 15 s idle
+  timeout at 2024 phone p = 0.55. The live gap remains open. These checks
+  keep the original timeout and run serially.
+- Performance: invisible callouts no longer project the scene symbols.
+  The missing 1,000-feature morph probe now exists and has run against the
+  production adapter with explicitly synthetic data. With Docker stopped,
+  the final default-WebGL run still selected SwiftShader: morph frame p99
+  33.4 ms desktop / 16.8 ms phone, feature-state update p95 0.6 / 0.3 ms.
+  The final night story measured 50.1 / 16.8 ms. The desktop 16.7 ms target
+  remains unmet; physical-device performance remains unverified.
 - The Linux goldens (made in the `mcr.microsoft.com/playwright:v1.64.1-noble`
   image) matched ubuntu-latest exactly in the first `visual` CI run on
   2026-10-23. Windows captures differ from them by 0.8–4.5% (DOM text wraps
@@ -188,6 +205,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-11-09: Fixed V2 ghost contrast, phone columns and flight framing; added invisible-callout and altitude-projection regressions plus a synthetic 1,000-feature morph probe. Started 5.5: skill 0.3.0, backend capabilities, READMEs, all-five-package 0.3.0 Changeset and expanded tarball smoke. Build, lint, package smoke and all 377 tests pass across final Linux/Windows runs after documented timeout reruns; 90 Linux goldens match exactly and both Potomac offline/fallback sweeps have zero findings. Final live: night clean, atlas one phone idle timeout, neither has overlaps. Desktop performance and owner scoring also remain open. Next: resolve the remaining release review gaps; no push or publish.
 
 - 2026-11-08: Generated all five Linux golden sets through CI run
   42554670343 (all eight jobs passed), inspected all five contact sheets,

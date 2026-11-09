@@ -12,6 +12,8 @@ import {
   LAYOUT_TEMPLATES,
   REDUCED_MOTION_MODES,
   THEME_PRESETS,
+  TECHNIQUE_BACKENDS,
+  V2_TECHNIQUES,
 } from '@mapbard/schema';
 import { READY_V2_TECHNIQUES, compilerReady } from '@mapbard/core';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -203,10 +205,11 @@ describe('CLI binary', () => {
     expect(result.capabilities).toEqual(CAPABILITY_IDS.filter(compilerReady));
     expect(result.techniques).toEqual(COMPILED_TECHNIQUES.filter(compilerReady));
     expect(result.motion.layerTracks).toEqual(LAYER_TRACK_PROPERTIES.filter(compilerReady));
-    // Step 5.1 stubs: V2 techniques and their tracks stay unlisted until M and N compile them.
-    for (const technique of READY_V2_TECHNIQUES.length ? [] : ['column', 'arc'])
-      expect(result.techniques).not.toContain(technique);
-    if (!READY_V2_TECHNIQUES.length) expect(result.motion.layerTracks).not.toContain('grow');
+    expect([...READY_V2_TECHNIQUES].sort()).toEqual([...V2_TECHNIQUES].sort());
+    expect(result.techniques).toEqual([...COMPILED_TECHNIQUES]);
+    expect(result.techniqueBackends).toEqual(TECHNIQUE_BACKENDS);
+    expect(Object.keys(result.techniqueBackends).sort()).toEqual([...result.techniques].sort());
+    expect(result.motion.layerTracks).toEqual(expect.arrayContaining(['grow', 'morph', 'trail']));
     expect(result.themes).toEqual([...THEME_PRESETS]);
     expect(result.layouts).toEqual([...LAYOUT_TEMPLATES]);
     expect(result.motion.cameraPresets).toEqual([...CAMERA_PRESETS]);

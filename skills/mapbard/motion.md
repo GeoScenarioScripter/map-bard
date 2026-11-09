@@ -16,13 +16,21 @@ Short camera form: `{"preset": "fly-along", "feature": "<sourceId>/<featureId>",
 | `orbit`                | Terrain shape or a 3D form is the subject                                               | The map is flat; orbiting a flat map only rotates the labels                      |
 | `fly-along`            | The route itself matters: a river, a road, a migration path, given in travel order      | The line is short, or point symbols along it would slide under the story panels   |
 
-`fly-along` follows every part of its line features as one network and takes the shortest route from the first feature's free end to the last's far end. Raise `zoom` or `pitch`, or shorten the path, when `check --visual` reports symbols passing under panels in flight.
+`fly-along` follows every part of its line features as one network and takes the shortest route from the first feature's free end to the last's far end. When symbols pass under panels, inspect the sample: zooming out can keep the whole group visible, while a close-up can focus on one feature. Adjust pitch, route or return keyframes and recheck both screen sizes; raising zoom is not a general cure.
 
 ## Layer and callout tracks
 
 Layer tracks animate a scene layer's `opacity`, `line-reveal` (constant-colour lines only) or `highlight`, with `from`/`to` or `keyframes`. A `play` or `loop` opacity or highlight track may add `stagger: {"delayMs": 300, "order": "data"}` (or `ascending`/`descending` by the encoded attribute) so features start one after another. `stagger` cannot apply to `line-reveal` or to `scrub` and `step` tracks; `check` says so.
 
 `callouts` tracks fade an annotation's callout by its `calloutId` (the annotation ID) with the same `from`/`to`, `keyframes`, `range`, `mode`, `durationMs` and `delayMs`. They play once by default, and a callout at 0 is hidden. Fade callouts out during a long camera flight and back in at rest, so labels don't sweep across the map.
+
+### Height and time tracks
+
+- `grow` multiplies a column/extrusion/height-change/extruded-hexbin height by a 0–1 factor. It may stagger in `play` or `loop`, for example `{"layerId":"gauges","property":"grow","durationMs":900,"stagger":{"delayMs":300}}`. Keep the final factor at 1 so the scene ends on the measured values.
+- `morph` blends joined values from a layer's `transition.from` to its current values, 0–1. The compiler adds a 1,200 ms `play` track by default; an explicit `morph` track overrides it. Use the same shared scale and compatible quantities/geometry in both scenes: columns/change columns or extrusions. Hexbin transitions are not supported. New and disappearing features are handled by the join; do not fabricate matching observations.
+- `trail` advances a trip's compiled UTC time range with progress 0–1; it defaults to linear `scrub`. The layer's `trip.trailHours` controls how much history remains visible. `trail` cannot stagger; changing the trail animation speed does not change the observed speed.
+
+Reduced motion steps these tracks to their final state by default. Inspect height and change marks at their smallest phone view; a legitimate near-zero value may need a label or a closer view, not an inflated minimum height.
 
 ## Modes, easing and defaults
 

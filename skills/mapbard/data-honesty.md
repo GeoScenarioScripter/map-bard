@@ -1,3 +1,9 @@
 # Data honesty
 
 Use only observed values from registered data or documented calculations. Format 0.2 narration is authored prose, not a computed binding: if it names a number, verify that number against the source and recheck it after data changes. Preserve units, denominators, dates, spatial coverage, missingness, qualifications and source credit. A pair of periods supports a comparison between those periods, not a trend. A contextual photo does not document a measured value or date unless its metadata says so. Keep media credits and restrictions visible. When evidence is insufficient, state the limit in narration and avoid an unsupported visual encoding.
+
+`change` is a limited, deterministic calculation at compile time, not general evidence-bound prose. It joins the current and `compare.sourceId` observations by feature ID and encoded attribute, checks measurement compatibility, and computes signed change `after - before` and percent change `(after - before) / abs(before) * 100`. When before is zero, percent is null and the label omits it; never claim an infinite percentage. `compare.labels: true` formats these results as callouts, using the declared unit. Small nonzero percentages may read `<1%`; displayed percentages are rounded, not new observations.
+
+Derived sources record input source IDs and hashes, the attribute, join and calculation parameters. Their generated values and labels must be rebuilt after a source change; never edit the compiled `mb:*` properties. Authored narration remains literal text and must be rechecked separately. Preserve missing/unmatched-value diagnostics rather than treating absent observations as zero.
+
+Hexbin count, sum and mean are also build-time derived results with recorded inputs and cell parameters. They are not observations at cell centres, densities or exposure-adjusted rates unless the source and operation establish those meanings.

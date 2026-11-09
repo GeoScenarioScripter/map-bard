@@ -4,7 +4,9 @@ Updated 2026-10-23. Status: **active; V1 closed 2026-10-23.** Waves 1–4
 are complete: both Potomac variants scored 77, and the `visual` CI job
 passed with the Linux goldens matching exactly. V2's detailed section is
 [written](#v2--3d-data-change-and-flows); its owner decisions are settled,
-and steps 5.0–5.3 are complete. Step 5.4 is in progress. Part of the
+and steps 5.0–5.3 are complete. Step 5.4 review fixes and step 5.5 release
+preparation are in progress; owner V2 scores and live/performance gaps
+remain open. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -1453,7 +1455,71 @@ scoring remain pending.
   fixed before Q.
 - The CI part of done-when waits for a push, which the owner asks for.
 
+### 5.4 Review fixes (2026-11-08)
+
+Final verification continued through 2026-11-09. The owner selected the
+recorded V2 gaps as the defect list. Ghosts now use
+the theme foreground at 45% opacity, with matching legend keys. Both
+Potomac variants keep their observed values and one zero-based scale,
+using 2.6 km footprints, a 60 km maximum display height and a closer
+comparison view. The river flight and return are wider; the closing
+pull-back starts with all three gauges visible, including below the
+failed-basemap notice.
+
+Invisible callouts skip symbol projection and layout. Height layers now
+prepare their altitude matrix before idle, so annotation-free scenes still
+report column tops correctly to visual QA. Both cases have regression
+tests. `scripts/morph-probe.mjs` fills the missing 1,000-feature morph probe
+with explicitly synthetic data and separate frame/update-cost measurements.
+
+Final Linux validation uses the same Playwright 1.64.1 image and Chromium
+156.0.8078.4 as the previous baselines. All three affected sets measured
+zero noise over five runs; the 0.0005 minimum tolerance is unchanged.
+
+| Project          | Captures | Fresh mismatches | Worst difference | Offline findings | Unavailable findings |
+| ---------------- | -------: | ---------------: | ---------------: | ---------------: | -------------------: |
+| Potomac atlas    |       24 |                0 |                0 |                0 |                    0 |
+| Potomac night    |       24 |                0 |                0 |                0 |                    0 |
+| MapLibre gallery |       42 |                0 |                0 |                0 |                    0 |
+
+The Potomac sweeps each include 134 flight samples. Final atlas/night
+contact sheets, phone comparisons and fallback views were inspected;
+the gallery contact sheet was also inspected. Verified Linux golden files
+were copied unchanged. The deck gallery and migration-flow goldens did not
+change. Final Windows live runs, with Docker stopped and no concurrent
+capture jobs, have zero overlaps: night has zero findings; atlas retains
+one 15 s idle timeout at 2024 phone p = 0.55. Both live contact sheets and
+full-size terrain/phone comparison captures were inspected. The timeout
+was not relaxed. The performance record and remaining release review gaps are
+in [the scoring sheet](m2-scoring.md#v2-named-gaps--review-fixes-2026-11-08).
+
+Build, lint, browser smoke and the expanded installed-tarball smoke pass.
+All 377 tests have passing final results across Linux plus an isolated
+Windows publication-test rerun. Default-worker runs timed out on core
+tests; one-worker core passed. The publication test timed out on Linux and
+passed on Windows after Docker stopped. No assertions or timeouts changed.
+No new CI run, push, version application or publication was performed.
+
 ### Q. Skill pack and release (step 5.5)
+
+Started 2026-11-08 at the owner's request, after implementing fixes for the
+recorded V2 visual gaps. This is preparation, not release approval: V2
+scores are still pending, live idle timeouts remain, and software-WebGL
+desktop frame intervals are above the target. See
+[the defect review](m2-scoring.md#v2-named-gaps--review-fixes-2026-11-08).
+
+Prepared: skill pack 0.3.0 (authored format 0.2.0, compiled 0.4.0), all six
+techniques with use/avoid guidance, fields, grow/morph/trail, exact critic
+codes, height and change honesty and generated-label provenance. READMEs
+describe the new tier and compatibility limits. `capabilities` adds a
+`techniqueBackends` map from the schema; tests require every V2 technique
+and the exact schema backend mapping. The Changeset
+`v2-data-change-flows` resolves all five packages to 0.3.0. Versions have
+not been applied and nothing has been pushed or published.
+
+The tarball smoke now also installs the skill and builds the migration
+flow example with the packaged deck tier, while checking that a plain
+story does not ship that tier. Final verification is recorded in STATUS.md.
 
 - `skills/mapbard`: each new technique in `techniques.md` with when to use
   and when not to; the new fields in `format.md`; `grow`, `morph` and

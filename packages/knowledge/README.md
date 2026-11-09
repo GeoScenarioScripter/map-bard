@@ -29,3 +29,8 @@ critic rules (`critique`) and the publication size budgets (`sizeReport`,
 `budgetDiagnostics`). For an authoring CLI, see
 [`mapbard`](https://www.npmjs.com/package/mapbard). [Source and examples](https://github.com/GeoScenarioScripter/map-bard).
 MIT licensed.
+
+The 0.3.0 release includes capability prerequisites for columns, extrusions,
+change symbols, hexbins, arcs and trips, theme light tokens and the
+`DEPTH_UNSEEN` and `ENCODING_AREA_DISTORTED` critic rules. JavaScript budgets
+are 450 KB gzip for core, 400 KB per optional tier and 1.2 MB for all tiers.

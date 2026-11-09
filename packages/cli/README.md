@@ -36,6 +36,13 @@ make a publication with no network requests.
 `full-bleed`), camera presets, motion modes and easings that the project format
 accepts, and whether visual checks can run on this machine.
 
+In 0.3.0, `techniqueBackends` maps each listed technique to `maplibre` or
+`deck`. New techniques are `column`, `extrusion`, `change`, `hexbin`, `arc`
+and `trip`; grow, morph and trail tracks animate them. Arcs/trips ship a
+local deck.gl tier and require Mercator without terrain. Authored files stay
+at format 0.2.0; generated publications use compiled spec 0.4.0. The bundled
+authoring pack is 0.3.0 and documents these fields and their limits.
+
 ## Check the page visually
 
 ```sh

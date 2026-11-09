@@ -29,6 +29,8 @@ The critic reads the compiled story the way a reader would. Its findings are war
 | `SCALE_INCONSISTENT`       | One attribute is drawn on different scales in different scenes. Add a shared scale with those layers as members                                             |
 | `PALETTE_CONTRAST_LOW`     | A mark colour is below 3:1 against the basemap land or water colour. Use darker (or, on a dark theme, lighter) colours                                      |
 | `TEXT_OVERFLOW_LIKELY`     | Narration would scroll inside the phone sheet. Tighten it or split the scene, keeping every value, date and qualification                                   |
+| `DEPTH_UNSEEN`             | A height encoding has no pitched camera state. Pitch the camera or choose the size form for a flat view                                                     |
+| `ENCODING_AREA_DISTORTED`  | Web Mercator hexbin ground areas vary by over 10% across the latitude span. Narrow the region or split it into scenes                                       |
 
 ## Visual checks (`check --visual`)
 
@@ -43,5 +45,9 @@ The critic reads the compiled story the way a reader would. Its findings are war
 | `BUDGET_EXCEEDED`        | The page's JavaScript is over its gzip budget (core 450 KB, all tiers 1.2 MB). A warning; `build` and `check --visual` both report sizes                                                                                                                                                                          |
 
 The contact sheet is advisory: look at it for crowded scenes, unreadable legends and weak framing that geometry checks cannot see, but act on diagnostics, not on taste. Run one `check --visual` at a time; parallel runs can make the map miss its idle timeout.
+
+For V2, `CAPABILITY_UNSUPPORTED` also covers deck layers with terrain/globe, incompatible motion properties and techniques not yet implemented. `MEASUREMENT_REQUIRED`/`MEASUREMENT_INCOMPATIBLE` cover non-ratio or negative height/width values, missing extrusion denominators and incompatible comparison units. `REFERENCE_MISSING` covers joins and transition references; `VALUE_INVALID` covers malformed trip times, and invalid OD geometry; `SCALE_INCONSISTENT` also covers before values outside the shared scale. Follow the diagnostic's exact path and remedy rather than changing units or IDs just to pass validation.
+
+`BUDGET_EXCEEDED` also checks each loaded tier against 400 KB gzip. Core and all-tier budgets remain 450 KB and 1.2 MB. A live idle timeout remains a failed sample even if the screenshot looks complete; check tile availability and playback independently. Offline success does not establish terrain contact or live performance.
 
 After fixing an authored file, refresh the lock and check again. A successful `check` validates the project and compiler inputs; `check --visual` confirms the layout; inspect a preview to confirm the page actually communicates the intended claim.

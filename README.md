@@ -46,7 +46,7 @@ node packages/cli/dist/bin.js --project my-story preview --open
 node packages/cli/dist/bin.js --project my-story build
 ```
 
-`preview` stays running and reloads when authored files change; while the project has errors, the page lists them instead. Stop it with Ctrl+C before the final `build`. The publication is `my-story/out/index.html`; `my-story/out/verification.json` lists its input hashes and online hosts. Add `--offline` to `build` for a publication with no network requests. A richer [three-scene Potomac example](examples/projects/potomac/README.md) uses a shared data scale, credited photo, local context layers, and an online basemap.
+`preview` stays running and reloads when authored files change; while the project has errors, the page lists them instead. Stop it with Ctrl+C before the final `build`. The publication is `my-story/out/index.html`; `my-story/out/verification.json` lists its input hashes and online hosts. Add `--offline` to `build` for a publication with no network requests. A richer [four-scene Potomac example](examples/projects/potomac/README.md) uses a shared data scale, credited photo, local context layers, and an online basemap.
 
 ## With a coding agent
 
@@ -76,5 +76,14 @@ libraries publish under [`@mapbard`](https://www.npmjs.com/org/mapbard).
 Changesets 2.29.7 (MIT) manages versions and changelogs. [CI](.github/workflows/ci.yml)
 checks Windows, macOS and Linux. The [manual release workflow](.github/workflows/release.yml)
 repeats those checks before publishing with the GitHub `npm` environment secret.
+
+The next release is prepared by a Changeset for **0.3.0 across all five
+packages**. It adds columns, normalized extrusions, change symbols, hexbins,
+arcs and timestamped trips; grow/morph/trail tracks; and an optional local
+deck.gl tier. Authored format remains 0.2.0 and compiled output is 0.4.0.
+See the [MapLibre gallery](fixtures/visual/gallery-maplibre/README.md),
+[deck.gl gallery](fixtures/visual/gallery-deck/README.md) and
+[migration-flows example](examples/projects/migration-flows/README.md).
+This is release preparation; publication and V2 owner scoring remain pending.
 
 Current work and known limitations are in [STATUS.md](docs/STATUS.md); the [roadmap](docs/ROADMAP.md) and [M1 plan](docs/m1-cli.md) describe the next steps.

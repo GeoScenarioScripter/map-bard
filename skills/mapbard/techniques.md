@@ -2,14 +2,26 @@
 
 Choose for the claim and source geometry. Check `mapbard capabilities` before authoring; the schema accepts some techniques that the current compiler diagnoses as unsupported.
 
-| Technique          | Use when                                                                               | Avoid when                                                            |
-| ------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `point`            | Showing locations, or measured point color/size with a declared attribute              | Marker area could be mistaken for an unencoded magnitude              |
-| `graduated-symbol` | Comparing nonnegative ratio quantities at points using `encode.visualVariable: "size"` | Zero and missing observations would be confused with absent features  |
-| `line`             | Showing routes, rivers, or boundaries                                                  | Geometry alone would imply flow direction or rate                     |
-| `fill`             | Showing polygon context with a constant color                                          | Color would seem to encode an unbound quantity                        |
-| `categorical`      | Coloring distinct nominal or ordinal values on matching geometry                       | A continuous ramp would falsely imply magnitude                       |
-| `choropleth`       | Coloring an already-normalized polygon ratio with a declared denominator               | Raw counts over unequal areas, or a denominator inferred from the map |
+| Technique          | Use when                                                                                   | Avoid when                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `point`            | Showing locations, or measured point color/size with a declared attribute                  | Marker area could be mistaken for an unencoded magnitude                     |
+| `graduated-symbol` | Comparing nonnegative ratio quantities at points using `encode.visualVariable: "size"`     | Zero and missing observations would be confused with absent features         |
+| `line`             | Showing routes, rivers, or boundaries                                                      | Geometry alone would imply flow direction or rate                            |
+| `fill`             | Showing polygon context with a constant color                                              | Color would seem to encode an unbound quantity                               |
+| `categorical`      | Coloring distinct nominal or ordinal values on matching geometry                           | A continuous ramp would falsely imply magnitude                              |
+| `choropleth`       | Coloring an already-normalized polygon ratio with a declared denominator                   | Raw counts over unequal areas, or a denominator inferred from the map        |
+| `column`           | Comparing nonnegative ratio quantities at points by linear height; MapLibre                | A top-down camera hides height, or footprints imply measured areas           |
+| `extrusion`        | Showing already-normalized polygon quantities with declared denominators; MapLibre         | Raw counts over unequal polygon areas, or height and area would imply volume |
+| `change`           | Comparing matched feature IDs as before rings/after discs or ghost/solid columns; MapLibre | IDs, units or measurement levels differ, or the comparison implies a trend   |
+| `hexbin`           | Aggregating points with a disclosed cell size and count, sum or mean; MapLibre             | Aggregation hides missingness, denominators or meaningful spatial boundaries |
+| `arc`              | Showing origin–destination relationships with optional quantity widths; deck.gl            | A curve would imply an observed route; terrain or globe is required          |
+| `trip`             | Showing timestamped LineString vertices with a trail and UTC clock; deck.gl                | Vertex times are absent or inferred, or terrain/globe is required            |
+
+Arcs need a two-vertex LineString; `arc.greatCircle: true` follows the great-circle path. The default elevated arc is a relationship diagram, not a measured altitude. Trips need one strictly increasing ISO UTC timestamp per vertex in `trip.timeProperty`; `trip.trailHours` specifies the visible time window. Do not invent intermediate observation times.
+
+Columns and extrusions use `encode.visualVariable: "height"`. Change symbols use `"size"` or `"height"` plus `compare.sourceId`; `compare.labels: true` compiles change callouts. Hexbins use `aggregate` and a colour classification, with optional `extrude`; cell values are computed at build time. Arcs can use `"width"`. See [format](format.md) for fields and [data honesty](data-honesty.md) for calculations.
+
+Only stories with arcs or trips ship `vendor/tier-deck.js`. Other techniques use MapLibre. Deck layers currently require Mercator without terrain; remove incompatible authored basemap settings only if that still serves the story. Otherwise report the capability limit.
 
 Numeric color needs a `classification` with 2–9 `classes` and one of these methods:
 

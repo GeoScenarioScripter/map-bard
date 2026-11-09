@@ -1,14 +1,14 @@
 ---
 name: mapbard
-description: Author and verify a MapBard 0.2 map story from local geographic data with the mapbard CLI.
-version: 0.2.0
+description: Author and verify a MapBard map story from local geographic data with the mapbard CLI, including 3D comparisons and flows.
+version: 0.3.0
 ---
 
 # MapBard authoring
 
 Use the CLI to register sources, validate the authored files, and publish the story. It does not call a model. The project root contains `mapbard.json` and `story.json`; the CLI owns `mapbard.lock.json` and generated output.
 
-1. Run `mapbard capabilities` to see current techniques, themes, layouts, motion presets, basemaps, the format version, and whether visual checks can run here.
+1. Run `mapbard capabilities` to see current techniques and their `techniqueBackends`, themes, layouts, motion presets, basemaps, the format version, and whether visual checks can run here. This pack targets CLI 0.3.0, authored format 0.2.0 and compiled spec 0.4.0; these versions are distinct.
 2. Run `mapbard init <project-dir>`. For later commands, work inside that directory or put the global `--project <project-dir>` before the command. For example, `mapbard --project <project-dir> add <file.geojson> --attribution "Source name"`.
 3. Register each data or media file with `add`, then run `inspect [resourceId]`. Check geometry, extent, unique feature IDs, missing values, and attribute distributions before choosing a depiction. `add` drafts attribute declarations; confirm roles, levels, units, observation dates, and source credit against the source material.
 4. Edit `mapbard.json` and `story.json` for the intent, sources, scenes, and visual bindings. Keep IDs and references consistent. Read [format](format.md) for a minimal scene and field names, [techniques](techniques.md) when choosing a layer, [layout](layout.md) for theme, layout, colour, size and callouts, [motion](motion.md) before adding camera moves or tracks, and [data honesty](data-honesty.md) before writing claims.

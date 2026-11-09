@@ -29,7 +29,13 @@ const editorSchema = projectJsonSchema(); // JSON Schema for mapbard.json
 `story.json`. The current authored format is 0.2.0; it includes the optional
 `theme`, `layout`, basemap terrain, `sky` and `projection`, story `motion`
 and `motionPresets`, scene `motion`, and `maxRadius` on size encodings and
-shared size scales. Compiled publications use spec 0.3.0. Lists such as
+shared size scales. The 0.3.0 package release adds optional `column`, `compare`,
+`transition`, `aggregate`, `extrude`, `arc` and `trip` layer fields, height/width
+encodings and shared scales, theme lighting and grow/morph/trail tracks.
+Authored format remains 0.2.0. Compiled publications use spec 0.4.0 with
+explicit layer backends, derived-source provenance and generated change
+callout inputs. `TECHNIQUE_BACKENDS` maps every `COMPILED_TECHNIQUES` entry to
+its runtime tier. Lists such as
 `THEME_PRESETS`, `LAYOUT_TEMPLATES`, `CAMERA_PRESETS` and `CAPABILITY_IDS`
 are exported for tools that offer choices. For a ready-to-use CLI, see
 [`mapbard`](https://www.npmjs.com/package/mapbard). [Source and examples](https://github.com/GeoScenarioScripter/map-bard).

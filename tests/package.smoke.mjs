@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { access, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import {
+  access,
+  cp,
+  copyFile,
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -81,6 +91,7 @@ test(
       await access(join(installed, 'mapbard', 'dist', 'skill', 'SKILL.md'));
       await access(join(installed, '@mapbard', 'renderer', 'dist', 'player', 'player.js'));
       await access(join(installed, '@mapbard', 'renderer', 'dist', 'vendor', 'maplibre-gl.js'));
+      await access(join(installed, '@mapbard', 'renderer', 'dist', 'vendor', 'tier-deck.js'));
       await access(join(installed, '@mapbard', 'renderer', 'runtime', 'style.css'));
 
       const binary = join(installed, 'mapbard', 'dist', 'bin.js');
@@ -103,6 +114,39 @@ test(
         await readFile(join(project, 'out', 'verification.json'), 'utf8'),
       );
       assert.deepEqual(verification.requiredNetwork, []);
+      await assert.rejects(access(join(project, 'out', 'vendor', 'tier-deck.js')));
+
+      const skill = JSON.parse(
+        await run(
+          process.execPath,
+          [binary, '--project', project, '--json', 'skill', 'install', '--codex'],
+          consumer,
+        ),
+      );
+      assert.equal(skill.ok, true, JSON.stringify(skill.diagnostics));
+      const installedSkill = await readFile(join(project, 'skills', 'mapbard', 'SKILL.md'), 'utf8');
+      assert.equal(
+        installedSkill,
+        await readFile(join(repository, 'skills', 'mapbard', 'SKILL.md'), 'utf8'),
+      );
+
+      // Exercise the optional tier from installed tarballs, outside workspace resolution.
+      const flows = join(consumer, 'flows');
+      const fixture = join(repository, 'examples', 'projects', 'migration-flows');
+      await mkdir(flows);
+      for (const file of ['mapbard.json', 'story.json', 'mapbard.lock.json'])
+        await copyFile(join(fixture, file), join(flows, file));
+      await cp(join(fixture, 'data'), join(flows, 'data'), { recursive: true });
+      const deckBuild = JSON.parse(
+        await run(
+          process.execPath,
+          [binary, '--project', flows, '--json', 'build', '--offline'],
+          consumer,
+        ),
+      );
+      assert.equal(deckBuild.ok, true, JSON.stringify(deckBuild.diagnostics));
+      assert.deepEqual(deckBuild.result.verification.requiredNetwork, []);
+      await access(join(flows, 'out', 'vendor', 'tier-deck.js'));
     } finally {
       await rm(scratch, { recursive: true, force: true });
     }

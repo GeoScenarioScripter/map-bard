@@ -17,6 +17,7 @@ import {
   STAGGER_ORDERS,
   storyJsonSchema,
   THEME_PRESETS,
+  TECHNIQUE_BACKENDS,
   type Diagnostic,
 } from '@mapbard/schema';
 import {
@@ -417,6 +418,12 @@ export async function run(argv: string[] = process.argv): Promise<number> {
           // V2 techniques, their capabilities and tracks appear once their compiler step lands.
           capabilities: STAGE1_CAPABILITIES.ids.filter(compilerReady),
           techniques: COMPILED_TECHNIQUES.filter(compilerReady),
+          techniqueBackends: Object.fromEntries(
+            COMPILED_TECHNIQUES.filter(compilerReady).map((name) => [
+              name,
+              TECHNIQUE_BACKENDS[name],
+            ]),
+          ),
           themes: THEME_PRESETS,
           layouts: LAYOUT_TEMPLATES,
           motion: {

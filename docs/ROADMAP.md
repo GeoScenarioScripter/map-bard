@@ -2,9 +2,10 @@
 
 Updated 2026-11-09. Current state lives in [STATUS.md](STATUS.md).
 M1 is complete; M2 is active, with the [execution plan](m2-visual.md). Its
-first slice, V1, closed on 2026-10-23. V2 implementation and owner review
-are complete locally (86/100 for both Potomac variants); fresh CI and release
-await the owner's push/publish requests. The visual
+first slice, V1, closed on 2026-10-23. V2 closed on 2026-11-09 (86/100
+for both Potomac variants, all eight CI jobs passing). V3's execution plan
+and three.js integration spike are next. The prepared 0.3.0 release awaits
+the owner's release request. The visual
 direction is [the visual engine plan](visual-engine.md). Earlier stage/wave/gate
 plans are archived in [archive/2026-10-20-process-reset/](archive/2026-10-20-process-reset/README.md).
 

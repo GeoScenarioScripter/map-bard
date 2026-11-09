@@ -1,13 +1,14 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-11-09. Status: **active; V1 closed 2026-10-23.** Waves 1–4
+Updated 2026-11-09. Status: **active; V1 closed 2026-10-23; V2 closed 2026-11-09.** Waves 1–4
 are complete: both Potomac variants scored 77, and the `visual` CI job
 passed with the Linux goldens matching exactly. V2's detailed section is
 [written](#v2--3d-data-change-and-flows); its owner decisions are settled,
 and steps 5.0–5.3 are complete. Step 5.4 review fixes and step 5.5 release
 preparation are implemented. Owner V2 scores are 86/100 for both variants,
 hardware performance meets the target, and both final live sweeps pass.
-A fresh CI run against these changes awaits an owner-requested push.
+The owner-requested push passed all eight CI jobs, including exact matches
+for all 126 committed Linux goldens. V3's detailed plan and integration spike are next.
 Release versions remain unapplied and unpublished. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
@@ -629,7 +630,7 @@ were published at 0.2.0 the same day.
 
 ## V2 — 3D data, change and flows
 
-Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
+Planned 2026-10-23. Status: **complete 2026-11-09.** The owner settled the decisions
 marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
 day ([results](#50-results-2026-10-23)), and the owner confirmed its
 backend table. Step 5.1 is done ([as built](#51-as-built-2026-10-23)),
@@ -1546,10 +1547,9 @@ The subsequent canonical run is clean. Local evidence is in
 
 The owner supplied identical V2 scores for atlas/light and night/dark:
 13, 18, 13, 11, 14, 9, 8 in rubric order, totaling **86/100 each**.
-No further defects were named. This closes the three recorded review gaps
-locally. New CI verification still requires
-an owner-requested push; release preparation is complete, publication is
-not authorized by the scores.
+No further defects were named. This closed the three recorded review gaps
+locally; the authorized push then passed CI as recorded below. Release
+preparation is complete; publication follows a separate owner request.
 
 Final local checks: build, lint, all **380 tests** (45 schema, 31 knowledge,
 128 core, 127 renderer, 38 CLI, 10 root and 1 browser smoke) and the installed
@@ -1558,9 +1558,26 @@ captures stopped; no timeout or assertion changed. Additional browser
 sweeps have zero findings: atlas offline and night unavailable (24 captures
 and 134 flight samples each), deck gallery stub (12 captures). The latter
 checks that the idle helper still composes with the tier's first draw.
-The core and deck tier remain within their size budgets. No Linux golden
-comparison or regeneration, new CI run, push, version application or npm
-publication was performed in this follow-up.
+The core and deck tier remain within their size budgets. These local checks
+preceded the push below. No goldens were regenerated, release versions
+applied or npm packages published.
+
+### V2 closure and next session (2026-11-09)
+
+The owner requested the push of the four prepared commits through
+`898aaf3`. [CI run 42571212244](https://github.com/GeoScenarioScripter/map-bard/actions/runs/42571212244)
+passed all eight jobs: build, tests, lint and tarball smoke on Linux, macOS
+and Windows, plus offline golden comparisons and unavailable-network checks
+for all five visual projects. All **126** committed Linux captures match
+exactly (24 atlas, 24 night, 42 MapLibre gallery, 12 deck gallery, 24 flows;
+worst pixel difference 0, unchanged tolerance 0.0005). This is a normal
+push run against the committed baselines, not a golden-update run.
+
+V2's acceptance list is satisfied. Next session should expand V3's outline
+into an execution plan, then run a three.js custom-layer spike: shared
+MapLibre WebGL context, terrain placement, lazy IIFE tier loading and frame
+budget. River-flow particles and a small glTF example follow that spike.
+The prepared 0.3.0 release remains a separate owner-requested operation.
 
 ### Q. Skill pack and release (step 5.5)
 
@@ -1576,8 +1593,8 @@ codes, height and change honesty and generated-label provenance. READMEs
 describe the new tier and compatibility limits. `capabilities` adds a
 `techniqueBackends` map from the schema; tests require every V2 technique
 and the exact schema backend mapping. The Changeset
-`v2-data-change-flows` resolves all five packages to 0.3.0. Versions have
-not been applied and nothing has been pushed or published.
+`v2-data-change-flows` resolves all five packages to 0.3.0. The preparation
+is pushed and CI-verified; release versions have not been applied or published.
 
 The tarball smoke now also installs the skill and builds the migration
 flow example with the packaged deck tier, while checking that a plain

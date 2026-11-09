@@ -19,8 +19,11 @@ flight framing. Step 5.5 preparation is complete: the 0.3.0 skill pack, backend 
 listing, READMEs and all-five-package Changeset are prepared. The owner
 scored both V2 variants 86/100 on 2026-11-09; hardware frame probes meet
 the 16.7 ms target, and both final live sweeps have zero findings after
-fixing idle recovery. A fresh pushed CI run is still pending; release
-versions have not been applied and nothing has been pushed or published.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+fixing idle recovery. V2 closed on 2026-11-09: the authorized push passed
+all eight jobs in [CI run 42571212244](https://github.com/GeoScenarioScripter/map-bard/actions/runs/42571212244),
+including exact matches for all 126 committed Linux goldens. Next is the
+V3 execution plan and three.js integration spike. Release versions have
+not been applied and 0.3.0 has not been published.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -148,8 +151,9 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   The smoke installs the 0.3.0 skill pack and
   builds both a plain story and a deck-tier flow story outside the workspace.
   Changeset status resolves all five packages to 0.3.0. Visual results are
-  recorded below. Laptop GPU performance is verified; no new CI run,
-  Linux golden comparison or physical-phone test in this session.
+  recorded below. Pushed CI also passes on Linux, macOS and Windows, and
+  all five visual jobs pass with 126 exact Linux golden matches. Laptop
+  GPU performance is verified; physical-phone performance remains untested.
 
 ## Known issues
 
@@ -215,6 +219,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-11-09: Pushed the four prepared commits through 898aaf3 at the owner's request. CI run 42571212244 passed all eight jobs: three-OS build/test/lint/package checks and all five visual projects, with 126/126 committed Linux goldens matching exactly. Marked V2 complete and recorded the handoff. Next: V3 execution plan and three.js integration spike; 0.3.0 version application/publication still awaits a release request.
 
 - 2026-11-09: Closed the three V2 review gaps locally: recovered loaded-map idle stalls without weakening the 15 s check, recorded actual WebGL renderer/browser metadata and passing Intel Arc frame probes, and recorded the owner's 86/100 for both themes. Build, all 380 tests (serial Windows workers), lint and installed-tarball smoke pass. Both final live sweeps, atlas offline, night unavailable and deck-gallery stub have zero findings; screenshots inspected. An intermediate night tile-host timeout is preserved in the plan. Next: owner-requested push for fresh CI, then release when requested; versions unapplied, no push or publish.
 

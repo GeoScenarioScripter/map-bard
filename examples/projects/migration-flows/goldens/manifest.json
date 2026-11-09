@@ -1,0 +1,52 @@
+{
+  "manifestVersion": 1,
+  "mapbard": "0.2.1",
+  "chromium": "156.0.8078.4",
+  "platform": "linux",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "phone",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "threshold": 0.1,
+  "maxDiffRatio": 0.0005,
+  "noise": {
+    "runs": 5,
+    "maxDiffRatio": 0,
+    "factor": 3,
+    "minimum": 0.0005
+  },
+  "captures": [
+    "east-coast-p0-desktop.png",
+    "east-coast-p0-phone.png",
+    "east-coast-p100-desktop.png",
+    "east-coast-p100-phone.png",
+    "east-coast-p50-desktop.png",
+    "east-coast-p50-phone.png",
+    "largest-first-p0-desktop.png",
+    "largest-first-p0-phone.png",
+    "largest-first-p100-desktop.png",
+    "largest-first-p100-phone.png",
+    "largest-first-p50-desktop.png",
+    "largest-first-p50-phone.png",
+    "limits-p0-desktop.png",
+    "limits-p0-phone.png",
+    "limits-p100-desktop.png",
+    "limits-p100-phone.png",
+    "limits-p50-desktop.png",
+    "limits-p50-phone.png",
+    "overview-p0-desktop.png",
+    "overview-p0-phone.png",
+    "overview-p100-desktop.png",
+    "overview-p100-phone.png",
+    "overview-p50-desktop.png",
+    "overview-p50-phone.png"
+  ]
+}

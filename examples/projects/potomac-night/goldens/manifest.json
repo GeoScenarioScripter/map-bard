@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "mapbard": "0.1.2",
+  "mapbard": "0.2.1",
   "chromium": "156.0.8078.4",
   "platform": "linux",
   "viewports": [

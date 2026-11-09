@@ -1389,7 +1389,37 @@ Notes for the merge and for 5.4 and Q:
 
 ### 5.4 Goldens, CI and scoring
 
-Progress (2026-11-08): the CI matrix now includes all five projects using
+Golden validation completed (2026-11-08): generated on canonical Linux
+CI runners via `update_goldens` in
+[run 42554670343](https://github.com/GeoScenarioScripter/map-bard/actions/runs/42554670343),
+then independently checked in the local
+`mcr.microsoft.com/playwright:v1.64.1-noble` container. This uses CI for
+generation instead of the overloaded local Docker generation attempted
+below. Both environments use Chromium 156.0.8078.4. All five sets measured
+zero noise over five runs; the unchanged minimum tolerance is 0.0005.
+
+| Project          | Captures | Fresh Linux mismatches | Worst pixel difference |
+| ---------------- | -------: | ---------------------: | ---------------------: |
+| Potomac atlas    |       24 |                      0 |                      0 |
+| Potomac night    |       24 |                      0 |                      0 |
+| MapLibre gallery |       42 |                      0 |                      0 |
+| deck.gl gallery  |       12 |                      0 |                      0 |
+| Migration flows  |       24 |                      0 |                      0 |
+
+All five CI visual jobs passed offline generation and unavailable checks;
+each Potomac variant retains 11 flight warnings, the other projects have
+none, and all have zero errors. All five unavailable contact sheets were
+inspected. The three OS verification jobs also passed build, tests, lint
+and tarball smoke. The prior push's Windows browser smoke timeout did not
+recur. Downloaded golden files were copied unchanged after the fresh Linux
+comparisons passed. No player code or tolerance changed.
+
+Still open: owner V2 scores and named defects before Q; the recorded live
+idle timeouts and performance gaps are not resolved by offline goldens.
+The successful workflow used freshly generated baselines; a normal CI run
+against the committed files follows their next push.
+
+Earlier attempt (2026-11-08, superseded by the validation above): the CI matrix includes all five projects using
 explicit paths (the galleries live under `fixtures/visual`, not
 `examples/projects`). V2 owner scoring fields and review prompts are in
 `m2-scoring.md`; no V2 score has been assigned. The local Windows and

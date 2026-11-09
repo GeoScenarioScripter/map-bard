@@ -1,0 +1,70 @@
+{
+  "manifestVersion": 1,
+  "mapbard": "0.2.1",
+  "chromium": "156.0.8078.4",
+  "platform": "linux",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "phone",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "threshold": 0.1,
+  "maxDiffRatio": 0.0005,
+  "noise": {
+    "runs": 5,
+    "maxDiffRatio": 0,
+    "factor": 3,
+    "minimum": 0.0005
+  },
+  "captures": [
+    "change-height-p0-desktop.png",
+    "change-height-p0-phone.png",
+    "change-height-p100-desktop.png",
+    "change-height-p100-phone.png",
+    "change-height-p50-desktop.png",
+    "change-height-p50-phone.png",
+    "change-size-p0-desktop.png",
+    "change-size-p0-phone.png",
+    "change-size-p100-desktop.png",
+    "change-size-p100-phone.png",
+    "change-size-p50-desktop.png",
+    "change-size-p50-phone.png",
+    "columns-p0-desktop.png",
+    "columns-p0-phone.png",
+    "columns-p100-desktop.png",
+    "columns-p100-phone.png",
+    "columns-p50-desktop.png",
+    "columns-p50-phone.png",
+    "extrusion-p0-desktop.png",
+    "extrusion-p0-phone.png",
+    "extrusion-p100-desktop.png",
+    "extrusion-p100-phone.png",
+    "extrusion-p50-desktop.png",
+    "extrusion-p50-phone.png",
+    "hexbin-extruded-p0-desktop.png",
+    "hexbin-extruded-p0-phone.png",
+    "hexbin-extruded-p100-desktop.png",
+    "hexbin-extruded-p100-phone.png",
+    "hexbin-extruded-p50-desktop.png",
+    "hexbin-extruded-p50-phone.png",
+    "hexbin-flat-p0-desktop.png",
+    "hexbin-flat-p0-phone.png",
+    "hexbin-flat-p100-desktop.png",
+    "hexbin-flat-p100-phone.png",
+    "hexbin-flat-p50-desktop.png",
+    "hexbin-flat-p50-phone.png",
+    "morph-p0-desktop.png",
+    "morph-p0-phone.png",
+    "morph-p100-desktop.png",
+    "morph-p100-phone.png",
+    "morph-p50-desktop.png",
+    "morph-p50-phone.png"
+  ]
+}

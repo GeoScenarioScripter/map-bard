@@ -13,8 +13,10 @@ its decisions, step 5.0 (spike) has run, the owner confirmed its
 [backend table](m2-visual.md#50-results-2026-10-23), and step 5.1 (the
 foundation: compiled 0.4.0, tier loading, altitude projection) and step
 5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) and
-step 5.3 (O: Potomac V2; P: the migration-flows example) are done; next:
-step 5.4 (Linux goldens, CI matrix, live terrain checks, owner scoring).** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
+step 5.3 (O: Potomac V2; P: the migration-flows example) are done.
+Step 5.4's five-project Linux goldens are generated and independently
+verified (126/126 exact matches); next: owner V2 scoring and named fixes.
+Live terrain captures were inspected, but live idle timeouts remain.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 ## What works today
@@ -101,8 +103,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   from their 2024 heights beside 2024 ghosts with compiled change labels and
   a scrub orbit, a push-in on Little Falls and a pull-back with size-form
   change symbols), Mapterhorn terrain with hillshade and sky. Both build
-  online and offline; their committed Linux goldens are V1 and stale until
-  5.4. `examples/projects/migration-flows` (newsroom, full-bleed, deck.gl
+  online and offline; their committed Linux goldens cover V2.
+  `examples/projects/migration-flows` (newsroom, full-bleed, deck.gl
   arcs): the 30 largest 2024 ACS state-to-state flows with margins of
   error, in four scenes. The format 0.1
   `first-slice` project remains as a migration regression fixture.
@@ -130,7 +132,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   `MapLibreOverlay`, with flow legends, a trip clock, a per-tier 400 KB
   budget warning, and `CAPABILITY_UNSUPPORTED` for deck techniques with
   terrain or globe. Technique galleries: `fixtures/visual/gallery-maplibre`
-  and `gallery-deck`, from public-domain data (no goldens yet).
+  and `gallery-deck`, from public-domain data, with Linux goldens.
 - Checks: 368 routine tests (schema 45, knowledge 31, core 128, renderer 121,
   CLI 38, root 5, browser smoke 1), lint and `actionlint` pass; the Windows
   tarball install smoke passed on 2026-10-23 at 0.2.0. A live OpenFreeMap style and multiple vector tiles loaded in headless
@@ -186,6 +188,15 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-11-08: Generated all five Linux golden sets through CI run
+  42554670343 (all eight jobs passed), inspected all five contact sheets,
+  and independently compared fresh captures in the Playwright Linux
+  container: 126/126 exact matches, five-run noise 0. Offline and
+  unavailable: 0 errors; each Potomac variant retains 11 flight warnings,
+  others 0. Three-OS build/test/lint/package checks passed in CI. No
+  runtime or tolerance changes. Next: owner V2 scores (target ≥ 80), named
+  fixes, then 5.5; live idle timeouts and performance gaps remain open.
 
 - 2026-11-08: Started 5.4: expanded visual CI to five explicit project
   paths and prepared V2 owner scoring sheets; corrected the stale plan

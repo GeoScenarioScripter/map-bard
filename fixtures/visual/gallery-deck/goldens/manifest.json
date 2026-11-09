@@ -1,0 +1,40 @@
+{
+  "manifestVersion": 1,
+  "mapbard": "0.2.1",
+  "chromium": "156.0.8078.4",
+  "platform": "linux",
+  "viewports": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "phone",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "threshold": 0.1,
+  "maxDiffRatio": 0.0005,
+  "noise": {
+    "runs": 5,
+    "maxDiffRatio": 0,
+    "factor": 3,
+    "minimum": 0.0005
+  },
+  "captures": [
+    "arcs-p0-desktop.png",
+    "arcs-p0-phone.png",
+    "arcs-p100-desktop.png",
+    "arcs-p100-phone.png",
+    "arcs-p50-desktop.png",
+    "arcs-p50-phone.png",
+    "trips-p0-desktop.png",
+    "trips-p0-phone.png",
+    "trips-p100-desktop.png",
+    "trips-p100-phone.png",
+    "trips-p50-desktop.png",
+    "trips-p50-phone.png"
+  ]
+}

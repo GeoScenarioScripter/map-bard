@@ -160,6 +160,12 @@ describe('3D and change styles', () => {
       change.change!.colors.unchanged,
     ]);
     expect(specs[1]!.paint['fill-extrusion-opacity']).toBeLessThan(0.5);
+    // The comparison must use the theme's foreground contrast, including dark maps.
+    expect(specs[1]!.paint['fill-extrusion-color']).toBe(colors.ink);
+    const key = changeLegend(change.change!, colors);
+    expect(key).toContain(
+      `fill="${colors.ink}" fill-opacity="${specs[1]!.paint['fill-extrusion-opacity']}"`,
+    );
   });
 
   it('draw change symbols as a disc and a ring on the size scale', () => {
@@ -184,6 +190,41 @@ describe('3D and change styles', () => {
 });
 
 describe('MapLibre adapter, 3D layers', () => {
+  it('prepares column-top projection before idle without a callout overlay', () => {
+    const map = {
+      ...fakeMap(),
+      triggerRepaint: vi.fn(),
+      getProjection: () => ({ type: 'mercator' }),
+      getCanvas: () => ({ clientWidth: 800, clientHeight: 600 }),
+    };
+    const adapter = createMapLibreAdapter(
+      story,
+      data,
+      map as unknown as Parameters<typeof createMapLibreAdapter>[2],
+      {
+        MercatorCoordinate: {
+          fromLngLat: (_at: [number, number], height: number) => ({
+            x: 0,
+            y: 0,
+            z: height / 100000,
+          }),
+        },
+      } as unknown as Parameters<typeof createMapLibreAdapter>[3],
+    );
+    adapter.bindLayer(layer('columns', 'gauges'));
+    const probe = map.layers.get('mb-altitude-probe') as unknown as {
+      render(gl: unknown, args: { defaultProjectionData: { mainMatrix: number[] } }): void;
+    };
+    expect(probe).toBeDefined();
+    // A pitched projection makes positive altitude visibly different from the ground.
+    probe.render(null, {
+      defaultProjectionData: { mainMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1] },
+    });
+    expect(adapter.projectAltitude([-77.5, 39.3], 10000)).toEqual({ x: 400, y: 270 });
+    adapter.dispose();
+    expect(map.layers.has('mb-altitude-probe')).toBe(false);
+  });
+
   it('shades 3D stories with the theme light, and leaves flat ones alone', () => {
     const map = fakeMap();
     adapterFor(map);

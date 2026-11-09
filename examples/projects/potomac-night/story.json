@@ -45,7 +45,7 @@
           },
           "sourceId": "potomac-2024",
           "column": {
-            "radiusMeters": 2000
+            "radiusMeters": 2600
           }
         }
       ],
@@ -93,15 +93,22 @@
               "potomac-river-context/mdimap-177",
               "potomac-river-context/mdimap-346"
             ],
-            "zoom": 9.4,
-            "pitch": 70,
+            "zoom": 7.7,
+            "pitch": 50,
             "range": [0.3, 0.85]
           },
           {
-            "range": [0.93, 1],
+            "range": [0.86, 1],
             "keyframes": [
               {
                 "at": 0,
+                "center": [-77.65, 39.33],
+                "zoom": 7.7,
+                "pitch": 45,
+                "bearing": 0
+              },
+              {
+                "at": 1,
                 "center": [-77.65, 39.33],
                 "zoom": 8.4,
                 "pitch": 45,
@@ -320,7 +327,7 @@
           },
           "sourceId": "potomac-2025",
           "column": {
-            "radiusMeters": 2000
+            "radiusMeters": 2600
           },
           "compare": {
             "sourceId": "potomac-2024",
@@ -335,7 +342,7 @@
       ],
       "camera": {
         "center": [-77.65, 39.33],
-        "zoom": 8.4,
+        "zoom": 8.7,
         "pitch": 45,
         "bearing": 0
       },
@@ -388,7 +395,7 @@
           },
           "sourceId": "potomac-2025",
           "column": {
-            "radiusMeters": 2000
+            "radiusMeters": 2600
           }
         }
       ],
@@ -477,10 +484,10 @@
           "keyframes": [
             {
               "at": 0,
-              "center": [-77.12763888888888, 38.949777777777776],
-              "zoom": 11,
-              "pitch": 35,
-              "bearing": 25
+              "center": [-77.8, 39.45],
+              "zoom": 8.6,
+              "pitch": 15,
+              "bearing": 0
             },
             {
               "at": 1,
@@ -500,7 +507,7 @@
       "id": "daily-discharge",
       "title": "Daily mean discharge",
       "visualVariable": "height",
-      "maxHeightMeters": 30000,
+      "maxHeightMeters": 60000,
       "members": [
         {
           "sceneId": "context-2024",

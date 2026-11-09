@@ -509,6 +509,9 @@ export function createMapLibreAdapter(
       boundLayers.set(layer.runtimeId, layer);
       if (layer.geometry === 'point') pointLayers.set(layer.runtimeId, layer);
       sourceUsers.set(layer.sourceId, (sourceUsers.get(layer.sourceId) ?? 0) + 1);
+      // QA can ask for column tops even when there are no visible callouts. Prepare the
+      // matrix before idle, rather than relying on callout placement to project a symbol.
+      if (drawsHeight(layer)) altitude?.prepare();
     },
     unbindLayer(runtimeId) {
       const tier = tierOf.get(runtimeId);

@@ -1,6 +1,7 @@
 import type { ChangeSign, CompiledChange, ResolvedScale } from '@mapbard/schema';
 import { escapeHtml } from './media.js';
 import { flowLegendMarkup, widthLegendBody } from './legend-flows.js';
+import { GHOST_OPACITY } from './resolved-style.js';
 import type { CompiledLayer, CompiledScene, CompiledStory } from './types.js';
 
 /** Space between the nested circles and their value labels, in CSS pixels. */
@@ -61,7 +62,7 @@ export function changeLegend(
   const height = change.form === 'height';
   const glyph = (color: string, filled = true, opacity = 1) =>
     height ? columnGlyph(color, opacity) : circleGlyph(color, filled);
-  const before = glyph(colors.muted, false, 0.35);
+  const before = glyph(colors.ink, false, GHOST_OPACITY);
   const after = glyph(colors.ink);
   const signs = change.signs.map((sign) => row(glyph(change.colors[sign]), SIGN_LABELS[sign]));
   const title = `Change, ${change.before.label} to ${change.after.label}`;

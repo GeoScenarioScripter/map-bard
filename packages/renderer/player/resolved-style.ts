@@ -206,7 +206,7 @@ export type FootprintSource = { id: string; radiusMeters: number };
 /** The ghost column sits slightly wider, so the solid column inside it never z-fights. */
 export const GHOST_WIDTH = 1.25;
 export const COLUMN_OPACITY = 0.9;
-export const GHOST_OPACITY = 0.35;
+export const GHOST_OPACITY = 0.45;
 
 const toNumber = (expression: Expression | string): Expression => ['to-number', expression, 0];
 
@@ -392,7 +392,7 @@ function layerStylesUnfiltered(
             extrusion(
               ghostLayerId(layer.runtimeId),
               ghost,
-              colors.muted,
+              colors.ink,
               height(scale, before),
               GHOST_OPACITY,
             ),

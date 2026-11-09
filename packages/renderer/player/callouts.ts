@@ -201,6 +201,12 @@ export function createCalloutOverlay(
           part.label.hidden = true;
           part.group.style.display = 'none';
         }
+      // No label can collide with a symbol while all callouts are hidden. In particular,
+      // morph galleries with thousands of columns need no projection or layout work here.
+      if (!live.length) {
+        previous.clear();
+        return;
+      }
       // Read every size first, then write, so a frame lays out once.
       const frame = container.getBoundingClientRect();
       const viewport = { width: frame.width, height: frame.height };

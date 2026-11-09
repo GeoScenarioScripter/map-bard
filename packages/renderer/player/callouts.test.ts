@@ -159,6 +159,25 @@ describe('callout overlay', () => {
     layer.setOpacity('missing', 0);
   });
 
+  it('skips symbol projection while no callouts are visible, and resumes when one returns', () => {
+    const { layer, container, frame } = overlay();
+    const symbols = vi.fn(() => [{ at: [4, 6] as const, radius: 5 }]);
+    const empty = layer.show([], symbols);
+    frame();
+    expect(symbols).not.toHaveBeenCalled();
+    empty.remove();
+    layer.show([gauge], symbols);
+    expect(symbols).toHaveBeenCalled();
+    symbols.mockClear();
+    layer.setOpacity(gauge.id, 0);
+    frame();
+    expect(symbols).not.toHaveBeenCalled();
+    expect(container.byClass('mb-callout')[0]!.hidden).toBe(true);
+    layer.setOpacity(gauge.id, 1);
+    expect(symbols).toHaveBeenCalledOnce();
+    expect(container.byClass('mb-callout')[0]!.hidden).toBe(false);
+  });
+
   it('re-places labels every frame against panels and nearby symbols', () => {
     let panels = [] as { left: number; top: number; right: number; bottom: number }[];
     const { layer, container, frame } = overlay(() => panels);

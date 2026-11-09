@@ -27,7 +27,8 @@ export function projectThroughMatrix(
  * Projects points above the ground. MapLibre's `project` knows only the ground, so a no-op
  * custom layer keeps each frame's `defaultProjectionData.mainMatrix` (Mercator 0–1 units; the
  * 5.0 spike matched `map.project` within 0.1 px). `modelViewProjectionMatrix` uses other units.
- * The probe is added on first use, so stories without 3D layers draw exactly as before.
+ * Height layers prepare the probe before their first idle frame, even without callouts;
+ * stories without 3D layers draw exactly as before.
  */
 export function createAltitudeProjector(map: MapLibreMap, mercator: MercatorConstructor) {
   const id = 'mb-altitude-probe';
@@ -48,6 +49,9 @@ export function createAltitudeProjector(map: MapLibreMap, mercator: MercatorCons
     map.triggerRepaint();
   }
   return {
+    prepare(): void {
+      if (map.getProjection?.()?.type !== 'globe') ensureProbe();
+    },
     project(at: readonly [number, number], heightMeters: number): { x: number; y: number } {
       const ground = () => {
         const point = map.project([at[0], at[1]]);

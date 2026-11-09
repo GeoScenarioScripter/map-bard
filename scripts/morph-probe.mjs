@@ -185,7 +185,7 @@ try {
     await page.screenshot({ path: join(out, `morph-${viewport.width}.png`) });
     assert.deepEqual(errors, []);
     assert(report.rendered > 0);
-    reports.push({ viewport, count, ...report });
+    reports.push({ viewport, count, browser: `Chromium ${browser.version()}`, ...report });
     await page.close();
   }
 } finally {

@@ -5,10 +5,9 @@
 //
 //   node scripts/frame-probe.mjs <publication-dir> [width] [height] [--swiftshader]
 //
-// Without --swiftshader, Chromium keeps its default WebGL path, as the numbers in STATUS.md
-// before Wave 4 did; `check --visual --frames` uses SwiftShader, which is much slower at
-// desktop size. Either way this measures main-thread cost (player, callout placement, MapLibre
-// render calls), not the frame rate of a real GPU.
+// Without --swiftshader, Chromium keeps its default WebGL path. This can still be software:
+// inspect the report's renderer before interpreting results. MAPBARD_CHROME_PATH can select
+// an installed browser. Frame intervals include rendering and scheduling, not just JS cost.
 import { resolve } from 'node:path';
 import { launchBrowser, probeFrames } from 'mapbard';
 

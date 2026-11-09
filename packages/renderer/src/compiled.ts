@@ -307,7 +307,7 @@ const app = `(() => {
             return adapter.drawnSymbols().map((symbol) => ({ ...symbol, x: symbol.x + box.left, y: symbol.y + box.top }));
           },
           // Idle also waits for each renderer tier's first drawn frame.
-          whenIdle: () => new Promise((resolve) => { map.once('idle', () => resolve()); map.triggerRepaint(); }).then(() => adapter.whenDrawn()),
+          whenIdle: () => api.whenMapIdle(map).then(() => adapter.whenDrawn()),
         };
         // Capture pages opt in before load; only they may hold a scene at a chosen progress.
         if (window.MAPBARD_CAPTURE === true) {

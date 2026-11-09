@@ -1,8 +1,10 @@
 # MapBard — Product Roadmap
 
-Updated 2026-10-23. Current state lives in [STATUS.md](STATUS.md).
+Updated 2026-11-09. Current state lives in [STATUS.md](STATUS.md).
 M1 is complete; M2 is active, with the [execution plan](m2-visual.md). Its
-first slice, V1, closed on 2026-10-23, and V2 is next. The visual
+first slice, V1, closed on 2026-10-23. V2 implementation and owner review
+are complete locally (86/100 for both Potomac variants); fresh CI and release
+await the owner's push/publish requests. The visual
 direction is [the visual engine plan](visual-engine.md). Earlier stage/wave/gate
 plans are archived in [archive/2026-10-20-process-reset/](archive/2026-10-20-process-reset/README.md).
 

@@ -1,7 +1,7 @@
 # MapBard — Status
 
 **Updated 2026-11-09. [M2 — Visual Engine](visual-engine.md) is active; its
-execution plan is [m2-visual.md](m2-visual.md). Waves 1–3 are complete;
+execution plan is [m2-visual.md](m2-visual.md). Waves 1–4 are complete;
 V1 closed on 2026-10-23: the owner
 [scored](m2-scoring.md#owners-scores-and-named-defects) both Potomac
 variants 77/100 (target ≥ 75), and the pushed CI run passed on three OSes,
@@ -15,9 +15,11 @@ foundation: compiled 0.4.0, tier loading, altitude projection) and step
 5.2 (M: MapLibre 3D and change; N: deck.gl tier, arcs and trips) and
 step 5.3 (O: Potomac V2; P: the migration-flows example) are done.
 Step 5.4 review fixes improve ghost contrast, phone column legibility and
-flight framing. Step 5.5 is started: the 0.3.0 skill pack, backend capability
-listing, READMEs and all-five-package Changeset are prepared. Owner V2
-scores, live idle timeouts and desktop performance remain open; release
+flight framing. Step 5.5 preparation is complete: the 0.3.0 skill pack, backend capability
+listing, READMEs and all-five-package Changeset are prepared. The owner
+scored both V2 variants 86/100 on 2026-11-09; hardware frame probes meet
+the 16.7 ms target, and both final live sweeps have zero findings after
+fixing idle recovery. A fresh pushed CI run is still pending; release
 versions have not been applied and nothing has been pushed or published.** [M1](m1-cli.md) is complete. The owner deferred the fresh Claude
 Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
@@ -138,15 +140,16 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   terrain or globe. Technique galleries: `fixtures/visual/gallery-maplibre`
   and `gallery-deck`, from public-domain data, with Linux goldens.
 - Checks (2026-11-09): final build, lint and expanded tarball smoke pass.
-  All 377 tests have passing final results (schema 45, knowledge 31,
-  core 128, renderer 124, CLI 38, root 10, browser smoke 1), across Linux
-  and an isolated Windows publication-test rerun. Default-worker runs had
-  timeouts; core passed with one worker, and the publication test passed
-  with Docker stopped. No timeouts or assertions were relaxed. The smoke
-  installs the 0.3.0 skill pack and
+  All 380 tests pass on Windows (schema 45, knowledge 31, core 128,
+  renderer 127, CLI 38, root 10, browser smoke 1), with package tests and
+  workers run serially after captures stopped. No timeouts or assertions
+  were relaxed. Both final live sweeps have zero findings; additional
+  atlas offline, night unavailable and deck-gallery stub sweeps are clean.
+  The smoke installs the 0.3.0 skill pack and
   builds both a plain story and a deck-tier flow story outside the workspace.
   Changeset status resolves all five packages to 0.3.0. Visual results are
-  recorded below; no new CI run or real-device performance check.
+  recorded below. Laptop GPU performance is verified; no new CI run,
+  Linux golden comparison or physical-phone test in this session.
 
 ## Known issues
 
@@ -161,11 +164,12 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   OpenFreeMap credit, flight callout collisions and long phone narration.
   The owner scored both variants 77/100 on 2026-10-23 (target ≥ 75); the
   weakest areas are motion and camera (9/15) and attention and annotation
-  (10/15).
+  (10/15). V2 review on 2026-11-09 scores both variants 86/100 (target ≥ 80),
+  with no additional owner-named defects.
 - Motion limits: `stagger` cannot apply to
   `line-reveal` or to scrub and step tracks (diagnostics say so). Frame
-  timing is measured in headless Chrome with software WebGL, so it shows
-  main-thread cost, not GPU frame rate. With 5,000 extra points in one scene,
+  timing includes rendering and scheduling. Earlier headless runs used
+  software WebGL and do not establish hardware performance. With 5,000 extra points in one scene,
   callout placement still costs about 42 ms per frame at p95 on a phone-sized
   map (desktop 16.7 ms); 1,000 points stay within 16.7 ms on both.
 - V2 review fixes: foreground-colour ghosts at 45% opacity, a shared
@@ -175,18 +179,24 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
   clear of panels. Both variants pass final Linux offline and unavailable
   sweeps with zero findings (24 captures and 134 flight samples each).
   All 90 affected goldens match exactly, with five-run noise 0 and the
-  unchanged 0.0005 tolerance. The final night live sweep also has zero
-  findings with Docker stopped; its earlier two idle timeouts and scope
-  overlap did not recur. Atlas has zero overlaps but retains one 15 s idle
-  timeout at 2024 phone p = 0.55. The live gap remains open. These checks
-  keep the original timeout and run serially.
-- Performance: invisible callouts no longer project the scene symbols.
-  The missing 1,000-feature morph probe now exists and has run against the
-  production adapter with explicitly synthetic data. With Docker stopped,
-  the final default-WebGL run still selected SwiftShader: morph frame p99
-  33.4 ms desktop / 16.8 ms phone, feature-state update p95 0.6 / 0.3 ms.
-  The final night story measured 50.1 / 16.8 ms. The desktop 16.7 ms target
-  remains unmet; physical-device performance remains unverified.
+  unchanged 0.0005 tolerance. The 2026-11-09 idle investigation found a
+  loaded terrain map with no scheduled frame and no idle event. Pending
+  readiness waits now request a repaint when loaded and stationary, while
+  still requiring a real idle event and each tier's first draw. Both final
+  live sweeps pass with zero findings (24 captures and 134 flight samples
+  each), at the original 15 s limit. An intermediate night run had one
+  genuine tile-request timeout; its fresh canonical CLI run passed. Network
+  availability remains external; the captured timeout is preserved in the
+  execution plan instead of being reclassified as success.
+- Performance target verified on the reference laptop: installed Chrome
+  156.0.8078.80 selects Intel Arc 140V/Direct3D11; bundled Chromium's
+  default path still selects SwiftShader. Offline frame p99, desktop /
+  phone viewport: atlas 8.5 / 8.6 ms, night 16.7 / 16.6 ms; the synthetic
+  1,000-column morph 8.5 / 8.5 ms, update cost p95 0.5 / 0.5 ms.
+  All meet ≤ 16.7 ms. Reports now identify the browser and actual renderer.
+  The prior SwiftShader numbers remain valid software measurements;
+  physical-phone performance remains unverified. See the reproduction
+  commands in [m2-scoring.md](m2-scoring.md#hardware-performance-follow-up-2026-11-09).
 - The Linux goldens (made in the `mcr.microsoft.com/playwright:v1.64.1-noble`
   image) matched ubuntu-latest exactly in the first `visual` CI run on
   2026-10-23. Windows captures differ from them by 0.8–4.5% (DOM text wraps
@@ -194,7 +204,7 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 - The legacy Potomac fixture still uses format 0.1. CSV can be added and
   inspected, but the current compiler cannot yet render CSV layers.
 - The routine headless browser smoke test still stubs the online style so it
-  remains network independent. The separate live check passed on 2026-10-21.
+  remains network independent. Both separate final live sweeps passed on 2026-11-09.
 - The 0.1.0 npm release did not include provenance. Releases use the GitHub
   `npm` environment secret; this machine has no npm login (`ENEEDAUTH`).
 - The fresh Claude Code agent trial could not start because its API connection
@@ -205,6 +215,8 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
+
+- 2026-11-09: Closed the three V2 review gaps locally: recovered loaded-map idle stalls without weakening the 15 s check, recorded actual WebGL renderer/browser metadata and passing Intel Arc frame probes, and recorded the owner's 86/100 for both themes. Build, all 380 tests (serial Windows workers), lint and installed-tarball smoke pass. Both final live sweeps, atlas offline, night unavailable and deck-gallery stub have zero findings; screenshots inspected. An intermediate night tile-host timeout is preserved in the plan. Next: owner-requested push for fresh CI, then release when requested; versions unapplied, no push or publish.
 
 - 2026-11-09: Fixed V2 ghost contrast, phone columns and flight framing; added invisible-callout and altitude-projection regressions plus a synthetic 1,000-feature morph probe. Started 5.5: skill 0.3.0, backend capabilities, READMEs, all-five-package 0.3.0 Changeset and expanded tarball smoke. Build, lint, package smoke and all 377 tests pass across final Linux/Windows runs after documented timeout reruns; 90 Linux goldens match exactly and both Potomac offline/fallback sweeps have zero findings. Final live: night clean, atlas one phone idle timeout, neither has overlaps. Desktop performance and owner scoring also remain open. Next: resolve the remaining release review gaps; no push or publish.
 

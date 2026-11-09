@@ -2,31 +2,33 @@
 
 ## V2 review — step 5.4 (prepared 2026-11-08)
 
-The owner scores both variants against the same quality bar, with a V2
-target of **≥ 80/100 each**. Scores below are deliberately pending. The V1
-review and scores are preserved below as historical evidence.
+The owner scored both variants on 2026-11-09: **86/100 each**, exceeding
+the V2 target of **≥ 80/100 each**. The seven scores were supplied directly
+by the owner, identically for light (atlas) and dark (night). No additional
+defects were named. V1 scores remain below as historical evidence.
 
 Use the preview commands below after building. Review both desktop and
 phone widths, scroll through each scene, and check reduced motion. Offline
 goldens cannot establish terrain placement: inspect the online 2024 scene
 at p = 0.5 and the 2025 scene at p = 1 as well.
 
-| Area (points)                     | V2 review focus                                                               | Atlas       | Night       |
-| --------------------------------- | ----------------------------------------------------------------------------- | ----------- | ----------- |
-| Sense of place (15)               | Basemap, terrain contact at column bases, readable context                    | Pending     | Pending     |
-| Encoding clarity and honesty (20) | Shared zero-based height scale; 2024 ghosts versus 2025 solids; change labels | Pending     | Pending     |
-| Motion and camera (15)            | Downstream growth, shrinking columns, orbit and pull-back; reduced motion     | Pending     | Pending     |
-| Attention and annotation (15)     | Column-top labels and legibility during flights                               | Pending     | Pending     |
-| Typography and layout (15)        | Phone rail, legend, narration and small overview columns                      | Pending     | Pending     |
-| Depth and atmosphere (10)         | Useful pitched views, terrain and ghost contrast                              | Pending     | Pending     |
-| Performance and polish (10)       | Loading, smooth interaction and failed-network behavior                       | Pending     | Pending     |
-| **Total (100)**                   | **Target ≥ 80 for each variant**                                              | **Pending** | **Pending** |
+| Area (points)                     | V2 review focus                                                               | Atlas  | Night  |
+| --------------------------------- | ----------------------------------------------------------------------------- | ------ | ------ |
+| Sense of place (15)               | Basemap, terrain contact at column bases, readable context                    | 13     | 13     |
+| Encoding clarity and honesty (20) | Shared zero-based height scale; 2024 ghosts versus 2025 solids; change labels | 18     | 18     |
+| Motion and camera (15)            | Downstream growth, shrinking columns, orbit and pull-back; reduced motion     | 13     | 13     |
+| Attention and annotation (15)     | Column-top labels and legibility during flights                               | 11     | 11     |
+| Typography and layout (15)        | Phone rail, legend, narration and small overview columns                      | 14     | 14     |
+| Depth and atmosphere (10)         | Useful pitched views, terrain and ghost contrast                              | 9      | 9      |
+| Performance and polish (10)       | Loading, smooth interaction and failed-network behavior                       | 8      | 8      |
+| **Total (100)**                   | **Target ≥ 80 for each variant**                                              | **86** | **86** |
 
 ### V2 named gaps — review fixes (2026-11-08)
 
 The owner confirmed this recorded list as the defect list and requested
-step 5.5 preparation. Scores remain **pending**; neither that instruction
-nor the V1 scores constitutes V2 visual approval.
+step 5.5 preparation. Scores were pending at that review; the owner's
+2026-11-09 V2 scores are recorded above. The initial technical findings
+below are retained, with the subsequent performance result following them.
 
 - **Faint ghosts:** use theme foreground at 45% opacity, with the same
   legend key. Inspected night offline/stub/live captures show the before
@@ -46,9 +48,10 @@ nor the V1 scores constitutes V2 visual approval.
   After the final framing changes, with Docker stopped and captures run
   serially, night passes all 24 captures and 134 flight samples with zero
   findings. Atlas has no overlaps but retains one 15 s idle timeout at
-  2024 phone p = 0.55. The live gap remains open. The timeout is unchanged;
+  2024 phone p = 0.55. That gap prompted the 2026-11-09 idle investigation
+  in [the execution plan](m2-visual.md#54-idle-and-performance-follow-up-2026-11-09). The timeout is unchanged;
   complete-looking screenshots were never counted as successful idle checks.
-- **Performance remains open:** skip symbol projection while no callouts
+- **Initial software performance:** skip symbol projection while no callouts
   are visible. The new `scripts/morph-probe.mjs` runs the production adapter
   with 1,000 explicitly synthetic columns, reporting frame intervals and
   feature-state update cost separately. With Docker stopped, the final
@@ -57,8 +60,45 @@ nor the V1 scores constitutes V2 visual approval.
   50.1 / 16.8 ms. This does not meet the 16.7 ms desktop target or establish
   real-device performance. The previously missing probe is now run.
 
-Step 5.5 preparation has started at the owner's request. Release review
-still needs V2 scores and disposition of the open live/performance gaps.
+The owner review and reference-laptop performance target are now satisfied.
+The execution plan records the live verification and release preparation.
+
+### Hardware performance follow-up (2026-11-09)
+
+The earlier default-WebGL runs selected bundled Chromium's SwiftShader,
+despite omitting software-renderer flags. Selecting installed Chrome via
+`MAPBARD_CHROME_PATH` uses the host's Intel Arc 140V GPU (16 GB), Direct3D11,
+driver 32.0.101.8860. Chrome is 156.0.8078.80. The default-path probes ran
+serially, with Docker stopped, at 1440 × 900 and 390 × 844, device scale 1.
+
+| Probe                        | Desktop p99 | Phone-size p99 |    Target |
+| ---------------------------- | ----------: | -------------: | --------: |
+| Potomac atlas, offline       |      8.5 ms |         8.6 ms | ≤ 16.7 ms |
+| Potomac night, offline       |     16.7 ms |        16.6 ms | ≤ 16.7 ms |
+| Synthetic 1,000-column morph |      8.5 ms |         8.5 ms | ≤ 16.7 ms |
+
+Morph update cost p95 is 0.5 ms at both sizes; 179 map renders were observed
+in each 180-frame run. These meet the plan's frame-probe target on this laptop.
+Phone size is viewport emulation on the same GPU, not a physical-phone test.
+The previous software results remain valid measurements of SwiftShader.
+Frame intervals include rendering and scheduling, not just main-thread cost.
+Both probes now record browser version and actual WebGL renderer.
+
+Reproduce from the repository root, after building the packages:
+
+```powershell
+$env:MAPBARD_CHROME_PATH = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+node packages/cli/dist/bin.js --project examples/projects/potomac build --offline --out out/close-offline
+node scripts/frame-probe.mjs examples/projects/potomac/out/close-offline
+node scripts/frame-probe.mjs examples/projects/potomac/out/close-offline 390 844
+# Repeat the build and frame commands with potomac-night.
+node scripts/morph-probe.mjs out/v2-close/morph-hardware
+Remove-Item Env:MAPBARD_CHROME_PATH
+```
+
+Local raw reports: `out/close-{atlas,night}-frames-{desktop,phone}.json`
+and `out/v2-close/morph-hardware/report.json`. Hardware performance does
+not supply the owner's visual scores or permission to publish.
 
 ## V1 review (historical)
 

@@ -1,12 +1,14 @@
 # M2 — Visual Engine: execution plan
 
-Updated 2026-10-23. Status: **active; V1 closed 2026-10-23.** Waves 1–4
+Updated 2026-11-09. Status: **active; V1 closed 2026-10-23.** Waves 1–4
 are complete: both Potomac variants scored 77, and the `visual` CI job
 passed with the Linux goldens matching exactly. V2's detailed section is
 [written](#v2--3d-data-change-and-flows); its owner decisions are settled,
 and steps 5.0–5.3 are complete. Step 5.4 review fixes and step 5.5 release
-preparation are in progress; owner V2 scores and live/performance gaps
-remain open. Part of the
+preparation are implemented. Owner V2 scores are 86/100 for both variants,
+hardware performance meets the target, and both final live sweeps pass.
+A fresh CI run against these changes awaits an owner-requested push.
+Release versions remain unapplied and unpublished. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -396,8 +398,9 @@ As built (2026-10-22):
   `BUDGET_EXCEEDED` is a warning.
 - **Frame sample.** `check --visual --frames` runs the frame probe from
   `scripts/frame-probe.mjs` (moved into the CLI) during each camera track and
-  reports p95/p99 frame intervals. It is info only: software WebGL measures
-  main-thread cost, not GPU frame rate.
+  reports p95/p99 frame intervals, browser version and actual WebGL renderer.
+  It is info only: intervals include rendering and scheduling; software
+  WebGL does not establish hardware performance.
 - **CI.** A new `visual` job on `ubuntu-latest`: build, then
   `check --visual --network offline` with goldens gating for both Potomac
   variants, a `--network unavailable` run, and the budget report. It always
@@ -630,7 +633,8 @@ Planned 2026-10-23. Status: **accepted.** The owner settled the decisions
 marked **(owner)** on 2026-10-23, each as proposed. Step 5.0 ran the same
 day ([results](#50-results-2026-10-23)), and the owner confirmed its
 backend table. Step 5.1 is done ([as built](#51-as-built-2026-10-23)),
-and steps 5.2 (M ‖ N) and 5.3 (O ‖ P) are merged; step 5.4 is next.
+and steps 5.2 (M ‖ N) and 5.3 (O ‖ P) are merged. Step 5.4's follow-up
+checks are below; step 5.5 release preparation is implemented.
 
 V2 is the second slice in
 [visual-engine.md](visual-engine.md#delivery-slices): 3D columns,
@@ -1416,8 +1420,9 @@ and tarball smoke. The prior push's Windows browser smoke timeout did not
 recur. Downloaded golden files were copied unchanged after the fresh Linux
 comparisons passed. No player code or tolerance changed.
 
-Still open: owner V2 scores and named defects before Q; the recorded live
-idle timeouts and performance gaps are not resolved by offline goldens.
+At the end of that 2026-11-08 run, owner V2 scores and the live/performance
+gaps were still open. The 2026-11-09 follow-up below supersedes that status;
+offline goldens alone did not resolve those items.
 The successful workflow used freshly generated baselines; a normal CI run
 against the committed files follows their next push.
 
@@ -1500,12 +1505,69 @@ tests; one-worker core passed. The publication test timed out on Linux and
 passed on Windows after Docker stopped. No assertions or timeouts changed.
 No new CI run, push, version application or publication was performed.
 
+### 5.4 Idle and performance follow-up (2026-11-09)
+
+The live timeout was reproduced at 2024 phone p = 0.55 with no pending
+network requests. MapLibre reported loaded sources and tiles, no movement,
+no placement or style work and no scheduled frame. Its last render had
+not emitted idle; an explicit repaint immediately did. Listening for more
+source events alone did not repair this state. The readiness helper now
+checks a pending wait every 100 ms and requests a repaint only when the
+map reports loaded and stationary. Success still requires MapLibre's real
+`idle` event and each renderer tier's first draw. It removes its listeners
+and timer on idle or map removal. The 15 s capture limit is unchanged.
+Three regression tests cover late loading without another event, failure
+to settle before idle, moving cameras and cleanup. The exact phone-flight
+reproduction now reaches idle at p = 0.55 in 506 ms instead of timing out.
+`scripts/idle-probe.mjs` records source/placement state and pending requests
+alongside a complete live capture run, without altering its idle limit.
+
+The hardware performance gap was a measurement-environment mismatch:
+bundled Chromium silently selected SwiftShader on its default path.
+Installed Chrome selects Intel Arc 140V/Direct3D11. Both Potomac variants
+and the 1,000-column morph meet the unchanged p99 ≤ 16.7 ms target at
+desktop and phone viewport sizes on that laptop. Browser and WebGL renderer
+now accompany every frame report; the exact measurements and reproduction
+commands are in [the scoring sheet](m2-scoring.md#hardware-performance-follow-up-2026-11-09).
+Physical-phone performance is still unverified.
+
+Final live validation: atlas's instrumented sweep and night's fresh
+canonical `check --visual --network live` both have 24 captures, 134 flight
+samples and zero findings, using bundled Chromium 156.0.8078.4 and
+SwiftShader. Both comparison views (desktop and phone) were inspected.
+An intermediate night sweep had one timeout at limits desktop p = 0.5:
+four OpenFreeMap vector tile requests were still pending and the map
+correctly reported unloaded. It is a separate transient network failure,
+not the loaded-map idle defect; the unmodified 15 s limit rejected it.
+The subsequent canonical run is clean. Local evidence is in
+`out/v2-close/atlas-fixed-live/`, `out/v2-close/night-fixed-live/`
+(the intermediate run), `out/close-night-live-confirm.json`, and
+`examples/projects/potomac-night/.mapbard-visual/captures/` (final).
+
+The owner supplied identical V2 scores for atlas/light and night/dark:
+13, 18, 13, 11, 14, 9, 8 in rubric order, totaling **86/100 each**.
+No further defects were named. This closes the three recorded review gaps
+locally. New CI verification still requires
+an owner-requested push; release preparation is complete, publication is
+not authorized by the scores.
+
+Final local checks: build, lint, all **380 tests** (45 schema, 31 knowledge,
+128 core, 127 renderer, 38 CLI, 10 root and 1 browser smoke) and the installed
+tarball smoke pass. Package tests used one worker and ran serially after
+captures stopped; no timeout or assertion changed. Additional browser
+sweeps have zero findings: atlas offline and night unavailable (24 captures
+and 134 flight samples each), deck gallery stub (12 captures). The latter
+checks that the idle helper still composes with the tier's first draw.
+The core and deck tier remain within their size budgets. No Linux golden
+comparison or regeneration, new CI run, push, version application or npm
+publication was performed in this follow-up.
+
 ### Q. Skill pack and release (step 5.5)
 
 Started 2026-11-08 at the owner's request, after implementing fixes for the
-recorded V2 visual gaps. This is preparation, not release approval: V2
-scores are still pending, live idle timeouts remain, and software-WebGL
-desktop frame intervals are above the target. See
+recorded V2 visual gaps. The owner subsequently scored both variants
+86/100 on 2026-11-09, and hardware frame probes meet the target. Live idle
+verification is recorded above. Publication still requires an owner request. See
 [the defect review](m2-scoring.md#v2-named-gaps--review-fixes-2026-11-08).
 
 Prepared: skill pack 0.3.0 (authored format 0.2.0, compiled 0.4.0), all six

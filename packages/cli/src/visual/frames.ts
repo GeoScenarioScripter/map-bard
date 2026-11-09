@@ -8,8 +8,8 @@ import { cameraMoves, sweeps } from './phase.js';
 /**
  * Frame sample (`check --visual --frames`, and `scripts/frame-probe.mjs`): scroll the whole story
  * like a reader and record requestAnimationFrame intervals, with the scene and progress each
- * frame showed. Headless Chromium renders WebGL in software, so this measures main-thread cost
- * (player, callout placement, MapLibre render calls), not the frame rate of a real GPU.
+ * frame showed. Report the actual WebGL renderer: headless Chromium may select software even
+ * without SwiftShader flags. Frame intervals include rendering and scheduling, not just JS cost.
  */
 export const FRAME_STEPS = 240;
 /** The first frames include start-up work. */
@@ -67,7 +67,11 @@ export function cameraTrackFrames(
     }));
 }
 
-export type FrameReport = { viewport: string } & FrameStats & { cameraTracks: CameraTrackFrames[] };
+export type FrameReport = {
+  viewport: string;
+  browser: string;
+  renderer: string;
+} & FrameStats & { cameraTracks: CameraTrackFrames[] };
 
 type Probe = {
   progress(): { sceneId: string; p: number } | undefined;
@@ -118,8 +122,15 @@ export async function probeFrames(
     const frames = (
       await page.evaluate(() => (window as unknown as { __mbFrames: Frame[] }).__mbFrames)
     ).slice(WARM_UP_FRAMES);
+    const renderer = await page.evaluate(() => {
+      const gl = document.querySelector<HTMLCanvasElement>('#map canvas')?.getContext('webgl2');
+      const debug = gl?.getExtension('WEBGL_debug_renderer_info');
+      return gl && debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : 'unavailable';
+    });
     return {
       viewport: options.viewport.id ?? `${width}x${height}`,
+      browser: `Chromium ${browser.version()}`,
+      renderer,
       ...frameStats(frames.map((frame) => frame.ms)),
       cameraTracks: cameraTrackFrames(frames, story.scenes),
     };

@@ -70,6 +70,12 @@ executable; without one it reports `VISUAL_BROWSER_MISSING`. `build` and
 `check --visual` also report the page's JavaScript size against its budgets
 (core 450 KB gzip, all tiers 1.2 MB) as `BUDGET_EXCEEDED` warnings.
 
+Frame reports include the browser version and actual WebGL renderer. A default
+headless browser can still use SwiftShader; those intervals include software
+rasterization and do not establish hardware performance. To measure an installed
+browser on its default GPU path, set `MAPBARD_CHROME_PATH` to its executable.
+Screenshots continue to force SwiftShader for consistent golden comparisons.
+
 ## Use with a coding agent
 
 The npm package includes the versioned MapBard authoring skill. Install it into

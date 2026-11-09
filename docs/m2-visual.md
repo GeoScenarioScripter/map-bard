@@ -3,8 +3,8 @@
 Updated 2026-10-23. Status: **active; V1 closed 2026-10-23.** Waves 1–4
 are complete: both Potomac variants scored 77, and the `visual` CI job
 passed with the Linux goldens matching exactly. V2's detailed section is
-[written](#v2--3d-data-change-and-flows); its owner decisions are open.
-Next: step 5.0 (spike). Part of the
+[written](#v2--3d-data-change-and-flows); its owner decisions are settled,
+and steps 5.0–5.3 are complete. Step 5.4 is in progress. Part of the
 [roadmap](ROADMAP.md). The design reference is
 [visual-engine.md](visual-engine.md) (architecture, motion model, technique
 catalog, quality bar). This file is the order of work.
@@ -1388,6 +1388,30 @@ Notes for the merge and for 5.4 and Q:
 - **Not done:** goldens (5.4), the CI matrix entry (5.4), `--frames`.
 
 ### 5.4 Goldens, CI and scoring
+
+Progress (2026-11-08): the CI matrix now includes all five projects using
+explicit paths (the galleries live under `fixtures/visual`, not
+`examples/projects`). V2 owner scoring fields and review prompts are in
+`m2-scoring.md`; no V2 score has been assigned. The local Windows and
+isolated Linux builds pass, and lint passes. The Windows test run failed
+14 core tests on timeouts, with three cleanup errors; a Linux rerun passed
+127/128 core tests but also timed out on one test during capture load.
+A final Windows rerun with captures stopped passed all 375 tests,
+including browser smoke. `actionlint` was unavailable; pushed CI has not
+run.
+
+The Linux Playwright image was available after starting Docker Desktop,
+but the first Potomac `--update` failed at contact-sheet generation
+(`page.setContent` exceeded 30 seconds). The capture batch was stopped;
+no generated baselines were copied into the repository. Retry goldens and
+their round-trip comparisons with other validation idle. The atlas live
+run had two idle timeouts (desktop flight p = 0.3 and phone p = 0.6),
+12 warnings and no rest findings. Its contact sheet and full-size 2024
+p = 0.5 and 2025 p = 1 desktop captures were inspected; visible column
+bases sit on the terrain. Night live had one idle timeout (phone p = 0.6)
+and 12 warnings; its contact sheet was inspected and the ghosts remain
+faint. Live success, Linux goldens, pushed CI and owner
+scoring remain pending.
 
 - Linux goldens from the Docker image for both Potomac variants (their
   look changes), both galleries and the flows example. The `visual` CI

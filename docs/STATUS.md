@@ -187,6 +187,20 @@ Code trial beyond M1. See the [roadmap](ROADMAP.md).
 Add one line per working session: date, what changed, the checks run, and the
 next step. Details belong in commit messages.
 
+- 2026-11-08: Started 5.4: expanded visual CI to five explicit project
+  paths and prepared V2 owner scoring sheets; corrected the stale plan
+  introduction. Windows/Linux builds and lint pass. Windows tests failed
+  14 core tests on timeouts (plus cleanup errors); Linux core passed
+  127/128 with one timeout under capture load; a final Windows rerun with
+  captures stopped passed all 375 tests including browser smoke.
+  `actionlint` unavailable. Atlas live: two idle
+  timeouts, 12 warnings; night live: one timeout, 12 warnings. Both contact
+  sheets and atlas full-size terrain captures inspected.
+  Linux golden update failed at contact-sheet generation (30 s timeout);
+  stopped the batch and preserved committed goldens. Next: regenerate
+  Linux goldens without concurrent captures, finish live review,
+  then owner scoring and CI after an explicitly requested push.
+
 - 2026-11-05: Step 5.3 merged: O (Potomac V2 columns and change symbols,
   both variants; phone rail CSS fix beside a basemap notice) fast-forwarded,
   then P (`examples/projects/migration-flows`; arc legend key deduped per

@@ -1,4 +1,41 @@
-# M2 V1 — Potomac scoring sheets
+# M2 — Potomac scoring sheets
+
+## V2 review — step 5.4 (prepared 2026-11-08)
+
+The owner scores both variants against the same quality bar, with a V2
+target of **≥ 80/100 each**. Scores below are deliberately pending. The V1
+review and scores are preserved below as historical evidence.
+
+Use the preview commands below after building. Review both desktop and
+phone widths, scroll through each scene, and check reduced motion. Offline
+goldens cannot establish terrain placement: inspect the online 2024 scene
+at p = 0.5 and the 2025 scene at p = 1 as well.
+
+| Area (points)                     | V2 review focus                                                               | Atlas       | Night       |
+| --------------------------------- | ----------------------------------------------------------------------------- | ----------- | ----------- |
+| Sense of place (15)               | Basemap, terrain contact at column bases, readable context                    | Pending     | Pending     |
+| Encoding clarity and honesty (20) | Shared zero-based height scale; 2024 ghosts versus 2025 solids; change labels | Pending     | Pending     |
+| Motion and camera (15)            | Downstream growth, shrinking columns, orbit and pull-back; reduced motion     | Pending     | Pending     |
+| Attention and annotation (15)     | Column-top labels and legibility during flights                               | Pending     | Pending     |
+| Typography and layout (15)        | Phone rail, legend, narration and small overview columns                      | Pending     | Pending     |
+| Depth and atmosphere (10)         | Useful pitched views, terrain and ghost contrast                              | Pending     | Pending     |
+| Performance and polish (10)       | Loading, smooth interaction and failed-network behavior                       | Pending     | Pending     |
+| **Total (100)**                   | **Target ≥ 80 for each variant**                                              | **Pending** | **Pending** |
+
+### V2 known gaps to review
+
+- Night-theme 2024 ghosts were faint in the step 5.3 captures.
+- The 2025 phone overview columns were only a few pixels tall.
+- Step 5.3 recorded 11 in-flight symbol warnings per Potomac variant.
+- Live checks previously timed out waiting for map idle; desktop offline
+  p99 was 50 ms under software WebGL, also measured on V1. These are not
+  evidence of meeting the 16.7 ms target or of real-device performance.
+- The 1,000-feature morph probe remains unrun.
+
+Owner's V2 scores, review date and named defects: **pending**. Fix named
+defects before step 5.5; do not treat the V1 scores as V2 approval.
+
+## V1 review (historical)
 
 Prepared 2026-10-23 for step 4.3 of [m2-visual.md](m2-visual.md). The owner
 scores each variant against the [quality bar](visual-engine.md#quality-bar);

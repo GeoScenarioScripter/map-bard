@@ -41,10 +41,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [potomac, potomac-night]
+        include:
+          - project: potomac
+            path: examples/projects/potomac
+          - project: potomac-night
+            path: examples/projects/potomac-night
+          - project: migration-flows
+            path: examples/projects/migration-flows
+          - project: gallery-maplibre
+            path: fixtures/visual/gallery-maplibre
+          - project: gallery-deck
+            path: fixtures/visual/gallery-deck
     runs-on: ubuntu-latest
     env:
-      PROJECT: examples/projects/${{ matrix.project }}
+      PROJECT: ${{ matrix.path }}
       UPDATE_GOLDENS: ${{ github.event_name == 'workflow_dispatch' && inputs.update_goldens }}
     steps:
       - uses: actions/checkout@v4
